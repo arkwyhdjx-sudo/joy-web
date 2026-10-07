@@ -395,7 +395,7 @@
     .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .color-opt.active { border-color: #fff; }
 
-    /* Карточки подписки */
+    /* Тарифные карточки */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -684,7 +684,7 @@
         </div>
       </section>
 
-      <!-- 2. ФОРУМ (С ВКЛАДКАМИ: ТЕМЫ И ОБЛАКО МАРКЕТПЛЕЙС КАК В NL) -->
+      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО) -->
       <section id="sec-forum" class="section">
         <div class="profile-card">
           <div class="profile-sub-tabs">
@@ -692,7 +692,6 @@
             <button class="profile-sub-tab" onclick="switchForumSub('cloud')">облако (конфиги и lua)</button>
           </div>
 
-          <!-- Вкладка: Темы -->
           <div id="forum-sub-threads" class="sub-view active">
             <div id="forum-index">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -743,7 +742,6 @@
             </div>
           </div>
 
-          <!-- Вкладка: Облако (Маркетплейс конфигов и скриптов внутри форума) -->
           <div id="forum-sub-cloud" class="sub-view">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <div class="profile-sub-tabs" style="margin-bottom: 0; padding-bottom: 0; border: none;">
@@ -755,7 +753,6 @@
               </div>
             </div>
 
-            <!-- Форма конфига -->
             <div id="new-config-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px;">
               <div class="form-group">
                 <label>название конфига</label>
@@ -772,7 +769,6 @@
               <button class="btn-violet" onclick="apiSaveNewConfig()">сохранить</button>
             </div>
 
-            <!-- Форма скрипта -->
             <div id="new-script-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px;">
               <div class="form-group">
                 <label>название (.lua)</label>
@@ -795,7 +791,7 @@
         </div>
       </section>
 
-      <!-- 3. ПРОФИЛЬ (ВНУТРИ: ОБЗОР, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА) -->
+      <!-- 3. ПРОФИЛЬ (ОБЗОР, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА) -->
       <section id="sec-profile" class="section">
         <div class="profile-card">
           <div id="profile-main-header" class="profile-header-banner">
@@ -816,7 +812,6 @@
             <button class="profile-sub-tab active" onclick="switchProfileSub('overview')">обзор</button>
             <button class="profile-sub-tab" onclick="switchProfileSub('subscription')">подписка</button>
             <button class="profile-sub-tab" onclick="switchProfileSub('settings')">настройки</button>
-            <!-- Скрытая вкладка админки внутри профиля (только owner) -->
             <button class="profile-sub-tab" id="prof-subtab-admin" style="display: none; color: #f87171;" onclick="switchProfileSub('admin')">админ-панель</button>
           </div>
 
@@ -828,7 +823,7 @@
             </div>
           </div>
 
-          <!-- Подписка внутри профиля (как в NL) -->
+          <!-- Подписка внутри профиля -->
           <div id="prof-sub-subscription" class="sub-view">
             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px;">
               <div>
@@ -916,7 +911,7 @@
               </div>
             </div>
 
-            <!-- Загрузка файлов -->
+            <!-- Заливка бинарников -->
             <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
               <label style="color: #f87171; margin-bottom: 6px;">заливка бинарников</label>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -1004,7 +999,35 @@
               </div>
             </div>
 
-            <!-- Инвайты (JOY-XXXXXXXXXX-XXXXXXXXXXXXXXX) -->
+            <!-- НОВЫЙ БЛОК ПРОМОКОДОВ (ДНИ, СКИДКА %, БЕСКОНЕЧНЫЕ ЮЗЫ, ВРЕМЯ) -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="color: #f87171; margin: 0;">управление промокодами</label>
+                <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPromos()">обновить список</button>
+              </div>
+
+              <!-- Форма создания промокода -->
+              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+                <input type="text" id="promo-code-input" placeholder="промокод (напр. VIP2026)">
+                <input type="number" id="promo-days-input" placeholder="+ дни (напр. 7)">
+                <input type="number" id="promo-discount-input" placeholder="скидка % (0-100)">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+                <input type="number" id="promo-uses-input" placeholder="макс юзов (0 = бесконечно)">
+                <input type="number" id="promo-hours-input" placeholder="время в часах (0 = бессрочно)">
+              </div>
+              <button class="btn-violet" style="padding: 5px 12px; font-size: 11px; width: 100%;" onclick="adminCreatePromo()">создать промокод</button>
+
+              <!-- Список созданных промокодов -->
+              <div style="max-height: 170px; overflow-y: auto; margin-top: 12px;">
+                <table class="admin-table">
+                  <thead><tr><th>код</th><th>бонус</th><th>юзы</th><th>срок</th><th>действие</th></tr></thead>
+                  <tbody id="admin-promos-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Инвайты -->
             <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <label style="color: #f87171; margin: 0;">инвайты</label>
@@ -1018,17 +1041,6 @@
               </div>
             </div>
 
-            <!-- Промокоды -->
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <label style="color: #f87171; margin-bottom: 6px;">создать промокод</label>
-              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 8px;">
-                <input type="text" id="promo-code-input" placeholder="промокод">
-                <input type="number" id="promo-days-input" placeholder="дней">
-                <input type="number" id="promo-uses-input" placeholder="активаций">
-              </div>
-              <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminCreatePromo()">создать</button>
-            </div>
-
             <!-- Патчноут -->
             <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
               <label style="color: #f87171; margin-bottom: 6px;">опубликовать патч</label>
@@ -1040,7 +1052,7 @@
         </div>
       </section>
 
-      <!-- 4. ОБНОВЛЕНИЯ (ДОСТУП ИЗ ЛАУНЧЕРА) -->
+      <!-- 4. ОБНОВЛЕНИЯ -->
       <section id="sec-updates" class="section">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h2 style="font-size: 17px;">обновления</h2>
@@ -1049,7 +1061,7 @@
         <div id="updates-list"></div>
       </section>
 
-      <!-- 5. ПОДДЕРЖКА (ДОСТУП ИЗ ЛАУНЧЕРА) -->
+      <!-- 5. ПОДДЕРЖКА -->
       <section id="sec-support" class="section">
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1088,6 +1100,7 @@
           <input type="text" id="checkout-promo-input" placeholder="введите промокод...">
           <button class="btn-outline" style="padding: 8px 12px; font-size: 11px;" onclick="applyCheckoutPromo()">применить</button>
         </div>
+        <div id="checkout-promo-badge" style="display: none; font-size: 11.5px; color: #34d399; margin-top: 6px;"></div>
       </div>
 
       <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px;">
@@ -1095,7 +1108,7 @@
           <span>итого к оплате:</span>
           <span id="checkout-total-price">0 ₽</span>
         </div>
-        <button class="btn-violet" style="width: 100%;" onclick="proceedPayment()">перейти к оплате</button>
+        <button class="btn-violet" style="width: 100%;" onclick="proceedPayment()">подтвердить и оформить</button>
       </div>
     </div>
   </div>
@@ -1131,6 +1144,9 @@
     let allAdminUsers = [];
 
     let activeCloudTab = 'configs';
+
+    // Состояние модалки чекаута
+    let activeCheckoutPlan = { days: 30, basePrice: 900, finalPrice: 900, promoCode: null, extraDays: 0 };
 
     function triggerToast(m) {
       const t = document.getElementById('toast');
@@ -1175,7 +1191,11 @@
       const targetSub = document.getElementById('prof-sub-' + sub);
       if (targetSub) targetSub.classList.add('active');
 
-      if (sub === 'admin') { loadAdminUsers(); loadAdminInvites(); }
+      if (sub === 'admin') { 
+        loadAdminUsers(); 
+        loadAdminInvites(); 
+        loadAdminPromos(); 
+      }
     }
 
     function switchForumSub(sub) {
@@ -1329,7 +1349,6 @@
       rEl.className = `role-badge role-${u.role || 'user'}`;
       rEl.innerText = u.role || 'user';
 
-      // Формат подписки
       let subStr = 'нет активной подписки';
       let subColor = 'var(--text-muted)';
       if (u.sub_until === -1) {
@@ -1352,7 +1371,6 @@
       document.getElementById('launcher-last-launch').innerText = u.last_launch ? new Date(u.last_launch).toLocaleString() : 'не запускался';
       document.getElementById('launcher-hwid-val').innerText = u.hwid || 'не привязан (ожидает первого входа)';
 
-      // Админ вкладка внутри профиля для owner
       const isOwner = (u.username === 'dev' || u.uid === 1 || u.role === 'owner');
       document.getElementById('prof-subtab-admin').style.display = isOwner ? 'inline-block' : 'none';
 
@@ -1395,11 +1413,20 @@
       } catch (err) { triggerToast(err.message); }
     }
 
-    // Покупка и промокод в модалке
+    // === ОФОРМЛЕНИЕ ПОКУПКИ С ПРОМОКОДОМ ===
     function openCheckoutModal(days, price) {
+      activeCheckoutPlan = { 
+        days: days, 
+        basePrice: price, 
+        finalPrice: price, 
+        promoCode: null, 
+        extraDays: 0 
+      };
+
       document.getElementById('checkout-plan-info').innerText = `${days} дней доступа • JOY Client`;
       document.getElementById('checkout-total-price').innerText = `${price} ₽`;
       document.getElementById('checkout-promo-input').value = '';
+      document.getElementById('checkout-promo-badge').style.display = 'none';
       document.getElementById('checkout-modal').classList.add('active');
     }
 
@@ -1407,13 +1434,14 @@
       document.getElementById('checkout-modal').classList.remove('active');
     }
 
+    // Проверка и применение промокода в чекауте
     async function applyCheckoutPromo() {
       const code = document.getElementById('checkout-promo-input').value.trim();
       const token = localStorage.getItem('token');
       if (!code) return triggerToast('введите промокод');
 
       try {
-        const res = await fetch('/api/promo/redeem', {
+        const res = await fetch('/api/promo/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ code })
@@ -1421,13 +1449,59 @@
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
 
-        triggerToast(d.message);
-        closeCheckoutModal();
-        renderUser(d.user);
-      } catch (err) { triggerToast(err.message); }
+        activeCheckoutPlan.promoCode = d.code;
+        activeCheckoutPlan.extraDays = d.days || 0;
+
+        // Расчет итоговой цены со скидкой
+        let newPrice = activeCheckoutPlan.basePrice;
+        if (d.discount_percent > 0) {
+          newPrice = Math.round(newPrice * (1 - d.discount_percent / 100));
+        }
+        activeCheckoutPlan.finalPrice = newPrice;
+
+        // Отображение бейджа
+        const badge = document.getElementById('checkout-promo-badge');
+        badge.style.display = 'block';
+        let bText = 'применено: ';
+        if (d.discount_percent > 0) bText += `скидка ${d.discount_percent}% `;
+        if (d.days > 0) bText += `(+${d.days} дн. бонусом)`;
+        badge.innerText = bText;
+
+        document.getElementById('checkout-total-price').innerText = `${newPrice} ₽`;
+        triggerToast('промокод успешно применен');
+      } catch (err) {
+        triggerToast(err.message);
+      }
     }
 
-    function proceedPayment() {
+    // Завершение оформления / начисление подписки
+    async function proceedPayment() {
+      const token = localStorage.getItem('token');
+      
+      // Если введен промокод — активируем через сервер
+      if (activeCheckoutPlan.promoCode) {
+        try {
+          const res = await fetch('/api/promo/redeem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ 
+              code: activeCheckoutPlan.promoCode, 
+              plan_days: activeCheckoutPlan.days 
+            })
+          });
+          const d = await res.json();
+          if (!res.ok) throw new Error(d.message);
+
+          triggerToast(d.message);
+          closeCheckoutModal();
+          renderUser(d.user);
+          return;
+        } catch (e) {
+          return triggerToast(e.message);
+        }
+      }
+
+      // Тестовая заглушка без промокода
       triggerToast('платежный шлюз временно в тестовом режиме');
     }
 
@@ -1838,19 +1912,71 @@
       } catch (e) { triggerToast(e.message); }
     }
 
+    // === УПРАВЛЕНИЕ ПРОМОКОДАМИ В АДМИНКЕ ===
+    async function loadAdminPromos() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/promos', { headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        const tbody = document.getElementById('admin-promos-table-body');
+        tbody.innerHTML = '';
+
+        if (!d.promos || d.promos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align: center;">промокодов нет</td></tr>';
+          return;
+        }
+
+        d.promos.forEach(p => {
+          let bonusStr = [];
+          if (p.days > 0) bonusStr.push(`+${p.days} дн.`);
+          if (p.discount_percent > 0) bonusStr.push(`-${p.discount_percent}%`);
+
+          const usesStr = p.max_uses === 0 ? `${p.used_count} / ∞` : `${p.used_count} / ${p.max_uses}`;
+          
+          let expStr = 'бессрочно';
+          if (p.expires_at) {
+            const isExpired = p.expires_at < Date.now();
+            expStr = isExpired 
+              ? '<span style="color:#f87171;">истек</span>' 
+              : `${new Date(p.expires_at).toLocaleDateString()} ${new Date(p.expires_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="copy-chip" onclick="navigator.clipboard.writeText('${p.code}'); triggerToast('скопирован: ${p.code}')">${p.code}</span></td>
+            <td style="color:#34d399; font-weight:600;">${bonusStr.join(' + ')}</td>
+            <td class="mono">${usesStr}</td>
+            <td style="font-size:11px;">${expStr}</td>
+            <td><button class="del-btn" onclick="adminDeletePromo('${p.code}')">[удалить]</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {}
+    }
+
     async function adminCreatePromo() {
       const token = localStorage.getItem('token');
       const code = document.getElementById('promo-code-input').value.trim();
       const days = document.getElementById('promo-days-input').value;
+      const discount_percent = document.getElementById('promo-discount-input').value;
       const max_uses = document.getElementById('promo-uses-input').value;
+      const duration_hours = document.getElementById('promo-hours-input').value;
 
-      if (!code || !days) return triggerToast('заполните поля');
+      if (!code || (!days && !discount_percent)) {
+        return triggerToast('укажите код и дни или скидку');
+      }
 
       try {
         const res = await fetch('/api/admin/promo/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ code, days, max_uses })
+          body: JSON.stringify({ 
+            code, 
+            days, 
+            discount_percent, 
+            max_uses, 
+            duration_hours 
+          })
         });
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
@@ -1858,7 +1984,24 @@
         triggerToast(d.message);
         document.getElementById('promo-code-input').value = '';
         document.getElementById('promo-days-input').value = '';
+        document.getElementById('promo-discount-input').value = '';
         document.getElementById('promo-uses-input').value = '';
+        document.getElementById('promo-hours-input').value = '';
+        loadAdminPromos();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function adminDeletePromo(code) {
+      if (!confirm(`удалить промокод ${code}?`)) return;
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`/api/admin/promo/${encodeURIComponent(code)}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        triggerToast(d.message);
+        loadAdminPromos();
       } catch (e) { triggerToast(e.message); }
     }
 
@@ -2112,38 +2255,36 @@
 
     async function loadTickets() {
       const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/support/my-tickets', { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await res.json();
-        const c = document.getElementById('tickets-list');
-        c.innerHTML = '';
+      const res = await fetch('/api/support/my-tickets', { headers: { 'Authorization': `Bearer ${token}` } });
+      const d = await res.json();
+      const c = document.getElementById('tickets-list');
+      c.innerHTML = '';
 
-        if (!d.tickets || d.tickets.length === 0) {
-          c.innerHTML = '<p class="text-muted" style="font-size: 12px;">обращений нет</p>';
-          return;
-        }
+      if (d.tickets.length === 0) {
+        c.innerHTML = '<p class="text-muted" style="font-size: 12px;">обращений нет</p>';
+        return;
+      }
 
-        d.tickets.forEach(t => {
-          const item = document.createElement('div');
-          item.style.padding = '8px 0';
-          item.style.borderBottom = '1px solid var(--border)';
-          item.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-              <div>
-                <span class="mono" style="font-weight: 600; font-size: 13px;">${t.subject}</span>
-                <span class="uid-tag" style="margin-left: 4px;">uid ${t.user_uid || 1}</span>
-              </div>
-              <div>
-                <span class="ticket-badge">${t.status}</span>
-                <button class="del-btn" onclick="apiDeleteTicket('${t.id}')">[удалить]</button>
-              </div>
+      d.tickets.forEach(t => {
+        const item = document.createElement('div');
+        item.style.padding = '8px 0';
+        item.style.borderBottom = '1px solid var(--border)';
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+            <div>
+              <span class="mono" style="font-weight: 600; font-size: 13px;">${t.subject}</span>
+              <span class="uid-tag" style="margin-left: 4px;">uid ${t.user_uid || 1}</span>
             </div>
-            <div class="text-muted" style="font-size: 12px;">${t.message}</div>
-            ${t.reply ? `<div style="margin-top: 5px; color: var(--accent-bright); font-size: 12px;">ответ: ${t.reply}</div>` : ''}
-          `;
-          c.appendChild(item);
-        });
-      } catch (e) {}
+            <div>
+              <span class="ticket-badge">${t.status}</span>
+              <button class="del-btn" onclick="apiDeleteTicket('${t.id}')">[удалить]</button>
+            </div>
+          </div>
+          <div class="text-muted" style="font-size: 12px;">${t.message}</div>
+          ${t.reply ? `<div style="margin-top: 5px; color: var(--accent-bright); font-size: 12px;">ответ: ${t.reply}</div>` : ''}
+        `;
+        c.appendChild(item);
+      });
     }
 
     async function apiDeleteTicket(id) {
@@ -2191,7 +2332,7 @@
       if (res.ok) loadUpdates();
     }
 
-    // Модалка юзера
+    // Модалка
     async function openUserProfileModal(username) {
       try {
         const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
