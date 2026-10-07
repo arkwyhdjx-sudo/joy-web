@@ -1,90 +1,60 @@
 const express = require('express');
-const Database = require('better-sqlite3');
-const bcrypt = require('bcryptjs');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const db = new Database('joy.db');
-
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// 1. ИНИЦИАЛИЗАЦИЯ ТАБЛИЦ БАЗЫ ДАННЫХ
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE COLLATE NOCASE,
-    password_hash TEXT,
-    invite_code TEXT,
-    hwid TEXT DEFAULT NULL,
-    sub_until INTEGER DEFAULT 0,
-    created_at INTEGER
-  );
+const DB_FILE = path.join(__dirname, 'joy_db.json');
 
-  CREATE TABLE IF NOT EXISTS invites (
-    code TEXT PRIMARY KEY,
-    used INTEGER DEFAULT 0,
-    used_by TEXT DEFAULT NULL
-  );
-`);
-
-// Создаем тестовые инвайты, если таблица пустая
-const inviteCount = db.prepare('SELECT count(*) as count FROM invites').get().count;
-if (inviteCount === 0) {
-  const insertInvite = db.prepare('INSERT INTO invites (code) VALUES (?)');
-  insertInvite.run('JOY-DEV-KEY1');
-  insertInvite.run('JOY-TEST-2026');
-  insertInvite.run('JOY-ALPHA-777');
-  console.log('[DB] Сгенерированы тестовые инвайты: JOY-DEV-KEY1, JOY-TEST-2026, JOY-ALPHA-777');
+// Инициализация базы данных в JSON-файле
+function loadDB() {
+  if (!fs.existsSync(DB_FILE)) {
+    const initial = {
+      users: {},
+      invites: {
+        'JOY-DEV-KEY1': { used: false },
+        'JOY-TEST-2026': { used: false },
+        'JOY-ALPHA-777': { used: false }
+      }
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
+    return initial;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  } catch (e) {
+    return { users: {}, invites: {} };
+  }
 }
 
-// 2. ANTI-DDOS / RATE-LIMITER ПО IP
+function saveDB(data) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+// Защита от флуда по IP
 const ipRequests = new Map();
-const IP_LIMIT_WINDOW_MS = 10000; // Окно 10 секунд
-const MAX_REQUESTS_PER_WINDOW = 12; // Максимум 12 запросов с одного IP
-const BLOCK_TIME_MS = 60000; // Бан на 1 минуту при флуде
-
-function antiDdosMiddleware(req, res, next) {
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+app.use('/api', (req, res, next) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
   const now = Date.now();
+  let record = ipRequests.get(ip);
 
-  let record = ipRequests.get(clientIp);
-
-  if (!record) {
-    record = { count: 1, firstRequest: now, blockedUntil: 0 };
-    ipRequests.set(clientIp, record);
+  if (!record || now - record.firstRequest > 10000) {
+    record = { count: 1, firstRequest: now };
+    ipRequests.set(ip, record);
   } else {
-    // Проверка активного бана
-    if (record.blockedUntil > now) {
-      const waitSec = Math.ceil((record.blockedUntil - now) / 1000);
-      return res.status(429).json({ message: `IP временно заблокирован защитой от DDoS. Ждите ${waitSec} сек.` });
-    }
-
-    // Сброс окна времени
-    if (now - record.firstRequest > IP_LIMIT_WINDOW_MS) {
-      record.count = 1;
-      record.firstRequest = now;
-    } else {
-      record.count++;
-      if (record.count > MAX_REQUESTS_PER_WINDOW) {
-        record.blockedUntil = now + BLOCK_TIME_MS;
-        console.warn(`[ANTI-DDOS] Временная блокировка IP: ${clientIp}`);
-        return res.status(429).json({ message: 'Слишком много запросов. Ваш IP временно заблокирован.' });
-      }
+    record.count++;
+    if (record.count > 15) {
+      return res.status(429).json({ message: 'Слишком частые запросы. Подождите.' });
     }
   }
-
-  req.clientIp = clientIp;
   next();
-}
+});
 
-app.use('/api', antiDdosMiddleware);
-
-// 3. API ЭНДПОИНТЫ
-
-// Проверка соединения и IP при загрузке
+// Проверка соединения
 app.get('/api/verify-ip', (req, res) => {
-  res.json({ status: 'ok', ip: req.clientIp });
+  res.json({ status: 'ok' });
 });
 
 // Регистрация
@@ -95,51 +65,56 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'Заполните все поля' });
   }
 
-  // Проверка инвайта
-  const inv = db.prepare('SELECT * FROM invites WHERE code = ? AND used = 0').get(invite_code.trim());
-  if (!inv) {
+  const db = loadDB();
+  const inv = db.invites[invite_code.trim()];
+
+  if (!inv || inv.used) {
     return res.status(400).json({ message: 'Недействительный или использованный инвайт' });
   }
 
-  // Проверка занятости никнейма
-  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username.trim());
-  if (existingUser) {
+  const userKey = username.trim().toLowerCase();
+  if (db.users[userKey]) {
     return res.status(400).json({ message: 'Логин уже занят' });
   }
 
-  const hash = bcrypt.hashSync(password, 10);
-  const now = Date.now();
+  // Создаем аккаунт и гасим инвайт
+  db.invites[invite_code.trim()].used = true;
+  db.invites[invite_code.trim()].used_by = username.trim();
 
-  // Транзакция: создаем юзера и гасим инвайт
-  const registerTx = db.transaction(() => {
-    db.prepare('INSERT INTO users (username, password_hash, invite_code, created_at) VALUES (?, ?, ?, ?)').run(
-      username.trim(), hash, invite_code.trim(), now
-    );
-    db.prepare('UPDATE invites SET used = 1, used_by = ? WHERE code = ?').run(username.trim(), invite_code.trim());
+  db.users[userKey] = {
+    username: username.trim(),
+    password: password, // В проде можно добавить хеширование
+    invite_code: invite_code.trim(),
+    hwid: null,
+    sub_until: 0,
+    created_at: Date.now()
+  };
+
+  saveDB(db);
+
+  res.json({
+    token: `joy_session_${userKey}`,
+    user: {
+      username: username.trim(),
+      invite_code: invite_code.trim(),
+      hwid: null,
+      subscription_expires: null
+    }
   });
-
-  try {
-    registerTx();
-    res.json({
-      token: `joy_session_${username.trim()}`,
-      user: { username: username.trim(), invite_code: invite_code.trim(), hwid: null, subscription_expires: null }
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Ошибка базы данных' });
-  }
 });
 
 // Вход
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username.trim());
+  const db = loadDB();
+  const user = db.users[username.trim().toLowerCase()];
 
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+  if (!user || user.password !== password) {
     return res.status(401).json({ message: 'Неверный логин или пароль' });
   }
 
   res.json({
-    token: `joy_session_${user.username}`,
+    token: `joy_session_${user.username.toLowerCase()}`,
     user: {
       username: user.username,
       invite_code: user.invite_code,
@@ -149,15 +124,16 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Получение профиля
+// Профиль
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) {
-    return res.status(401).json({ message: 'Сессия недействительна' });
+    return res.status(401).json({ message: 'Сессия истекла' });
   }
 
-  const username = token.replace('joy_session_', '');
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
 
   if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
 
@@ -176,13 +152,22 @@ app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'Не авторизован' });
 
-  const username = token.replace('joy_session_', '');
-  db.prepare('UPDATE users SET hwid = NULL WHERE username = ?').run(username);
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  if (db.users[userKey]) {
+    db.users[userKey].hwid = null;
+    saveDB(db);
+  }
 
-  res.json({ message: 'HWID успешно сброшен. Привязка очищена.' });
+  res.json({ message: 'HWID успешно сброшен' });
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`[JOY.CC] Сервер и база активны на http://localhost:${PORT}`);
+// Главная страница
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[JOY.CC] Сервер активен на порту ${PORT}`);
 });
