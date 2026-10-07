@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOY.CC</title>
+
+  <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #07060b;
+      --surface: #0f0d17;
+      --surface-elevated: #151322;
+      --border: #221d33;
+      --accent: #8b5cf6;
+      --accent-bright: #a855f7;
+      --accent-glow: rgba(139, 92, 246, 0.25);
+      --accent-glow-intense: rgba(168, 85, 247, 0.45);
+      --text-main: #f3f2f8;
+      --text-muted: #726c8a;
+      --radius: 8px;
+      --font-main: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.45;
+      animation: floatOrb 12s ease-in-out infinite alternate;
+    }
+
+    .glow-1 {
+      top: -15%;
+      left: 20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    }
+
+    .glow-2 {
+      bottom: 5%;
+      right: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, #5b21b6 0%, transparent 70%);
+      animation-duration: 16s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    .mono { font-family: var(--font-mono); }
+    .text-muted { color: var(--text-muted); }
+    .fw-600 { font-weight: 600; }
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(15, 13, 23, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      outline: none;
+      font-size: 14px;
+      font-family: var(--font-main);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    input.mono-input {
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+
+    input:focus {
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+      background: var(--surface-elevated);
+    }
+
+    button {
+      font-family: var(--font-main);
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      outline: none;
+    }
+
+    .btn-violet {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-violet:hover:not(:disabled) {
+      box-shadow: 0 6px 25px var(--accent-glow-intense);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.08);
+      transform: translateY(-2px);
+    }
+
+    button:disabled, .btn-disabled {
+      opacity: 0.45;
+      cursor: not-allowed !important;
+      border-color: var(--border) !important;
+      background: var(--surface-elevated) !important;
+      color: var(--text-muted) !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    /* --- ЧИСТЫЙ МИНИМАЛИСТИЧНЫЙ ЛОАДЕР ЗАЩИТЫ (БЕЗ ТЕКСТА) --- */
+    #ddos-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+    }
+
+    #ddos-screen.verified {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .shield-loader {
+      position: relative;
+      width: 48px;
+      height: 48px;
+    }
+
+    .shield-loader::before, .shield-loader::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--accent-bright);
+      animation: loaderSpin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    }
+
+    .shield-loader::after {
+      border-top-color: transparent;
+      border-bottom-color: var(--accent);
+      animation-duration: 1.4s;
+    }
+
+    @keyframes loaderSpin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* --- AUTH SCREEN --- */
+    #auth-screen {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 2px);
+      padding: 36px 32px;
+      box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px -10px var(--accent-glow);
+      animation: modalFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-bottom: 24px;
+      background: linear-gradient(180deg, #fff 40%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: rgba(7, 6, 11, 0.6);
+      padding: 4px;
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .auth-tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab.active {
+      color: #fff;
+      background: var(--surface-elevated);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    /* --- DASHBOARD SCREEN --- */
+    #dashboard-screen {
+      position: relative;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      animation: screenFade 0.4s ease;
+    }
+
+    header.top-nav {
+      background: rgba(15, 13, 23, 0.95);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links { display: flex; gap: 20px; }
+
+    .nav-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 0;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover, .nav-link.active { color: var(--text-main); }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -19px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    .logout-btn {
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      font-size: 13px;
+    }
+    .logout-btn:hover { color: #f87171; }
+
+    .glow-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.35;
+      width: 100%;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 24px;
+    }
+
+    .glow-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glow-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px -12px rgba(139, 92, 246, 0.25);
+    }
+
+    .plan-period {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .plan-price {
+      font-family: var(--font-mono);
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 28px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: 13.5px;
+    }
+
+    .hwid-box {
+      background: #09080e;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 16px 0;
+      word-break: break-all;
+      color: #c4b5fd;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--accent);
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+      color: var(--text-main);
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes modalFadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes screenFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .profile-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      header.top-nav { padding: 0 16px; }
+      .auth-box { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-container">
+    <div class="glow-orb glow-1"></div>
+    <div class="glow-orb glow-2"></div>
+  </div>
+
+  <!-- МИНИМАЛИСТИЧНЫЙ ЛОАДЕР (ПРОВЕРКА IP НА СЕРВЕРЕ) -->
+  <div id="ddos-screen">
+    <div class="shield-loader"></div>
+  </div>
+
+  <!-- ШЛЮЗ АВТОРИЗАЦИИ -->
+  <div id="auth-screen">
+    <div class="auth-box">
+      <div class="brand-title">JOY.CC</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+      </div>
+
+      <!-- Вход -->
+      <form id="form-login" class="auth-form active" onsubmit="apiLogin(event)">
+        <div class="form-group">
+          <label>Логин</label>
+          <input type="text" id="login-username" name="username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" id="login-password" name="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-login-submit" class="btn-violet" style="width: 100%; margin-top: 8px;">Войти</button>
+      </form>
+
+      <!-- Регистрация -->
+      <form id="form-register" class="auth-form" onsubmit="apiRegister(event)">
+        <div class="form-group">
+          <label>Инвайт-код</label>
+          <input type="text" id="reg-invite" name="invite_code" class="mono-input" placeholder="JOY-XXXX-XXXX" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Логин</label>
+          <input type="text" id="reg-username" name="username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" id="reg-p1" name="password" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>Подтверждение пароля</label>
+          <input type="password" id="reg-p2" name="confirm_password" required autocomplete="new-password">
+        </div>
+        <button type="submit" id="btn-reg-submit" class="btn-violet" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ВНУТРЕННЯЯ ПАНЕЛЬ -->
+  <div id="dashboard-screen">
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-title" style="margin: 0; font-size: 18px;">JOY.CC</div>
+        <nav class="nav-links">
+          <button class="nav-link active" onclick="switchNav('sub')">Подписка</button>
+          <button class="nav-link" onclick="switchNav('cfg')">Конфигурации</button>
+          <button class="nav-link" onclick="switchNav('profile')">Профиль</button>
+        </nav>
+      </div>
+
+      <div class="nav-right">
+        <button class="logout-btn" onclick="apiLogout()">Выйти</button>
+      </div>
+    </header>
+
+    <div class="glow-divider"></div>
+
+    <main class="main-content">
+      <!-- Подписка -->
+      <section id="sec-sub" class="section active">
+        <h1 class="section-title">Тарифные периоды</h1>
+        <div class="pricing-grid">
+          <div class="glow-card">
+            <div class="plan-period">1 месяц</div>
+            <div class="plan-price">900 ₽</div>
+            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+          </div>
+
+          <div class="glow-card">
+            <div class="plan-period" style="color: var(--accent-bright);">3 месяца</div>
+            <div class="plan-price">2 300 ₽</div>
+            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+          </div>
+
+          <div class="glow-card">
+            <div class="plan-period">12 месяцев</div>
+            <div class="plan-price">8 000 ₽</div>
+            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Конфигурации -->
+      <section id="sec-cfg" class="section">
+        <h1 class="section-title">Облачные пресеты</h1>
+        <div class="profile-card" style="text-align: center; padding: 48px 24px;">
+          <p class="text-muted" style="margin-bottom: 16px;">Синхронизация профилей активна. В облаке сохранено 0 пользовательских слотов.</p>
+          <button class="btn-outline" onclick="triggerToast('Пресеты актуальны')">Проверить обновления</button>
+        </div>
+      </section>
+
+      <!-- Профиль -->
+      <section id="sec-profile" class="section">
+        <h1 class="section-title">Учетная запись</h1>
+        <div class="profile-grid">
+          <div class="profile-card">
+            <div class="info-row">
+              <span class="text-muted">Пользователь</span>
+              <span class="fw-600" id="prof-username">—</span>
+            </div>
+            <div class="info-row">
+              <span class="text-muted">Приглашен по коду</span>
+              <span class="mono" id="prof-invite" style="color: var(--accent-bright);">—</span>
+            </div>
+            <div class="info-row" style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border);">
+              <span class="text-muted">Срок действия</span>
+              <span id="prof-sub-status" style="color: var(--text-muted);">Неактивна</span>
+            </div>
+            <button class="btn-violet" id="btn-download" style="width: 100%; margin-top: 24px;" onclick="downloadLoader()">
+              Скачать клиент
+            </button>
+          </div>
+
+          <div class="profile-card">
+            <div class="info-row">
+              <span class="text-muted">Оборудование (HWID)</span>
+              <span id="prof-hwid-status" style="color: var(--text-muted);">Не привязано</span>
+            </div>
+            <div class="hwid-box" id="prof-hwid-val">
+              Ожидает первого входа через лаунчер
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+              Сброс HWID доступен 1 раз в 30 дней.
+            </p>
+            <button class="btn-outline" style="width: 100%;" onclick="apiResetHWID()">
+              Запросить сброс HWID
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    function triggerToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function switchAuthTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+
+      if (tab === 'login') {
+        document.querySelectorAll('.auth-tab')[0].classList.add('active');
+        document.getElementById('form-login').classList.add('active');
+      } else {
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.getElementById('form-register').classList.add('active');
+      }
+    }
+
+    function switchNav(sec) {
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('sec-' + sec).classList.add('active');
+    }
+
+    // === ПРОВЕРКА IP ПРИ ВХОДЕ (РЕАЛЬНЫЙ ЗАПРОС К СЕРВЕРУ) ===
+    window.addEventListener('DOMContentLoaded', async () => {
+      const screen = document.getElementById('ddos-screen');
+
+      try {
+        const res = await fetch('/api/verify-ip');
+        if (!res.ok) {
+          const err = await res.json();
+          triggerToast(err.message || 'Ошибка сети');
+        }
+      } catch (e) {
+        // Сервер пока не запущен локально
+      } finally {
+        setTimeout(() => {
+          screen.classList.add('verified');
+        }, 600);
+      }
+
+      const token = localStorage.getItem('token');
+      if (token) loadUserProfile();
+    });
+
+    async function apiLogin(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('btn-login-submit');
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Ошибка авторизации');
+
+        localStorage.setItem('token', data.token);
+        renderDashboard(data.user);
+        triggerToast('Успешный вход');
+      } catch (err) {
+        triggerToast(err.message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function apiRegister(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('btn-reg-submit');
+      const inviteCode = document.getElementById('reg-invite').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const p1 = document.getElementById('reg-p1').value;
+      const p2 = document.getElementById('reg-p2').value;
+
+      if (p1 !== p2) {
+        triggerToast('Пароли не совпадают');
+        return;
+      }
+
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invite_code: inviteCode, username, password: p1 })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Ошибка регистрации');
+
+        localStorage.setItem('token', data.token);
+        renderDashboard(data.user);
+        triggerToast('Регистрация завершена');
+      } catch (err) {
+        triggerToast(err.message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function loadUserProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Сессия устарела');
+
+        const data = await res.json();
+        renderDashboard(data.user);
+      } catch (err) {
+        apiLogout();
+      }
+    }
+
+    function renderDashboard(user) {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').style.display = 'flex';
+
+      document.getElementById('prof-username').innerText = user.username || 'operator';
+      document.getElementById('prof-invite').innerText = user.invite_code || '—';
+
+      const subStatus = document.getElementById('prof-sub-status');
+      if (user.subscription_expires) {
+        subStatus.innerText = `Активна (до ${user.subscription_expires})`;
+        subStatus.style.color = '#4ade80';
+      } else {
+        subStatus.innerText = 'Неактивна';
+        subStatus.style.color = 'var(--text-muted)';
+      }
+
+      const hwidStatus = document.getElementById('prof-hwid-status');
+      const hwidVal = document.getElementById('prof-hwid-val');
+      if (user.hwid) {
+        hwidStatus.innerText = 'Привязано';
+        hwidStatus.style.color = '#4ade80';
+        hwidVal.innerText = user.hwid;
+      } else {
+        hwidStatus.innerText = 'Не привязано';
+        hwidStatus.style.color = 'var(--text-muted)';
+        hwidVal.innerText = 'Ожидает первого входа через лаунчер';
+      }
+    }
+
+    async function apiResetHWID() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/hwid/reset', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Ошибка сброса HWID');
+        triggerToast(data.message || 'HWID успешно сброшен');
+      } catch (err) {
+        triggerToast(err.message);
+      }
+    }
+
+    function downloadLoader() {
+      triggerToast('Запрос на скачивание отправлен');
+    }
+
+    function checkout() {
+      triggerToast('Прием платежей временно приостановлен');
+    }
+
+    function apiLogout() {
+      localStorage.removeItem('token');
+      document.getElementById('dashboard-screen').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+      switchAuthTab('login');
+      triggerToast('Вы вышли из учетной записи');
+    }
+  </script>
+</body>
+</html>
