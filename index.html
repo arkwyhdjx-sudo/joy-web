@@ -14,15 +14,16 @@
     :root {
       --bg-dark: #07060b;
       --surface: #0f0d17;
-      --surface-elevated: #151322;
-      --border: #221d33;
+      --surface-elevated: #161324;
+      --border: #211c33;
+      --border-light: #2c2544;
       --accent: #8b5cf6;
       --accent-bright: #a855f7;
       --accent-glow: rgba(139, 92, 246, 0.25);
       --accent-glow-intense: rgba(168, 85, 247, 0.45);
       --text-main: #f3f2f8;
       --text-muted: #726c8a;
-      --radius: 10px;
+      --radius: 8px;
       --font-main: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -33,7 +34,7 @@
       background-color: var(--bg-dark);
       color: var(--text-main);
       font-family: var(--font-main);
-      font-size: 14px;
+      font-size: 13.5px;
       line-height: 1.5;
       min-height: 100vh;
       overflow-x: hidden;
@@ -53,64 +54,63 @@
       position: absolute;
       border-radius: 50%;
       filter: blur(140px);
-      opacity: 0.4;
+      opacity: 0.35;
     }
 
-    .glow-1 { top: -15%; left: 20%; width: 500px; height: 500px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
-    .glow-2 { bottom: 5%; right: 10%; width: 600px; height: 600px; background: radial-gradient(circle, #5b21b6 0%, transparent 70%); }
+    .glow-1 { top: -10%; left: 25%; width: 450px; height: 450px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
+    .glow-2 { bottom: 5%; right: 15%; width: 500px; height: 500px; background: radial-gradient(circle, #5b21b6 0%, transparent 70%); }
 
     .mono { font-family: var(--font-mono); }
     .text-muted { color: var(--text-muted); }
-    .fw-600 { font-weight: 600; }
-    .form-group { margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
 
     label {
       display: block;
       margin-bottom: 6px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text-muted);
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
-      background: rgba(15, 13, 23, 0.7);
+      background: rgba(15, 13, 23, 0.8);
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: var(--radius);
       outline: none;
-      font-size: 14px;
+      font-size: 13.5px;
       font-family: var(--font-main);
-      transition: border-color 0.2s;
+      transition: all 0.2s ease;
     }
 
-    textarea { resize: vertical; min-height: 80px; }
-    input:focus, textarea:focus { border-color: var(--accent-bright); }
+    textarea { resize: vertical; min-height: 70px; }
+    input:focus, textarea:focus { border-color: var(--accent-bright); background: var(--surface-elevated); }
 
     button {
       font-family: var(--font-main);
       font-weight: 600;
-      font-size: 13.5px;
+      font-size: 13px;
       border: none;
       border-radius: var(--radius);
-      padding: 11px 18px;
+      padding: 9px 16px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.2s ease;
     }
 
     .btn-violet {
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%);
       color: #fff;
-      box-shadow: 0 4px 20px var(--accent-glow);
+      box-shadow: 0 4px 15px var(--accent-glow);
     }
-    .btn-violet:hover { box-shadow: 0 6px 25px var(--accent-glow-intense); transform: translateY(-1px); }
+    .btn-violet:hover { box-shadow: 0 6px 20px var(--accent-glow-intense); transform: translateY(-1px); }
 
     .btn-outline {
       background: transparent;
@@ -119,7 +119,7 @@
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); }
 
-    /* Минималистичный лоадер без текста */
+    /* DDoS Screen */
     #ddos-screen {
       position: fixed;
       inset: 0;
@@ -128,13 +128,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.4s ease, visibility 0.4s;
+      transition: opacity 0.3s ease, visibility 0.3s;
     }
     #ddos-screen.verified { opacity: 0; visibility: hidden; pointer-events: none; }
 
     .loader {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border: 2px solid transparent;
       border-top-color: var(--accent-bright);
       border-radius: 50%;
@@ -142,7 +142,7 @@
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* Авторизация */
+    /* Шлюз авторизации */
     #auth-screen {
       position: relative;
       z-index: 10;
@@ -150,26 +150,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
     }
 
     .auth-box {
       width: 100%;
-      max-width: 400px;
+      max-width: 380px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 36px 32px;
+      padding: 30px 26px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     }
 
     .brand-title {
       font-family: var(--font-mono);
       font-weight: 700;
-      font-size: 26px;
+      font-size: 24px;
       letter-spacing: 0.08em;
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       background: linear-gradient(180deg, #fff 40%, #c4b5fd 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -178,9 +178,9 @@
     .auth-tabs {
       display: flex;
       background: rgba(7, 6, 11, 0.6);
-      padding: 4px;
+      padding: 3px;
       border-radius: var(--radius);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       border: 1px solid var(--border);
     }
 
@@ -188,8 +188,8 @@
       flex: 1;
       background: transparent;
       color: var(--text-muted);
-      padding: 8px 0;
-      font-size: 13px;
+      padding: 7px 0;
+      font-size: 12.5px;
       border-radius: 6px;
     }
     .auth-tab.active { color: #fff; background: var(--surface-elevated); }
@@ -209,23 +209,23 @@
     header.top-nav {
       background: rgba(15, 13, 23, 0.95);
       border-bottom: 1px solid var(--border);
-      height: 64px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
+      padding: 0 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
 
-    .nav-left, .nav-right { display: flex; align-items: center; gap: 32px; }
-    .nav-links { display: flex; gap: 20px; }
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-links { display: flex; gap: 16px; }
 
     .nav-link {
       background: none;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 13.5px;
       padding: 6px 0;
       position: relative;
     }
@@ -233,7 +233,7 @@
     .nav-link.active::after {
       content: '';
       position: absolute;
-      bottom: -19px;
+      bottom: -15px;
       left: 0;
       right: 0;
       height: 2px;
@@ -241,65 +241,90 @@
       box-shadow: 0 0 10px var(--accent);
     }
 
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-btn, .curr-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+    .lang-btn.active, .curr-btn.active {
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Главный контент (без лишнего воздуха) */
     .main-content {
       flex-grow: 1;
-      max-width: 1000px;
+      max-width: 860px;
       width: 100%;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 30px 16px;
     }
 
     .section { display: none; }
     .section.active { display: block; }
 
-    /* СТИЛИ ПРОФИЛЯ */
+    /* ПРОФИЛЬ */
     .profile-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 22px;
+      margin-bottom: 16px;
     }
 
     .profile-header-banner {
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-bottom: 28px;
+      gap: 16px;
+      margin-bottom: 20px;
+      transition: opacity 0.2s ease;
     }
 
     .profile-avatar {
-      width: 72px;
-      height: 72px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-mono);
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 700;
       color: #fff;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--border-light);
+      flex-shrink: 0;
     }
 
     .profile-sub-tabs {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       padding-bottom: 8px;
     }
 
     .profile-sub-tab {
       background: none;
       color: var(--text-muted);
-      font-size: 13.5px;
-      padding: 6px 12px;
+      font-size: 13px;
+      padding: 5px 10px;
+      border-radius: var(--radius);
     }
     .profile-sub-tab.active {
       color: #fff;
       background: var(--surface-elevated);
-      border-radius: var(--radius);
     }
 
     .sub-view { display: none; }
@@ -308,36 +333,113 @@
     .color-picker {
       display: flex;
       gap: 8px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .color-opt {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
     }
     .color-opt.active { border-color: #fff; }
 
+    /* ТАРИФЫ (КОМПАКТНЫЕ КАРТОЧКИ) */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .pricing-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 25px -5px var(--accent-glow);
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid var(--accent);
+      color: #c4b5fd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .plan-period {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .plan-price {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .plan-perks {
+      list-style: none;
+      margin-bottom: 20px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      flex-grow: 1;
+    }
+
+    .plan-perks li {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .plan-perks li::before {
+      content: '✓';
+      color: var(--accent-bright);
+      font-weight: bold;
+    }
+
     /* ФОРУМ И ТИКЕТЫ */
     .forum-item {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px 20px;
+      padding: 14px 18px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       transition: all 0.2s;
     }
     .forum-item:hover { border-color: var(--accent); background: var(--surface-elevated); }
 
     .ticket-badge {
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 11px;
       font-weight: 600;
       background: rgba(139, 92, 246, 0.15);
@@ -346,19 +448,25 @@
 
     #toast {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 20px;
+      right: 20px;
       background: var(--surface-elevated);
       border: 1px solid var(--accent);
       color: var(--text-main);
-      padding: 10px 18px;
+      padding: 9px 16px;
       border-radius: var(--radius);
-      font-size: 13px;
+      font-size: 12.5px;
       z-index: 1000;
-      transform: translateY(100px);
-      transition: all 0.3s ease;
+      transform: translateY(80px);
+      transition: all 0.25s ease;
     }
     #toast.show { transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      header.top-nav { padding: 0 14px; }
+      .nav-links { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -375,40 +483,40 @@
     <div class="auth-box">
       <div class="brand-title">JOY.CC</div>
       <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
-        <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+        <button class="auth-tab active" data-i18n="tab_login" onclick="switchAuthTab('login')">Вход</button>
+        <button class="auth-tab" data-i18n="tab_reg" onclick="switchAuthTab('register')">Регистрация</button>
       </div>
 
       <form id="form-login" class="auth-form active" onsubmit="apiLogin(event)">
         <div class="form-group">
-          <label>Логин</label>
+          <label data-i18n="lbl_username">Логин</label>
           <input type="text" id="login-username" required>
         </div>
         <div class="form-group">
-          <label>Пароль</label>
+          <label data-i18n="lbl_pass">Пароль</label>
           <input type="password" id="login-password" required>
         </div>
-        <button type="submit" class="btn-violet" style="width: 100%;">Войти</button>
+        <button type="submit" class="btn-violet" style="width: 100%;" data-i18n="btn_login">Войти</button>
       </form>
 
       <form id="form-register" class="auth-form" onsubmit="apiRegister(event)">
         <div class="form-group">
-          <label>Инвайт-код</label>
+          <label data-i18n="lbl_invite">Инвайт-код</label>
           <input type="text" id="reg-invite" class="mono" placeholder="JOY-XXXX-XXXX" required>
         </div>
         <div class="form-group">
-          <label>Логин</label>
+          <label data-i18n="lbl_username">Логин</label>
           <input type="text" id="reg-username" required>
         </div>
         <div class="form-group">
-          <label>Пароль</label>
+          <label data-i18n="lbl_pass">Пароль</label>
           <input type="password" id="reg-p1" required>
         </div>
         <div class="form-group">
-          <label>Подтверждение пароля</label>
+          <label data-i18n="lbl_pass_confirm">Подтверждение пароля</label>
           <input type="password" id="reg-p2" required>
         </div>
-        <button type="submit" class="btn-violet" style="width: 100%;">Зарегистрироваться</button>
+        <button type="submit" class="btn-violet" style="width: 100%;" data-i18n="btn_register">Зарегистрироваться</button>
       </form>
     </div>
   </div>
@@ -417,16 +525,25 @@
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
-        <div class="brand-title" style="margin: 0; font-size: 18px;">JOY.CC</div>
+        <div class="brand-title" style="margin: 0; font-size: 17px;">JOY.CC</div>
         <nav class="nav-links">
-          <button class="nav-link active" onclick="switchNav('profile')">Профиль</button>
-          <button class="nav-link" onclick="switchNav('forum')">Форум</button>
-          <button class="nav-link" onclick="switchNav('support')">Поддержка</button>
-          <button class="nav-link" onclick="switchNav('sub')">Подписка</button>
+          <button class="nav-link active" data-i18n="nav_profile" onclick="switchNav('profile')">Профиль</button>
+          <button class="nav-link" data-i18n="nav_forum" onclick="switchNav('forum')">Форум</button>
+          <button class="nav-link" data-i18n="nav_support" onclick="switchNav('support')">Поддержка</button>
+          <button class="nav-link" data-i18n="nav_sub" onclick="switchNav('sub')">Подписка</button>
         </nav>
       </div>
+
       <div class="nav-right">
-        <button class="btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="apiLogout()">Выйти</button>
+        <div class="controls-group">
+          <!-- Переключатель языка -->
+          <button class="lang-btn active" id="btn-lang-ru" onclick="setLang('ru')">RU</button>
+          <button class="lang-btn" id="btn-lang-en" onclick="setLang('en')">EN</button>
+          <!-- Переключатель валюты -->
+          <button class="curr-btn active" id="btn-curr-rub" onclick="setCurrency('RUB')">₽</button>
+          <button class="curr-btn" id="btn-curr-usd" onclick="setCurrency('USD')">$</button>
+        </div>
+        <button class="btn-outline" style="padding: 5px 10px; font-size: 11.5px;" data-i18n="btn_logout" onclick="apiLogout()">Выйти</button>
       </div>
     </header>
 
@@ -434,33 +551,40 @@
       <!-- ПРОФИЛЬ -->
       <section id="sec-profile" class="section active">
         <div class="profile-card">
-          <div class="profile-header-banner">
+          <!-- ШАПКА ПРОФИЛЯ (СКРЫВАЕТСЯ НА ВКЛАДКЕ БЕЗОПАСНОСТИ) -->
+          <div id="profile-main-header" class="profile-header-banner">
             <div id="prof-avatar" class="profile-avatar">U</div>
             <div>
-              <h2 id="prof-username" style="font-size: 20px; font-weight: 700;">User</h2>
-              <div id="prof-invite" class="mono text-muted" style="font-size: 12px;">JOY-XXXX-XXXX</div>
+              <h2 id="prof-username" style="font-size: 19px; font-weight: 700;">User</h2>
+              <div id="prof-invite" class="mono text-muted" style="font-size: 11.5px;">JOY-XXXX-XXXX</div>
             </div>
           </div>
 
           <div class="profile-sub-tabs">
-            <button class="profile-sub-tab active" onclick="switchProfileSub('overview')">Обзор</button>
-            <button class="profile-sub-tab" onclick="switchProfileSub('settings')">Настройки</button>
-            <button class="profile-sub-tab" onclick="switchProfileSub('security')">Безопасность (HWID)</button>
+            <button class="profile-sub-tab active" data-i18n="subtab_overview" onclick="switchProfileSub('overview')">Обзор</button>
+            <button class="profile-sub-tab" data-i18n="subtab_settings" onclick="switchProfileSub('settings')">Настройки</button>
+            <button class="profile-sub-tab" data-i18n="subtab_security" onclick="switchProfileSub('security')">Безопасность (HWID)</button>
           </div>
 
           <!-- Обзор профиля -->
           <div id="sub-overview" class="sub-view active">
             <div class="form-group">
-              <label>Описание</label>
-              <p id="prof-bio-text" class="text-muted" style="margin-bottom: 20px; font-size: 13.5px;">—</p>
+              <label data-i18n="lbl_bio">О себе</label>
+              <p id="prof-bio-text" class="text-muted" style="margin-bottom: 20px; font-size: 13px;">—</p>
             </div>
-            <button class="btn-violet" onclick="downloadClient()">Скачать лаунчер (JoyLoader.exe)</button>
+            <button class="btn-violet" onclick="downloadClient()" data-i18n="btn_download_client">Скачать лаунчер (JoyLoader.exe)</button>
           </div>
 
-          <!-- Настройки био и цвета -->
+          <!-- Настройки био, аватарки и цвета -->
           <div id="sub-settings" class="sub-view">
             <div class="form-group">
-              <label>Цвет аватарки</label>
+              <label data-i18n="lbl_avatar_url">Ссылка на аватарку (прямой URL)</label>
+              <input type="text" id="edit-avatar-url" placeholder="https://example.com/avatar.png">
+              <span class="text-muted" style="font-size: 11px;" data-i18n="lbl_avatar_hint">Оставьте пустым, чтобы использовать букву ника.</span>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_avatar_color">Цвет фона буквы (если ссылки нет)</label>
               <div class="color-picker">
                 <div class="color-opt active" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6', this)"></div>
                 <div class="color-opt" style="background: #ef4444;" onclick="selectColor('#ef4444', this)"></div>
@@ -469,20 +593,69 @@
                 <div class="color-opt" style="background: #f59e0b;" onclick="selectColor('#f59e0b', this)"></div>
               </div>
             </div>
+
             <div class="form-group">
-              <label>О себе</label>
-              <textarea id="edit-bio" placeholder="Расскажите о себе..."></textarea>
+              <label data-i18n="lbl_edit_bio">Биография</label>
+              <textarea id="edit-bio" placeholder="О себе..."></textarea>
             </div>
-            <button class="btn-violet" onclick="apiSaveProfile()">Сохранить изменения</button>
+
+            <button class="btn-violet" onclick="apiSaveProfile()" data-i18n="btn_save_profile">Сохранить изменения</button>
           </div>
 
-          <!-- HWID -->
+          <!-- HWID (Инкогнито: шапка профиля полностью скрыта) -->
           <div id="sub-security" class="sub-view">
-            <p class="text-muted" style="margin-bottom: 12px;">Привязка оборудования лаунчера:</p>
-            <div id="prof-hwid" class="mono text-muted" style="background: #000; padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
-              Не привязано
+            <p class="text-muted" style="margin-bottom: 10px;" data-i18n="lbl_hwid_desc">Привязка оборудования лаунчера:</p>
+            <div id="prof-hwid" class="mono text-muted" style="background: #09080e; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+              Ожидает запуска клиента
             </div>
-            <button class="btn-outline" onclick="apiResetHWID()">Сбросить HWID</button>
+            <button class="btn-outline" onclick="apiResetHWID()" data-i18n="btn_reset_hwid">Сбросить HWID</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ТАРИФЫ (1, 3, 12 МЕСЯЦЕВ + ПЕРКЫ) -->
+      <section id="sec-sub" class="section">
+        <h2 style="font-size: 19px; margin-bottom: 16px;" data-i18n="title_plans">Тарифные периоды</h2>
+        <div class="pricing-grid">
+          <!-- 1 месяц -->
+          <div class="pricing-card">
+            <div class="plan-period" data-i18n="plan_1m">1 месяц</div>
+            <div class="plan-price" id="price-1m">900 ₽</div>
+            <ul class="plan-perks">
+              <li data-i18n="perk_access">Полный доступ к альфа-билду</li>
+              <li data-i18n="perk_cloud">Синхронизация пресетов в облаке</li>
+              <li data-i18n="perk_updates">Автоматические обновления</li>
+            </ul>
+            <button class="btn-outline" style="width: 100%; opacity: 0.5;" disabled data-i18n="status_disabled">Временно недоступно</button>
+          </div>
+
+          <!-- 3 месяца (Популярный) -->
+          <div class="pricing-card featured">
+            <div class="plan-badge" data-i18n="badge_pop">Популярно</div>
+            <div class="plan-period" style="color: var(--accent-bright);" data-i18n="plan_3m">3 месяца</div>
+            <div class="plan-price" id="price-3m">2 300 ₽</div>
+            <ul class="plan-perks">
+              <li data-i18n="perk_access">Полный доступ к альфа-билду</li>
+              <li data-i18n="perk_cloud">Синхронизация пресетов в облаке</li>
+              <li data-i18n="perk_updates">Автоматические обновления</li>
+              <li data-i18n="perk_prior">Приоритет в очереди серверов</li>
+            </ul>
+            <button class="btn-outline" style="width: 100%; opacity: 0.5;" disabled data-i18n="status_disabled">Временно недоступно</button>
+          </div>
+
+          <!-- 12 месяцев -->
+          <div class="pricing-card">
+            <div class="plan-badge" style="border-color: #10b981; color: #6ee7b7;" data-i18n="badge_save">Выгода 25%</div>
+            <div class="plan-period" data-i18n="plan_12m">12 месяцев</div>
+            <div class="plan-price" id="price-12m">8 000 ₽</div>
+            <ul class="plan-perks">
+              <li data-i18n="perk_access">Полный доступ к альфа-билду</li>
+              <li data-i18n="perk_cloud">Синхронизация пресетов в облаке</li>
+              <li data-i18n="perk_updates">Автоматические обновления</li>
+              <li data-i18n="perk_prior">Приоритет в очереди серверов</li>
+              <li data-i18n="perk_roles">Эксклюзивная роль на форуме</li>
+            </ul>
+            <button class="btn-outline" style="width: 100%; opacity: 0.5;" disabled data-i18n="status_disabled">Временно недоступно</button>
           </div>
         </div>
       </section>
@@ -490,76 +663,59 @@
       <!-- ФОРУМ -->
       <section id="sec-forum" class="section">
         <div id="forum-index">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="font-size: 20px;">Темы форума</h2>
-            <button class="btn-violet" onclick="toggleNewThread()">Новая тема</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 19px;" data-i18n="nav_forum">Форум</h2>
+            <button class="btn-violet" onclick="toggleNewThread()" data-i18n="btn_new_thread">Новая тема</button>
           </div>
 
-          <div id="new-thread-form" style="display: none; background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;">
+          <div id="new-thread-form" style="display: none; background: var(--surface); border: 1px solid var(--border); padding: 18px; border-radius: var(--radius); margin-bottom: 16px;">
             <div class="form-group">
-              <label>Заголовок</label>
+              <label data-i18n="lbl_thread_title">Заголовок</label>
               <input type="text" id="t-title">
             </div>
             <div class="form-group">
-              <label>Сообщение</label>
+              <label data-i18n="lbl_thread_msg">Сообщение</label>
               <textarea id="t-content"></textarea>
             </div>
-            <button class="btn-violet" onclick="apiCreateThread()">Создать</button>
+            <button class="btn-violet" onclick="apiCreateThread()" data-i18n="btn_publish">Опубликовать</button>
           </div>
 
           <div id="forum-threads-list"></div>
         </div>
 
         <div id="forum-view" style="display: none;">
-          <button class="btn-outline" style="margin-bottom: 16px;" onclick="backToThreads()">← Назад к темам</button>
-          <h2 id="view-t-title" style="margin-bottom: 16px;"></h2>
+          <button class="btn-outline" style="margin-bottom: 14px;" onclick="backToThreads()" data-i18n="btn_back_threads">← Назад к темам</button>
+          <h2 id="view-t-title" style="margin-bottom: 14px;"></h2>
           <div id="view-t-posts"></div>
-          <div class="profile-card" style="margin-top: 20px;">
-            <label>Ответить в тему</label>
-            <textarea id="reply-text" style="margin-bottom: 12px;"></textarea>
-            <button class="btn-violet" onclick="apiReplyThread()">Отправить ответ</button>
+          <div class="profile-card" style="margin-top: 16px;">
+            <label data-i18n="lbl_reply">Ответить в тему</label>
+            <textarea id="reply-text" style="margin-bottom: 10px;"></textarea>
+            <button class="btn-violet" onclick="apiReplyThread()" data-i18n="btn_send_reply">Отправить</button>
           </div>
         </div>
       </section>
 
-      <!-- ПОДДЕРЖКА / ВОПРОСЫ -->
+      <!-- ПОДДЕРЖКА -->
       <section id="sec-support" class="section">
         <div class="profile-card">
-          <h2 style="font-size: 18px; margin-bottom: 8px;">Анонимная поддержка</h2>
-          <p class="text-muted" style="margin-bottom: 20px;">
-            Задайте вопрос разработчикам. Ваш тикет отправляется в защищенную очередь, а ответ будет доставлен прямо сюда.
+          <h2 style="font-size: 18px; margin-bottom: 6px;" data-i18n="title_support">Анонимная поддержка</h2>
+          <p class="text-muted" style="margin-bottom: 16px;" data-i18n="desc_support">
+            Задайте вопрос разработчикам. Ваш тикет будет доставлен напрямую, а ответ отобразится ниже.
           </p>
           <div class="form-group">
-            <label>Тема обращения</label>
-            <input type="text" id="ticket-subj" placeholder="Вопрос по билду или аккаунту...">
+            <label data-i18n="lbl_ticket_subj">Тема обращения</label>
+            <input type="text" id="ticket-subj">
           </div>
           <div class="form-group">
-            <label>Сообщение</label>
-            <textarea id="ticket-msg" placeholder="Опишите подробно ваш вопрос..."></textarea>
+            <label data-i18n="lbl_ticket_msg">Сообщение</label>
+            <textarea id="ticket-msg"></textarea>
           </div>
-          <button class="btn-violet" onclick="apiSendTicket()">Отправить обращение</button>
+          <button class="btn-violet" onclick="apiSendTicket()" data-i18n="btn_send_ticket">Отправить обращение</button>
         </div>
 
         <div class="profile-card">
-          <h3 style="font-size: 15px; margin-bottom: 14px;">Ваши обращения</h3>
+          <h3 style="font-size: 14px; margin-bottom: 12px;" data-i18n="title_my_tickets">Ваши обращения</h3>
           <div id="tickets-list"></div>
-        </div>
-      </section>
-
-      <!-- ПОДПИСКА -->
-      <section id="sec-sub" class="section">
-        <h2 style="font-size: 20px; margin-bottom: 20px;">Тарифные периоды</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-          <div class="profile-card" style="text-align: center;">
-            <div class="text-muted" style="margin-bottom: 8px;">1 месяц</div>
-            <div class="mono" style="font-size: 24px; font-weight: 700; margin-bottom: 16px;">900 ₽</div>
-            <button class="btn-outline" style="width: 100%; opacity: 0.5;" disabled>Недоступно</button>
-          </div>
-          <div class="profile-card" style="text-align: center;">
-            <div class="text-muted" style="margin-bottom: 8px; color: var(--accent-bright);">3 месяца</div>
-            <div class="mono" style="font-size: 24px; font-weight: 700; margin-bottom: 16px;">2 300 ₽</div>
-            <button class="btn-outline" style="width: 100%; opacity: 0.5;" disabled>Недоступно</button>
-          </div>
         </div>
       </section>
     </main>
@@ -570,6 +726,83 @@
   <script>
     let activeThreadId = null;
     let selectedColor = '#8b5cf6';
+    let currentLang = 'ru';
+    let currentCurrency = 'RUB';
+
+    const prices = {
+      RUB: { '1m': '900 ₽', '3m': '2 300 ₽', '12m': '8 000 ₽' },
+      USD: { '1m': '$10', '3m': '$25', '12m': '$85' }
+    };
+
+    const i18n = {
+      ru: {
+        tab_login: 'Вход', tab_reg: 'Регистрация', lbl_username: 'Логин', lbl_pass: 'Пароль',
+        lbl_invite: 'Инвайт-код', lbl_pass_confirm: 'Подтверждение пароля', btn_login: 'Войти',
+        btn_register: 'Зарегистрироваться', nav_profile: 'Профиль', nav_forum: 'Форум',
+        nav_support: 'Поддержка', nav_sub: 'Подписка', btn_logout: 'Выйти',
+        subtab_overview: 'Обзор', subtab_settings: 'Настройки', subtab_security: 'Безопасность (HWID)',
+        lbl_bio: 'О себе', btn_download_client: 'Скачать лаунчер (JoyLoader.exe)',
+        lbl_avatar_url: 'Ссылка на аватарку (прямой URL)', lbl_avatar_hint: 'Оставьте пустым, чтобы использовать букву ника.',
+        lbl_avatar_color: 'Цвет фона буквы (если ссылки нет)', lbl_edit_bio: 'Биография',
+        btn_save_profile: 'Сохранить изменения', lbl_hwid_desc: 'Привязка оборудования лаунчера:',
+        btn_reset_hwid: 'Сбросить HWID', title_plans: 'Тарифные периоды',
+        plan_1m: '1 месяц', plan_3m: '3 месяца', plan_12m: '12 месяцев',
+        badge_pop: 'Популярно', badge_save: 'Выгода 25%',
+        perk_access: 'Полный доступ к альфа-билду', perk_cloud: 'Синхронизация пресетов в облаке',
+        perk_updates: 'Автоматические обновления', perk_prior: 'Приоритет в очереди серверов',
+        perk_roles: 'Эксклюзивная роль на форуме', status_disabled: 'Временно недоступно',
+        btn_new_thread: 'Новая тема', lbl_thread_title: 'Заголовок', lbl_thread_msg: 'Сообщение',
+        btn_publish: 'Опубликовать', btn_back_threads: '← Назад к темам', lbl_reply: 'Ответить в тему',
+        btn_send_reply: 'Отправить', title_support: 'Анонимная поддержка',
+        desc_support: 'Задайте вопрос разработчикам. Ваш тикет будет доставлен напрямую, а ответ отобразится ниже.',
+        lbl_ticket_subj: 'Тема обращения', lbl_ticket_msg: 'Сообщение', btn_send_ticket: 'Отправить обращение',
+        title_my_tickets: 'Ваши обращения'
+      },
+      en: {
+        tab_login: 'Sign In', tab_reg: 'Sign Up', lbl_username: 'Username', lbl_pass: 'Password',
+        lbl_invite: 'Invite Code', lbl_pass_confirm: 'Confirm Password', btn_login: 'Login',
+        btn_register: 'Register', nav_profile: 'Profile', nav_forum: 'Forum',
+        nav_support: 'Support', nav_sub: 'Subscription', btn_logout: 'Logout',
+        subtab_overview: 'Overview', subtab_settings: 'Settings', subtab_security: 'Security (HWID)',
+        lbl_bio: 'About', btn_download_client: 'Download Client (JoyLoader.exe)',
+        lbl_avatar_url: 'Avatar URL (Direct link)', lbl_avatar_hint: 'Leave blank to use username letter.',
+        lbl_avatar_color: 'Letter background color (if no link)', lbl_edit_bio: 'Biography',
+        btn_save_profile: 'Save Changes', lbl_hwid_desc: 'Launcher hardware binding:',
+        btn_reset_hwid: 'Reset HWID', title_plans: 'Subscription Plans',
+        plan_1m: '1 Month', plan_3m: '3 Months', plan_12m: '12 Months',
+        badge_pop: 'Popular', badge_save: 'Save 25%',
+        perk_access: 'Full access to alpha build', perk_cloud: 'Cloud presets sync',
+        perk_updates: 'Automatic updates', perk_prior: 'Server priority queue',
+        perk_roles: 'Exclusive forum role', status_disabled: 'Temporarily disabled',
+        btn_new_thread: 'New Thread', lbl_thread_title: 'Title', lbl_thread_msg: 'Message',
+        btn_publish: 'Publish', btn_back_threads: '← Back to threads', lbl_reply: 'Reply to thread',
+        btn_send_reply: 'Send Reply', title_support: 'Anonymous Support',
+        desc_support: 'Contact the development team. Your ticket is queued securely and answers appear below.',
+        lbl_ticket_subj: 'Subject', lbl_ticket_msg: 'Message', btn_send_ticket: 'Submit Ticket',
+        title_my_tickets: 'Your Tickets'
+      }
+    };
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btn-lang-ru').classList.toggle('active', lang === 'ru');
+      document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) el.innerText = i18n[lang][key];
+      });
+    }
+
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      document.getElementById('btn-curr-rub').classList.toggle('active', curr === 'RUB');
+      document.getElementById('btn-curr-usd').classList.toggle('active', curr === 'USD');
+
+      document.getElementById('price-1m').innerText = prices[curr]['1m'];
+      document.getElementById('price-3m').innerText = prices[curr]['3m'];
+      document.getElementById('price-12m').innerText = prices[curr]['12m'];
+    }
 
     function triggerToast(m) {
       const t = document.getElementById('toast');
@@ -600,11 +833,19 @@
       if (sec === 'support') loadTickets();
     }
 
+    // ЛОГИКА ВКЛАДОК ПРОФИЛЯ + СКРЫТИЕ ШАПКИ НА БЕЗОПАСНОСТИ
     function switchProfileSub(sub) {
       document.querySelectorAll('.profile-sub-tab').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
       document.querySelectorAll('.sub-view').forEach(v => v.classList.remove('active'));
       document.getElementById('sub-' + sub).classList.add('active');
+
+      const header = document.getElementById('profile-main-header');
+      if (sub === 'security') {
+        header.style.display = 'none'; // Полностью скрываем ник, аватарку и инвайт
+      } else {
+        header.style.display = 'flex';
+      }
     }
 
     function selectColor(color, el) {
@@ -615,7 +856,7 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       try { await fetch('/api/verify-ip'); } catch (e) {}
-      setTimeout(() => document.getElementById('ddos-screen').classList.add('verified'), 400);
+      setTimeout(() => document.getElementById('ddos-screen').classList.add('verified'), 350);
 
       const token = localStorage.getItem('token');
       if (token) loadUserProfile();
@@ -679,28 +920,33 @@
 
       document.getElementById('prof-username').innerText = u.username;
       document.getElementById('prof-invite').innerText = u.invite_code;
-      document.getElementById('prof-bio-text').innerText = u.bio || 'Описание не заполнено.';
+      document.getElementById('prof-bio-text').innerText = u.bio || '—';
       document.getElementById('edit-bio').value = u.bio || '';
+      document.getElementById('edit-avatar-url').value = u.avatar_url || '';
 
       const avatar = document.getElementById('prof-avatar');
-      avatar.innerText = u.username.charAt(0).toUpperCase();
-      avatar.style.background = u.avatar_color || '#8b5cf6';
+      if (u.avatar_url) {
+        avatar.style.backgroundImage = `url('${u.avatar_url}')`;
+        avatar.innerText = '';
+      } else {
+        avatar.style.backgroundImage = 'none';
+        avatar.innerText = u.username.charAt(0).toUpperCase();
+        avatar.style.background = u.avatar_color || '#8b5cf6';
+      }
 
-      document.getElementById('prof-hwid').innerText = u.hwid || 'Ожидает запуска клиента';
+      document.getElementById('prof-hwid').innerText = u.hwid || 'Ожидает первого запуска клиента';
     }
 
     async function apiSaveProfile() {
       const token = localStorage.getItem('token');
       const bio = document.getElementById('edit-bio').value;
+      const avatar_url = document.getElementById('edit-avatar-url').value;
 
       try {
         const res = await fetch('/api/profile/update', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ bio, avatar_color: selectedColor })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ bio, avatar_color: selectedColor, avatar_url })
         });
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
@@ -730,7 +976,7 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // === ФОРУМ ===
+    // ФОРУМ
     async function loadThreads() {
       const res = await fetch('/api/forum/threads');
       const d = await res.json();
@@ -743,8 +989,8 @@
         div.onclick = () => openThread(t.id);
         div.innerHTML = `
           <div>
-            <div style="font-weight: 600; font-size: 15px;">${t.title}</div>
-            <div class="text-muted" style="font-size: 12px;">Автор: ${t.author} • ${new Date(t.created_at).toLocaleDateString()}</div>
+            <div style="font-weight: 600; font-size: 14.5px;">${t.title}</div>
+            <div class="text-muted" style="font-size: 11.5px;">Автор: ${t.author} • ${new Date(t.created_at).toLocaleDateString()}</div>
           </div>
           <div class="ticket-badge">${t.replies_count} ответов</div>
         `;
@@ -787,7 +1033,7 @@
       const c = document.getElementById('view-t-posts');
       c.innerHTML = `
         <div class="profile-card">
-          <div class="text-muted" style="font-size: 12px; margin-bottom: 6px;">${d.thread.author}</div>
+          <div class="text-muted" style="font-size: 11.5px; margin-bottom: 6px;">${d.thread.author}</div>
           <div>${d.thread.content}</div>
         </div>
       `;
@@ -796,7 +1042,7 @@
         const postDiv = document.createElement('div');
         postDiv.className = 'profile-card';
         postDiv.innerHTML = `
-          <div class="text-muted" style="font-size: 12px; margin-bottom: 6px;">${p.author}</div>
+          <div class="text-muted" style="font-size: 11.5px; margin-bottom: 6px;">${p.author}</div>
           <div>${p.text}</div>
         `;
         c.appendChild(postDiv);
@@ -825,20 +1071,19 @@
       }
     }
 
-    // === САППОРТ / ТИКЕТЫ ===
+    // ТИКЕТЫ
     async function apiSendTicket() {
       const token = localStorage.getItem('token');
       const subject = document.getElementById('ticket-subj').value;
       const message = document.getElementById('ticket-msg').value;
 
-      if (!subject || !message) return triggerToast('Заполните все поля');
+      if (!subject || !message) return triggerToast('Заполните поля');
 
       const res = await fetch('/api/support/ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ subject, message })
       });
-      const d = await res.json();
       if (res.ok) {
         document.getElementById('ticket-subj').value = '';
         document.getElementById('ticket-msg').value = '';
@@ -863,15 +1108,15 @@
 
       d.tickets.forEach(t => {
         const item = document.createElement('div');
-        item.style.padding = '12px 0';
+        item.style.padding = '10px 0';
         item.style.borderBottom = '1px solid var(--border)';
         item.innerHTML = `
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
             <span class="mono" style="font-weight: 600;">${t.subject}</span>
             <span class="ticket-badge">${t.status}</span>
           </div>
-          <div class="text-muted" style="font-size: 13px;">${t.message}</div>
-          ${t.reply ? `<div style="margin-top: 8px; color: var(--accent-bright); font-size: 13px;">Ответ команды: ${t.reply}</div>` : ''}
+          <div class="text-muted" style="font-size: 12.5px;">${t.message}</div>
+          ${t.reply ? `<div style="margin-top: 6px; color: var(--accent-bright); font-size: 12.5px;">Ответ: ${t.reply}</div>` : ''}
         `;
         c.appendChild(item);
       });
