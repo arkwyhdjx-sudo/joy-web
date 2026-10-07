@@ -35,7 +35,6 @@ function loadDB() {
     const initial = {
       next_uid: 1,
       build_status: 'stable',
-      owner_pin: '778899', // 2FA PIN по умолчанию для овнера
       tg_bot_token: '',
       tg_chat_id: '',
       users: {},
@@ -71,7 +70,6 @@ function loadDB() {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
     if (!data.next_uid) data.next_uid = 1;
     if (!data.build_status) data.build_status = 'stable';
-    if (!data.owner_pin) data.owner_pin = '778899';
     if (!data.users) data.users = {};
     if (!data.invites) data.invites = {};
     if (!data.promos) data.promos = {};
@@ -83,7 +81,7 @@ function loadDB() {
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { next_uid: 1, build_status: 'stable', owner_pin: '778899', users: {}, invites: {}, promos: {}, configs: [], scripts: [], payments: [], threads: [], updates: [], tickets: [] };
+    return { next_uid: 1, build_status: 'stable', users: {}, invites: {}, promos: {}, configs: [], scripts: [], payments: [], threads: [], updates: [], tickets: [] };
   }
 }
 
@@ -154,14 +152,44 @@ app.get('/api/verify-ip', (req, res) => {
   res.json({ status: 'ok', build_status: db.build_status });
 });
 
-// Проверка 2FA PIN овнера
-app.post('/api/admin/verify-pin', requireOwner, (req, res) => {
-  const { pin } = req.body;
+// Проверка и установка персонального PIN-кода 2FA
+app.post('/api/user/set-pin', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
   const db = loadDB();
-  if (pin === db.owner_pin || pin === '778899') {
+  const user = db.users[userKey];
+  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+
+  const { pin } = req.body;
+  if (!pin || pin.length < 4 || pin.length > 8) {
+    return res.status(400).json({ message: 'пин-код должен быть от 4 до 8 цифр' });
+  }
+
+  user.security_pin = pin.trim();
+  saveDB(db);
+  res.json({ message: 'пин-код безопасности успешно установлен' });
+});
+
+app.post('/api/user/verify-pin', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+
+  const { pin } = req.body;
+  if (!user.security_pin) {
+    return res.json({ status: 'success', message: 'пин не задан (доступ открыт)' });
+  }
+
+  if (user.security_pin === pin.trim()) {
     return res.json({ status: 'success', message: '2FA подтвержден' });
   }
-  res.status(403).json({ status: 'error', message: 'неверный мастер-пин' });
+  res.status(403).json({ status: 'error', message: 'неверный пин-код' });
 });
 
 // Регистрация
@@ -202,6 +230,7 @@ app.post('/api/register', (req, res) => {
     banned: false,
     ban_reason: '',
     bio: '',
+    security_pin: null,
     avatar_color: '#8b5cf6',
     avatar_media: null,
     avatar_type: null,
@@ -343,7 +372,6 @@ app.post('/api/promo/validate', (req, res) => {
   });
 });
 
-// Оформление платежа / активация с записью в логи покупок
 app.post('/api/payment/checkout', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -378,7 +406,6 @@ app.post('/api/payment/checkout', (req, res) => {
     user.sub_until = (user.sub_until > now ? user.sub_until : now) + msToAdd;
   }
 
-  // Запись в журнал транзакций
   const paymentRecord = {
     id: 'PAY-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
     username: user.username,
@@ -398,7 +425,6 @@ app.post('/api/payment/checkout', (req, res) => {
   res.json({ message: `подписка успешно активирована (+${finalDays} дн.)`, user, payment: paymentRecord });
 });
 
-// Ручная выдача подписки овнером по клику в логах
 app.post('/api/admin/payments/grant', requireOwner, (req, res) => {
   const { payment_id } = req.body;
   const db = loadDB();
@@ -419,13 +445,11 @@ app.post('/api/admin/payments/grant', requireOwner, (req, res) => {
   res.json({ message: `подписка успешно выдана юзеру ${target.username}` });
 });
 
-// Получение списка всех транзакций
 app.get('/api/admin/payments', requireOwner, (req, res) => {
   const db = loadDB();
   res.json({ payments: db.payments || [] });
 });
 
-// HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -440,7 +464,6 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
-// Скачивание лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
@@ -462,7 +485,7 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// Авторизация лаунчера
+// Лаунчер Auth
 app.post('/api/client/auth', (req, res) => {
   const { username, password, hwid } = req.body;
   if (!username || !password || !hwid) {
@@ -532,7 +555,7 @@ app.get('/api/client/payload', (req, res) => {
   res.send('JOY_ENCRYPTED_MEMORY_PAYLOAD_STUB');
 });
 
-// ОБЛАЧНЫЕ КОНФИГИ (.CFG ФАЙЛОМ)
+// Конфиги
 app.get('/api/configs', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -586,7 +609,7 @@ app.delete('/api/configs/:id', (req, res) => {
   res.json({ message: 'конфиг удален' });
 });
 
-// ОБЛАЧНЫЕ LUA СКРИПТЫ
+// Lua скрипты
 app.get('/api/scripts', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -709,7 +732,7 @@ app.delete('/api/support/ticket/:id', (req, res) => {
   res.json({ message: 'удалено' });
 });
 
-// ФОРУМ
+// Форум
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => {
@@ -896,23 +919,27 @@ app.post('/api/admin/self-lifetime', requireOwner, (req, res) => {
   res.json({ message: 'вам выдана lifetime сабка и роль owner', user });
 });
 
+// СПИСОК ЮЗЕРОВ (СКРЫВАЕМ IP ДЛЯ ОВНЕРА)
 app.get('/api/admin/users', requireOwner, (req, res) => {
   const db = loadDB();
-  const list = Object.values(db.users).map(u => ({
-    uid: u.uid,
-    username: u.username,
-    role: u.role || 'user',
-    banned: u.banned || false,
-    ban_reason: u.ban_reason || '',
-    sub_until: u.sub_until,
-    invite_code: u.invite_code,
-    web_ip: u.web_ip || '—',
-    client_ip: u.client_ip || '—',
-    last_launch: u.last_launch,
-    ip_mismatch: !!(u.web_ip && u.client_ip && u.web_ip !== u.client_ip),
-    hwid: !!u.hwid,
-    created_at: u.created_at
-  }));
+  const list = Object.values(db.users).map(u => {
+    const isOwner = (u.uid === 1 || u.username.toLowerCase() === 'dev');
+    return {
+      uid: u.uid,
+      username: u.username,
+      role: u.role || 'user',
+      banned: u.banned || false,
+      ban_reason: u.ban_reason || '',
+      sub_until: u.sub_until,
+      invite_code: u.invite_code,
+      web_ip: isOwner ? 'hidden (protected)' : (u.web_ip || '—'),
+      client_ip: isOwner ? 'hidden (protected)' : (u.client_ip || '—'),
+      last_launch: u.last_launch,
+      ip_mismatch: isOwner ? false : !!(u.web_ip && u.client_ip && u.web_ip !== u.client_ip),
+      hwid: !!u.hwid,
+      created_at: u.created_at
+    };
+  });
   list.sort((a, b) => a.uid - b.uid);
   res.json({ users: list });
 });
