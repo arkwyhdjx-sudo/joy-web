@@ -4,7 +4,6 @@ const path = require('path');
 
 const app = express();
 
-// Лимит на загрузку файлов лаунчера и медиа (до 100MB)
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(express.static(__dirname));
@@ -26,26 +25,20 @@ function loadDB() {
         'JOY-TEST-2026': { used: false, used_by: null },
         'JOY-ALPHA-777': { used: false, used_by: null }
       },
+      promos: {},
       threads: [
         {
           id: 1,
           title: 'правила и статус закрытого билда',
           author: 'system',
           author_uid: 0,
+          author_role: 'system',
           created_at: Date.now(),
           content: 'закрытый тест запущен. вопросы и найденные баги пишите сюда.',
           posts: []
         }
       ],
-      updates: [
-        {
-          id: 1,
-          title: 'первый запуск закрытой альфы',
-          content: '- инициализация веб-панели\n- запуск системы авторизации и тикетов\n- базовая защита от флуда',
-          author: 'dev',
-          created_at: Date.now()
-        }
-      ],
+      updates: [],
       tickets: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
@@ -55,12 +48,14 @@ function loadDB() {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
     if (!data.next_uid) data.next_uid = 1;
     if (!data.users) data.users = {};
+    if (!data.invites) data.invites = {};
+    if (!data.promos) data.promos = {};
     if (!data.threads) data.threads = [];
     if (!data.updates) data.updates = [];
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { next_uid: 1, users: {}, invites: {}, threads: [], updates: [], tickets: [] };
+    return { next_uid: 1, users: {}, invites: {}, promos: {}, threads: [], updates: [], tickets: [] };
   }
 }
 
@@ -72,7 +67,7 @@ function saveDB(data) {
   }
 }
 
-// Защита от флуда по IP
+// Защита от флуда
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -84,24 +79,28 @@ app.use('/api', (req, res, next) => {
     ipRequests.set(ip, record);
   } else {
     record.count++;
-    if (record.count > 40) {
+    if (record.count > 45) {
       return res.status(429).json({ message: 'лимит запросов превышен' });
     }
   }
   next();
 });
 
-const actionCooldowns = new Map();
-function checkCooldown(username, action, cooldownSec) {
-  const key = `${username}_${action}`;
-  const now = Date.now();
-  const last = actionCooldowns.get(key) || 0;
-  if (now - last < cooldownSec * 1000) {
-    const wait = Math.ceil((cooldownSec * 1000 - (now - last)) / 1000);
-    return `подождите ${wait} сек.`;
+// Проверка админ-доступа (UID 1 или роль owner)
+function requireOwner(req, res, next) {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || (user.uid !== 1 && user.role !== 'owner')) {
+    return res.status(403).json({ message: 'доступ запрещен' });
   }
-  actionCooldowns.set(key, now);
-  return null;
+
+  req.adminUser = user;
+  next();
 }
 
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
@@ -132,17 +131,21 @@ app.post('/api/register', (req, res) => {
   db.invites[cleanInvite].used = true;
   db.invites[cleanInvite].used_by = username.trim();
 
+  // Первый зарегистрированный автоматически получает роль owner
+  const defaultRole = (assignedUid === 1) ? 'owner' : 'user';
+
   db.users[userKey] = {
     uid: assignedUid,
     username: username.trim(),
     password: password,
     invite_code: cleanInvite,
+    role: defaultRole,
     bio: '',
     avatar_color: '#8b5cf6',
     avatar_media: null,
     avatar_type: null,
     hwid: null,
-    sub_until: 0,
+    sub_until: (assignedUid === 1) ? -1 : 0, // -1 означает lifetime
     created_at: Date.now()
   };
 
@@ -170,7 +173,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Профиль текущего юзера
+// Профиль
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'сессия истекла' });
@@ -183,7 +186,7 @@ app.get('/api/profile', (req, res) => {
   res.json({ user });
 });
 
-// Публичный профиль для модалки
+// Публичный профиль
 app.get('/api/user/:username', (req, res) => {
   const db = loadDB();
   const target = db.users[req.params.username.toLowerCase()];
@@ -193,6 +196,7 @@ app.get('/api/user/:username', (req, res) => {
     user: {
       uid: target.uid,
       username: target.username,
+      role: target.role || 'user',
       bio: target.bio || '',
       avatar_color: target.avatar_color,
       avatar_media: target.avatar_media,
@@ -229,6 +233,49 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
+// Активация промокода пользователем
+app.post('/api/promo/redeem', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ message: 'введите промокод' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+
+  const promoKey = code.trim().toUpperCase();
+  const promo = db.promos[promoKey];
+
+  if (!promo) return res.status(400).json({ message: 'промокод не существует' });
+  if (promo.used_count >= promo.max_uses) return res.status(400).json({ message: 'лимит активаций исчерпан' });
+  if (promo.users_activated && promo.users_activated.includes(user.username)) {
+    return res.status(400).json({ message: 'вы уже активировали этот промокод' });
+  }
+
+  // Начисляем дни
+  const now = Date.now();
+  const daysMs = promo.days * 24 * 60 * 60 * 1000;
+  if (user.sub_until === -1) {
+    return res.status(400).json({ message: 'у вас уже активна бессрочная подписка' });
+  }
+
+  if (user.sub_until > now) {
+    user.sub_until += daysMs;
+  } else {
+    user.sub_until = now + daysMs;
+  }
+
+  promo.used_count++;
+  if (!promo.users_activated) promo.users_activated = [];
+  promo.users_activated.push(user.username);
+
+  saveDB(db);
+  res.json({ message: `активировано +${promo.days} дн. подписки`, user });
+});
+
 // Сброс HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
@@ -246,9 +293,7 @@ app.post('/api/hwid/reset', (req, res) => {
 // Скачивание лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
-  if (!token || !token.startsWith('joy_session_')) {
-    return res.status(401).send('доступ запрещен');
-  }
+  if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
 
   const realLoader = path.join(BUILDS_DIR, 'JoyLoader.exe');
   if (fs.existsSync(realLoader)) {
@@ -262,52 +307,85 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// === АДМИН-ПАНЕЛЬ (ТОЛЬКО ДЛЯ UID 1) ===
+// === АДМИН-МЕНЕДЖЕР (ТОЛЬКО OWNER / UID 1) ===
 
-// 1. Загрузка файла лаунчера через браузер
-app.post('/api/admin/upload-build', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'не авторизован' });
-
-  const userKey = token.replace('joy_session_', '');
+// 1. Поиск инфы о пользователе
+app.get('/api/admin/user/:username', requireOwner, (req, res) => {
   const db = loadDB();
-  const user = db.users[userKey];
+  const target = db.users[req.params.username.toLowerCase()];
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+  res.json({ target });
+});
 
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ запрещен' });
+// 2. Обновление пользователя (роль, uid, подписка, сброс hwid)
+app.post('/api/admin/user/update', requireOwner, (req, res) => {
+  const { username, role, uid, sub_mode, reset_hwid } = req.body;
+  const db = loadDB();
+  const target = db.users[username.toLowerCase()];
+
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+
+  if (role) target.role = role;
+  if (uid && !isNaN(parseInt(uid))) target.uid = parseInt(uid);
+
+  const now = Date.now();
+  if (sub_mode === 'reset') {
+    target.sub_until = 0;
+  } else if (sub_mode === 'lifetime') {
+    target.sub_until = -1;
+  } else if (sub_mode === '30d') {
+    target.sub_until = (target.sub_until > now ? target.sub_until : now) + (30 * 86400000);
+  } else if (sub_mode === '90d') {
+    target.sub_until = (target.sub_until > now ? target.sub_until : now) + (90 * 86400000);
   }
 
+  if (reset_hwid) target.hwid = null;
+
+  saveDB(db);
+  res.json({ message: `аккаунт ${target.username} успешно обновлен`, target });
+});
+
+// 3. Создание промокода
+app.post('/api/admin/promo/create', requireOwner, (req, res) => {
+  const { code, days, max_uses } = req.body;
+  if (!code || !days) return res.status(400).json({ message: 'заполните поля' });
+
+  const db = loadDB();
+  const promoKey = code.trim().toUpperCase();
+
+  db.promos[promoKey] = {
+    code: promoKey,
+    days: parseInt(days),
+    max_uses: parseInt(max_uses) || 1,
+    used_count: 0,
+    users_activated: []
+  };
+
+  saveDB(db);
+  res.json({ message: `промокод ${promoKey} создан`, promos: db.promos });
+});
+
+// 4. Загрузка бинарника
+app.post('/api/admin/upload-build', requireOwner, (req, res) => {
   const { file_base64 } = req.body;
   if (!file_base64) return res.status(400).json({ message: 'файл не передан' });
 
   try {
     const base64Data = file_base64.replace(/^data:.*?;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
-    const targetPath = path.join(BUILDS_DIR, 'JoyLoader.exe');
-    fs.writeFileSync(targetPath, buffer);
-    res.json({ message: 'новый билд JoyLoader.exe успешно загружен на сервер' });
+    fs.writeFileSync(path.join(BUILDS_DIR, 'JoyLoader.exe'), buffer);
+    res.json({ message: 'билд JoyLoader.exe сохранен на сервере' });
   } catch (err) {
-    res.status(500).json({ message: 'ошибка сохранения файла' });
+    res.status(500).json({ message: 'ошибка записи файла' });
   }
 });
 
-// 2. Создание инвайтов из админки
-app.post('/api/admin/create-invite', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'не авторизован' });
-
-  const userKey = token.replace('joy_session_', '');
+// 5. Создание инвайта
+app.post('/api/admin/create-invite', requireOwner, (req, res) => {
   const db = loadDB();
-  const user = db.users[userKey];
-
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ запрещен' });
-  }
-
   const code = 'JOY-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
   db.invites[code] = { used: false, used_by: null };
   saveDB(db);
-
   res.json({ invite: code, invites: db.invites });
 });
 
@@ -317,26 +395,16 @@ app.get('/api/updates', (req, res) => {
   res.json({ updates: db.updates || [] });
 });
 
-app.post('/api/updates', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
-
-  const userKey = token.replace('joy_session_', '');
-  const db = loadDB();
-  const user = db.users[userKey];
-
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ только для разработчика' });
-  }
-
+app.post('/api/updates', requireOwner, (req, res) => {
   const { title, content } = req.body;
   if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
 
+  const db = loadDB();
   const item = {
     id: Date.now(),
     title: title.trim(),
     content: content.trim(),
-    author: user.username,
+    author: req.adminUser.username,
     created_at: Date.now()
   };
 
@@ -345,25 +413,15 @@ app.post('/api/updates', (req, res) => {
   res.json({ update: item });
 });
 
-app.delete('/api/updates/:id', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
-
-  const userKey = token.replace('joy_session_', '');
+app.delete('/api/updates/:id', requireOwner, (req, res) => {
   const db = loadDB();
-  const user = db.users[userKey];
-
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ только для разработчика' });
-  }
-
   const uId = parseInt(req.params.id);
   const idx = (db.updates || []).findIndex(u => u.id === uId);
-  if (idx === -1) return res.status(404).json({ message: 'обновление не найдено' });
+  if (idx === -1) return res.status(404).json({ message: 'не найдено' });
 
   db.updates.splice(idx, 1);
   saveDB(db);
-  res.json({ message: 'обновление удалено' });
+  res.json({ message: 'удалено' });
 });
 
 // === ФОРУМ ===
@@ -376,6 +434,7 @@ app.get('/api/forum/threads', (req, res) => {
       title: t.title,
       author: t.author,
       author_uid: t.author_uid || 1,
+      author_role: authorUser.role || 'user',
       author_avatar_media: authorUser.avatar_media || null,
       author_avatar_type: authorUser.avatar_type || null,
       author_avatar_color: authorUser.avatar_color || '#8b5cf6',
@@ -394,6 +453,7 @@ app.get('/api/forum/threads/:id', (req, res) => {
   const authorUser = db.users[thread.author.toLowerCase()] || {};
   const enrichedThread = {
     ...thread,
+    author_role: authorUser.role || 'user',
     author_avatar_media: authorUser.avatar_media || null,
     author_avatar_type: authorUser.avatar_type || null,
     author_avatar_color: authorUser.avatar_color || '#8b5cf6',
@@ -401,6 +461,7 @@ app.get('/api/forum/threads/:id', (req, res) => {
       const pUser = db.users[p.author.toLowerCase()] || {};
       return {
         ...p,
+        author_role: pUser.role || 'user',
         author_avatar_media: pUser.avatar_media || null,
         author_avatar_type: pUser.avatar_type || null,
         author_avatar_color: pUser.avatar_color || '#8b5cf6'
@@ -419,9 +480,6 @@ app.post('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const user = db.users[userKey];
   if (!user) return res.status(401).json({ message: 'пользователь не найден' });
-
-  const cdError = checkCooldown(user.username, 'new_thread', 30);
-  if (cdError) return res.status(429).json({ message: cdError });
 
   const { title, content } = req.body;
   if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
@@ -449,9 +507,6 @@ app.post('/api/forum/threads/:id/reply', (req, res) => {
   const db = loadDB();
   const user = db.users[userKey];
   if (!user) return res.status(401).json({ message: 'пользователь не найден' });
-
-  const cdError = checkCooldown(user.username, 'reply', 10);
-  if (cdError) return res.status(429).json({ message: cdError });
 
   const { text } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ message: 'введите текст' });
@@ -483,10 +538,10 @@ app.delete('/api/forum/threads/:id', (req, res) => {
   const tId = parseInt(req.params.id);
 
   const idx = db.threads.findIndex(t => t.id === tId);
-  if (idx === -1) return res.status(404).json({ message: 'тема не найдена' });
+  if (idx === -1) return res.status(404).json({ message: 'не найдено' });
 
-  if (db.threads[idx].author !== user.username && user.uid !== 1) {
-    return res.status(403).json({ message: 'нет прав на удаление' });
+  if (db.threads[idx].author !== user.username && user.role !== 'owner') {
+    return res.status(403).json({ message: 'нет прав' });
   }
 
   db.threads.splice(idx, 1);
@@ -505,13 +560,13 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   const pId = parseInt(req.params.postId);
 
   const thread = db.threads.find(t => t.id === tId);
-  if (!thread) return res.status(404).json({ message: 'тема не найдена' });
+  if (!thread) return res.status(404).json({ message: 'не найдено' });
 
   const pIdx = (thread.posts || []).findIndex(p => p.id === pId);
-  if (pIdx === -1) return res.status(404).json({ message: 'сообщение не найдено' });
+  if (pIdx === -1) return res.status(404).json({ message: 'не найдено' });
 
-  if (thread.posts[pIdx].author !== user.username && user.uid !== 1) {
-    return res.status(403).json({ message: 'нет прав на удаление' });
+  if (thread.posts[pIdx].author !== user.username && user.role !== 'owner') {
+    return res.status(403).json({ message: 'нет прав' });
   }
 
   thread.posts.splice(pIdx, 1);
@@ -529,11 +584,8 @@ app.post('/api/support/ticket', (req, res) => {
   const user = db.users[userKey];
   if (!user) return res.status(401).json({ message: 'пользователь не найден' });
 
-  const cdError = checkCooldown(user.username, 'ticket', 30);
-  if (cdError) return res.status(429).json({ message: cdError });
-
   const { subject, message } = req.body;
-  if (!subject || !message) return res.status(400).json({ message: 'заполните все поля' });
+  if (!subject || !message) return res.status(400).json({ message: 'заполните поля' });
 
   const ticket = {
     id: 'TICK-' + Math.floor(1000 + Math.random() * 9000),
@@ -549,8 +601,6 @@ app.post('/api/support/ticket', (req, res) => {
 
   db.tickets.unshift(ticket);
   saveDB(db);
-
-  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username} [uid ${user.uid}]: ${ticket.subject}`);
   res.json({ message: 'обращение отправлено', ticket });
 });
 
@@ -573,11 +623,11 @@ app.delete('/api/support/ticket/:id', (req, res) => {
   const tId = req.params.id;
 
   const idx = (db.tickets || []).findIndex(t => t.id === tId && (t.userKey === userKey || userKey === 'dev'));
-  if (idx === -1) return res.status(404).json({ message: 'тикет не найден' });
+  if (idx === -1) return res.status(404).json({ message: 'не найдено' });
 
   db.tickets.splice(idx, 1);
   saveDB(db);
-  res.json({ message: 'обращение удалено' });
+  res.json({ message: 'удалено' });
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
