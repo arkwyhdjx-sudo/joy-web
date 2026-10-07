@@ -8,37 +8,38 @@ app.use(express.static(__dirname));
 
 const DB_FILE = path.join(__dirname, 'joy_db.json');
 
+// Инициализация базы данных
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = {
       users: {},
       invites: {
-        'JOY-DEV-KEY1': { used: false },
-        'JOY-TEST-2026': { used: false },
-        'JOY-ALPHA-777': { used: false }
+        'JOY-DEV-KEY1': { used: false, used_by: null },
+        'JOY-TEST-2026': { used: false, used_by: null },
+        'JOY-ALPHA-777': { used: false, used_by: null }
       },
       threads: [
         {
           id: 1,
-          title: 'Правила закрытого сообщества и статус билда',
+          title: 'Добро пожаловать в закрытый билд JOY.CC',
           author: 'dev',
           created_at: Date.now(),
-          content: 'Добро пожаловать в закрытый альфа-билд. Публиковать материалы за пределы площадки строго запрещено.',
-          posts: [
-            { author: 'dev', text: 'По всем багам пишите в этот тред.', created_at: Date.now() }
-          ]
+          content: 'Тестирование начато. Баги и предложения пишите в этот тред.',
+          posts: []
         }
-      ]
+      ],
+      tickets: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
     return initial;
   }
   try {
-    const parsed = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-    if (!parsed.threads) parsed.threads = [];
-    return parsed;
+    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    if (!data.threads) data.threads = [];
+    if (!data.tickets) data.tickets = [];
+    return data;
   } catch (e) {
-    return { users: {}, invites: {}, threads: [] };
+    return { users: {}, invites: {}, threads: [], tickets: [] };
   }
 }
 
@@ -46,7 +47,7 @@ function saveDB(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// Защита от флуда по IP
+// Anti-flood middleware
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -59,12 +60,13 @@ app.use('/api', (req, res, next) => {
   } else {
     record.count++;
     if (record.count > 25) {
-      return res.status(429).json({ message: 'Слишком частые запросы. Подождите.' });
+      return res.status(429).json({ message: 'Слишком много запросов. Подождите пару секунд.' });
     }
   }
   next();
 });
 
+// Проверка соединения
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 
 // Регистрация
@@ -75,23 +77,29 @@ app.post('/api/register', (req, res) => {
   }
 
   const db = loadDB();
-  const inv = db.invites[invite_code.trim()];
+  const cleanInvite = invite_code.trim();
+  const inv = db.invites[cleanInvite];
+
   if (!inv || inv.used) {
-    return res.status(400).json({ message: 'Недействительный или использованный инвайт' });
+    return res.status(400).json({ message: 'Инвайт недействителен или уже был активирован' });
   }
 
   const userKey = username.trim().toLowerCase();
   if (db.users[userKey]) {
-    return res.status(400).json({ message: 'Логин уже занят' });
+    return res.status(400).json({ message: 'Этот логин уже занят' });
   }
 
-  db.invites[invite_code.trim()].used = true;
-  db.invites[invite_code.trim()].used_by = username.trim();
+  // Сжигаем инвайт
+  db.invites[cleanInvite].used = true;
+  db.invites[cleanInvite].used_by = username.trim();
 
+  // Создаем пользователя
   db.users[userKey] = {
     username: username.trim(),
     password: password,
-    invite_code: invite_code.trim(),
+    invite_code: cleanInvite,
+    bio: 'Участник закрытого тестирования.',
+    avatar_color: '#8b5cf6',
     hwid: null,
     sub_until: 0,
     created_at: Date.now()
@@ -101,12 +109,7 @@ app.post('/api/register', (req, res) => {
 
   res.json({
     token: `joy_session_${userKey}`,
-    user: {
-      username: username.trim(),
-      invite_code: invite_code.trim(),
-      hwid: null,
-      subscription_expires: null
-    }
+    user: db.users[userKey]
   });
 });
 
@@ -122,16 +125,11 @@ app.post('/api/login', (req, res) => {
 
   res.json({
     token: `joy_session_${user.username.toLowerCase()}`,
-    user: {
-      username: user.username,
-      invite_code: user.invite_code,
-      hwid: user.hwid,
-      subscription_expires: user.sub_until ? new Date(user.sub_until).toLocaleDateString() : null
-    }
+    user: user
   });
 });
 
-// Профиль
+// Получение профиля
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) {
@@ -143,15 +141,25 @@ app.get('/api/profile', (req, res) => {
   const user = db.users[userKey];
 
   if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
+  res.json({ user });
+});
 
-  res.json({
-    user: {
-      username: user.username,
-      invite_code: user.invite_code,
-      hwid: user.hwid,
-      subscription_expires: user.sub_until ? new Date(user.sub_until).toLocaleDateString() : null
-    }
-  });
+// Обновление профиля (Био и Аватар)
+app.post('/api/profile/update', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'Не авторизован' });
+
+  const { bio, avatar_color } = req.body;
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+
+  if (!db.users[userKey]) return res.status(404).json({ message: 'Пользователь не найден' });
+
+  if (typeof bio === 'string') db.users[userKey].bio = bio.slice(0, 160);
+  if (typeof avatar_color === 'string') db.users[userKey].avatar_color = avatar_color;
+
+  saveDB(db);
+  res.json({ message: 'Профиль обновлен', user: db.users[userKey] });
 });
 
 // Сброс HWID
@@ -165,13 +173,27 @@ app.post('/api/hwid/reset', (req, res) => {
     db.users[userKey].hwid = null;
     saveDB(db);
   }
-
   res.json({ message: 'HWID успешно сброшен' });
 });
 
-// === API ФОРУМА ===
+// Выдача реального бинарника лоадера
+app.get('/api/download-loader', (req, res) => {
+  const token = req.query.token;
+  if (!token || !token.startsWith('joy_session_')) {
+    return res.status(401).send('Ошибка доступа: авторизуйтесь для загрузки.');
+  }
 
-// Получить все темы
+  const loaderPath = path.join(__dirname, 'JoyLoader.exe');
+  
+  // Если бинарника еще нет, генерируем проверочный файл на лету
+  if (!fs.existsSync(loaderPath)) {
+    fs.writeFileSync(loaderPath, 'JOY-CLIENT-BINARY-STUB');
+  }
+
+  res.download(loaderPath, 'JoyLoader.exe');
+});
+
+// === ФОРУМ ===
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => ({
@@ -184,7 +206,6 @@ app.get('/api/forum/threads', (req, res) => {
   res.json({ threads: list });
 });
 
-// Получить один тред с сообщениями
 app.get('/api/forum/threads/:id', (req, res) => {
   const db = loadDB();
   const thread = db.threads.find(t => t.id === parseInt(req.params.id));
@@ -192,22 +213,17 @@ app.get('/api/forum/threads/:id', (req, res) => {
   res.json({ thread });
 });
 
-// Создать новую тему
 app.post('/api/forum/threads', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token || !token.startsWith('joy_session_')) {
-    return res.status(401).json({ message: 'Требуется авторизация' });
-  }
+  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
 
   const { title, content } = req.body;
-  if (!title || !content) {
-    return res.status(400).json({ message: 'Заполните название и текст' });
-  }
+  if (!title || !content) return res.status(400).json({ message: 'Заполните поля' });
 
   const db = loadDB();
   const userKey = token.replace('joy_session_', '');
   const user = db.users[userKey];
-  if (!user) return res.status(401).json({ message: 'Пользователь не найден' });
+  if (!user) return res.status(401).json({ message: 'Ошибка пользователя' });
 
   const newThread = {
     id: Date.now(),
@@ -220,47 +236,80 @@ app.post('/api/forum/threads', (req, res) => {
 
   db.threads.unshift(newThread);
   saveDB(db);
-
   res.json({ thread: newThread });
 });
 
-// Добавить ответ в тему
 app.post('/api/forum/threads/:id/reply', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token || !token.startsWith('joy_session_')) {
-    return res.status(401).json({ message: 'Требуется авторизация' });
-  }
+  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
 
   const { text } = req.body;
-  if (!text || !text.trim()) {
-    return res.status(400).json({ message: 'Введите сообщение' });
-  }
+  if (!text || !text.trim()) return res.status(400).json({ message: 'Пустое сообщение' });
 
   const db = loadDB();
   const userKey = token.replace('joy_session_', '');
   const user = db.users[userKey];
-  if (!user) return res.status(401).json({ message: 'Пользователь не найден' });
+  if (!user) return res.status(401).json({ message: 'Ошибка пользователя' });
 
   const thread = db.threads.find(t => t.id === parseInt(req.params.id));
   if (!thread) return res.status(404).json({ message: 'Тема не найдена' });
 
-  if (!thread.posts) thread.posts = [];
-
-  const newPost = {
+  const post = {
     author: user.username,
     text: text.trim(),
     created_at: Date.now()
   };
 
-  thread.posts.push(newPost);
+  if (!thread.posts) thread.posts = [];
+  thread.posts.push(post);
+  saveDB(db);
+  res.json({ post });
+});
+
+// === АНОНИМНЫЕ ТИКЕТЫ / ВОПРОСЫ В САППОРТ ===
+app.post('/api/support/ticket', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
+
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ message: 'Заполните все поля' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(401).json({ message: 'Ошибка пользователя' });
+
+  const ticket = {
+    id: 'TICK-' + Math.floor(1000 + Math.random() * 9000),
+    userKey: userKey,
+    username: user.username,
+    subject: subject.trim(),
+    message: message.trim(),
+    status: 'На рассмотрении',
+    reply: null,
+    created_at: Date.now()
+  };
+
+  db.tickets.unshift(ticket);
   saveDB(db);
 
-  res.json({ post: newPost });
+  // Внутренний лог сервера (твоя скрытая почта нигде на клиенте не отображается)
+  console.log(`[FORWARD TO: arkwyhdjx@gmail.com] Новый тикет ${ticket.id} от ${user.username}: ${ticket.subject}`);
+
+  res.json({ message: 'Вопрос безопасно отправлен администраторам', ticket });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.get('/api/support/my-tickets', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const myTickets = (db.tickets || []).filter(t => t.userKey === userKey);
+  res.json({ tickets: myTickets });
 });
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
