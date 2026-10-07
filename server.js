@@ -36,6 +36,15 @@ function loadDB() {
           posts: []
         }
       ],
+      updates: [
+        {
+          id: 1,
+          title: 'первый запуск закрытой альфы',
+          content: '- инициализация веб-панели\n- запуск системы авторизации и тикетов\n- базовая защита от флуда',
+          author: 'dev',
+          created_at: Date.now()
+        }
+      ],
       tickets: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
@@ -46,10 +55,11 @@ function loadDB() {
     if (!data.next_uid) data.next_uid = 1;
     if (!data.users) data.users = {};
     if (!data.threads) data.threads = [];
+    if (!data.updates) data.updates = [];
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { next_uid: 1, users: {}, invites: {}, threads: [], tickets: [] };
+    return { next_uid: 1, users: {}, invites: {}, threads: [], updates: [], tickets: [] };
   }
 }
 
@@ -57,10 +67,11 @@ function saveDB(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.error('Ошибка записи в базу:', e);
+    console.error('ошибка базы:', e);
   }
 }
 
+// Защита от флуда по IP
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -94,6 +105,7 @@ function checkCooldown(username, action, cooldownSec) {
 
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 
+// Регистрация
 app.post('/api/register', (req, res) => {
   const { invite_code, username, password } = req.body;
   if (!invite_code || !username || !password) {
@@ -141,6 +153,7 @@ app.post('/api/register', (req, res) => {
   });
 });
 
+// Вход
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   const db = loadDB();
@@ -156,6 +169,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Получение профиля текущего пользователя
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'сессия истекла' });
@@ -168,6 +182,26 @@ app.get('/api/profile', (req, res) => {
   res.json({ user });
 });
 
+// Публичный профиль для модалки по клику
+app.get('/api/user/:username', (req, res) => {
+  const db = loadDB();
+  const target = db.users[req.params.username.toLowerCase()];
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+
+  res.json({
+    user: {
+      uid: target.uid,
+      username: target.username,
+      bio: target.bio || '',
+      avatar_color: target.avatar_color,
+      avatar_media: target.avatar_media,
+      avatar_type: target.avatar_type,
+      created_at: target.created_at
+    }
+  });
+});
+
+// Обновление профиля
 app.post('/api/profile/update', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'не авторизован' });
@@ -194,6 +228,7 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
+// Сброс HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -207,6 +242,7 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
+// Загрузка лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) {
@@ -225,16 +261,23 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
+// === ФОРУМ ===
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
-  const list = db.threads.map(t => ({
-    id: t.id,
-    title: t.title,
-    author: t.author,
-    author_uid: t.author_uid || 1,
-    created_at: t.created_at,
-    replies_count: t.posts ? t.posts.length : 0
-  }));
+  const list = db.threads.map(t => {
+    const authorUser = db.users[t.author.toLowerCase()] || {};
+    return {
+      id: t.id,
+      title: t.title,
+      author: t.author,
+      author_uid: t.author_uid || 1,
+      author_avatar_media: authorUser.avatar_media || null,
+      author_avatar_type: authorUser.avatar_type || null,
+      author_avatar_color: authorUser.avatar_color || '#8b5cf6',
+      created_at: t.created_at,
+      replies_count: t.posts ? t.posts.length : 0
+    };
+  });
   res.json({ threads: list });
 });
 
@@ -242,7 +285,25 @@ app.get('/api/forum/threads/:id', (req, res) => {
   const db = loadDB();
   const thread = db.threads.find(t => t.id === parseInt(req.params.id));
   if (!thread) return res.status(404).json({ message: 'тема не найдена' });
-  res.json({ thread });
+
+  const authorUser = db.users[thread.author.toLowerCase()] || {};
+  const enrichedThread = {
+    ...thread,
+    author_avatar_media: authorUser.avatar_media || null,
+    author_avatar_type: authorUser.avatar_type || null,
+    author_avatar_color: authorUser.avatar_color || '#8b5cf6',
+    posts: (thread.posts || []).map(p => {
+      const pUser = db.users[p.author.toLowerCase()] || {};
+      return {
+        ...p,
+        author_avatar_media: pUser.avatar_media || null,
+        author_avatar_type: pUser.avatar_type || null,
+        author_avatar_color: pUser.avatar_color || '#8b5cf6'
+      };
+    })
+  };
+
+  res.json({ thread: enrichedThread });
 });
 
 app.post('/api/forum/threads', (req, res) => {
@@ -353,6 +414,63 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   res.json({ message: 'сообщение удалено' });
 });
 
+// === АПДЕЙТЫ (CHANGELOG) ===
+app.get('/api/updates', (req, res) => {
+  const db = loadDB();
+  res.json({ updates: db.updates || [] });
+});
+
+app.post('/api/updates', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  // Постить апдейты разрешено только dev / UID 1
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ только для разработчика' });
+  }
+
+  const { title, content } = req.body;
+  if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
+
+  const item = {
+    id: Date.now(),
+    title: title.trim(),
+    content: content.trim(),
+    author: user.username,
+    created_at: Date.now()
+  };
+
+  db.updates.unshift(item);
+  saveDB(db);
+  res.json({ update: item });
+});
+
+app.delete('/api/updates/:id', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ только для разработчика' });
+  }
+
+  const uId = parseInt(req.params.id);
+  const idx = (db.updates || []).findIndex(u => u.id === uId);
+  if (idx === -1) return res.status(404).json({ message: 'обновление не найдено' });
+
+  db.updates.splice(idx, 1);
+  saveDB(db);
+  res.json({ message: 'обновление удалено' });
+});
+
+// === ТИКЕТЫ (ПОДДЕРЖКА) ===
 app.post('/api/support/ticket', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
