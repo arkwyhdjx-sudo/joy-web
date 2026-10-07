@@ -21,9 +21,9 @@ function loadDB() {
       next_uid: 1,
       users: {},
       invites: {
-        'JOY-DEV-KEY1': { used: false, used_by: null },
-        'JOY-TEST-2026': { used: false, used_by: null },
-        'JOY-ALPHA-777': { used: false, used_by: null }
+        'JOY-DEV-KEY1': { used: false, used_by: null, created_at: Date.now() },
+        'JOY-TEST-2026': { used: false, used_by: null, created_at: Date.now() },
+        'JOY-ALPHA-777': { used: false, used_by: null, created_at: Date.now() }
       },
       promos: {},
       threads: [
@@ -79,14 +79,14 @@ app.use('/api', (req, res, next) => {
     ipRequests.set(ip, record);
   } else {
     record.count++;
-    if (record.count > 45) {
+    if (record.count > 50) {
       return res.status(429).json({ message: 'лимит запросов превышен' });
     }
   }
   next();
 });
 
-// Проверка админ-доступа (UID 1 или роль owner)
+// Проверка прав овнера
 function requireOwner(req, res, next) {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -95,7 +95,7 @@ function requireOwner(req, res, next) {
   const db = loadDB();
   const user = db.users[userKey];
 
-  if (!user || (user.uid !== 1 && user.role !== 'owner')) {
+  if (!user || (user.uid !== 1 && user.role !== 'owner' && user.username !== 'dev')) {
     return res.status(403).json({ message: 'доступ запрещен' });
   }
 
@@ -131,8 +131,8 @@ app.post('/api/register', (req, res) => {
   db.invites[cleanInvite].used = true;
   db.invites[cleanInvite].used_by = username.trim();
 
-  // Первый зарегистрированный автоматически получает роль owner
-  const defaultRole = (assignedUid === 1) ? 'owner' : 'user';
+  const isOwner = (assignedUid === 1 || userKey === 'dev');
+  const defaultRole = isOwner ? 'owner' : 'user';
 
   db.users[userKey] = {
     uid: assignedUid,
@@ -140,12 +140,14 @@ app.post('/api/register', (req, res) => {
     password: password,
     invite_code: cleanInvite,
     role: defaultRole,
+    banned: false,
+    ban_reason: '',
     bio: '',
     avatar_color: '#8b5cf6',
     avatar_media: null,
     avatar_type: null,
     hwid: null,
-    sub_until: (assignedUid === 1) ? -1 : 0, // -1 означает lifetime
+    sub_until: isOwner ? -1 : 0,
     created_at: Date.now()
   };
 
@@ -157,7 +159,7 @@ app.post('/api/register', (req, res) => {
   });
 });
 
-// Вход
+// Вход с проверкой бана
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   const db = loadDB();
@@ -165,6 +167,13 @@ app.post('/api/login', (req, res) => {
 
   if (!user || user.password !== password) {
     return res.status(401).json({ message: 'неверный логин или пароль' });
+  }
+
+  if (user.banned) {
+    return res.status(403).json({ 
+      message: `аккаунт заблокирован. причина: ${user.ban_reason || 'нарушение правил'}`,
+      banned: true 
+    });
   }
 
   res.json({
@@ -183,6 +192,8 @@ app.get('/api/profile', (req, res) => {
   const user = db.users[userKey];
 
   if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+  if (user.banned) return res.status(403).json({ message: `аккаунт заблокирован: ${user.ban_reason || 'бан'}`, banned: true });
+
   res.json({ user });
 });
 
@@ -197,6 +208,7 @@ app.get('/api/user/:username', (req, res) => {
       uid: target.uid,
       username: target.username,
       role: target.role || 'user',
+      banned: target.banned || false,
       bio: target.bio || '',
       avatar_color: target.avatar_color,
       avatar_media: target.avatar_media,
@@ -215,6 +227,7 @@ app.post('/api/profile/update', (req, res) => {
   const db = loadDB();
   const user = db.users[userKey];
   if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+  if (user.banned) return res.status(403).json({ message: 'аккаунт заблокирован' });
 
   const { bio, avatar_color, avatar_media, avatar_type, reset_media } = req.body;
 
@@ -233,20 +246,17 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
-// Активация промокода пользователем
+// Активация промокода
 app.post('/api/promo/redeem', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
 
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ message: 'введите промокод' });
-
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
-  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
 
-  const promoKey = code.trim().toUpperCase();
+  const promoKey = (req.body.code || '').trim().toUpperCase();
   const promo = db.promos[promoKey];
 
   if (!promo) return res.status(400).json({ message: 'промокод не существует' });
@@ -255,7 +265,6 @@ app.post('/api/promo/redeem', (req, res) => {
     return res.status(400).json({ message: 'вы уже активировали этот промокод' });
   }
 
-  // Начисляем дни
   const now = Date.now();
   const daysMs = promo.days * 24 * 60 * 60 * 1000;
   if (user.sub_until === -1) {
@@ -283,10 +292,11 @@ app.post('/api/hwid/reset', (req, res) => {
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
-  if (db.users[userKey]) {
-    db.users[userKey].hwid = null;
-    saveDB(db);
-  }
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
+
+  user.hwid = null;
+  saveDB(db);
   res.json({ message: 'hwid успешно сброшен' });
 });
 
@@ -294,6 +304,11 @@ app.post('/api/hwid/reset', (req, res) => {
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).send('аккаунт заблокирован');
 
   const realLoader = path.join(BUILDS_DIR, 'JoyLoader.exe');
   if (fs.existsSync(realLoader)) {
@@ -307,9 +322,37 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// === АДМИН-МЕНЕДЖЕР (ТОЛЬКО OWNER / UID 1) ===
+// === АДМИН-ФУНКЦИИ (ДЛЯ ОВНЕРА) ===
 
-// 1. Поиск инфы о пользователе
+// 1. Выдать себе Lifetime подписку в 1 клик
+app.post('/api/admin/self-lifetime', requireOwner, (req, res) => {
+  const db = loadDB();
+  const user = req.adminUser;
+  user.sub_until = -1;
+  user.role = 'owner';
+  saveDB(db);
+  res.json({ message: 'вам успешно выдана lifetime подписка и роль owner', user });
+});
+
+// 2. Список юзеров
+app.get('/api/admin/users', requireOwner, (req, res) => {
+  const db = loadDB();
+  const list = Object.values(db.users).map(u => ({
+    uid: u.uid,
+    username: u.username,
+    role: u.role || 'user',
+    banned: u.banned || false,
+    ban_reason: u.ban_reason || '',
+    sub_until: u.sub_until,
+    invite_code: u.invite_code,
+    hwid: !!u.hwid,
+    created_at: u.created_at
+  }));
+  list.sort((a, b) => a.uid - b.uid);
+  res.json({ users: list });
+});
+
+// 3. Данные одного пользователя
 app.get('/api/admin/user/:username', requireOwner, (req, res) => {
   const db = loadDB();
   const target = db.users[req.params.username.toLowerCase()];
@@ -317,9 +360,9 @@ app.get('/api/admin/user/:username', requireOwner, (req, res) => {
   res.json({ target });
 });
 
-// 2. Обновление пользователя (роль, uid, подписка, сброс hwid)
+// 4. Редактирование пользователя + Бан / Разбан
 app.post('/api/admin/user/update', requireOwner, (req, res) => {
-  const { username, role, uid, sub_mode, reset_hwid } = req.body;
+  const { username, role, uid, sub_mode, reset_hwid, banned, ban_reason } = req.body;
   const db = loadDB();
   const target = db.users[username.toLowerCase()];
 
@@ -329,26 +372,58 @@ app.post('/api/admin/user/update', requireOwner, (req, res) => {
   if (uid && !isNaN(parseInt(uid))) target.uid = parseInt(uid);
 
   const now = Date.now();
-  if (sub_mode === 'reset') {
-    target.sub_until = 0;
-  } else if (sub_mode === 'lifetime') {
-    target.sub_until = -1;
-  } else if (sub_mode === '30d') {
-    target.sub_until = (target.sub_until > now ? target.sub_until : now) + (30 * 86400000);
-  } else if (sub_mode === '90d') {
-    target.sub_until = (target.sub_until > now ? target.sub_until : now) + (90 * 86400000);
-  }
+  if (sub_mode === 'reset') target.sub_until = 0;
+  else if (sub_mode === 'lifetime') target.sub_until = -1;
+  else if (sub_mode === '30d') target.sub_until = (target.sub_until > now ? target.sub_until : now) + (30 * 86400000);
+  else if (sub_mode === '90d') target.sub_until = (target.sub_until > now ? target.sub_until : now) + (90 * 86400000);
 
   if (reset_hwid) target.hwid = null;
 
+  if (typeof banned === 'boolean') {
+    target.banned = banned;
+    target.ban_reason = banned ? (ban_reason || 'нарушение правил') : '';
+  }
+
   saveDB(db);
-  res.json({ message: `аккаунт ${target.username} успешно обновлен`, target });
+  res.json({ message: `аккаунт ${target.username} обновлен`, target });
 });
 
-// 3. Создание промокода
+// 5. Инвайты
+app.get('/api/admin/invites', requireOwner, (req, res) => {
+  const db = loadDB();
+  const list = Object.entries(db.invites || {}).map(([code, info]) => ({
+    code,
+    used: info.used,
+    used_by: info.used_by,
+    created_at: info.created_at || null
+  }));
+  list.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+  res.json({ invites: list });
+});
+
+app.post('/api/admin/create-invite', requireOwner, (req, res) => {
+  const db = loadDB();
+  const code = 'JOY-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+  db.invites[code] = { used: false, used_by: null, created_at: Date.now() };
+  saveDB(db);
+  res.json({ invite: code });
+});
+
+app.delete('/api/admin/invite/:code', requireOwner, (req, res) => {
+  const db = loadDB();
+  const code = req.params.code.trim();
+  if (db.invites[code]) {
+    delete db.invites[code];
+    saveDB(db);
+    return res.json({ message: 'инвайт удален' });
+  }
+  res.status(404).json({ message: 'инвайт не найден' });
+});
+
+// 6. Промокоды
 app.post('/api/admin/promo/create', requireOwner, (req, res) => {
   const { code, days, max_uses } = req.body;
-  if (!code || !days) return res.status(400).json({ message: 'заполните поля' });
+  if (!code || !days) return res.status(400).json({ message: 'заполните код и дни' });
 
   const db = loadDB();
   const promoKey = code.trim().toUpperCase();
@@ -362,10 +437,10 @@ app.post('/api/admin/promo/create', requireOwner, (req, res) => {
   };
 
   saveDB(db);
-  res.json({ message: `промокод ${promoKey} создан`, promos: db.promos });
+  res.json({ message: `промокод ${promoKey} создан` });
 });
 
-// 4. Загрузка бинарника
+// 7. Загрузка бинарника
 app.post('/api/admin/upload-build', requireOwner, (req, res) => {
   const { file_base64 } = req.body;
   if (!file_base64) return res.status(400).json({ message: 'файл не передан' });
@@ -380,13 +455,23 @@ app.post('/api/admin/upload-build', requireOwner, (req, res) => {
   }
 });
 
-// 5. Создание инвайта
-app.post('/api/admin/create-invite', requireOwner, (req, res) => {
+// 8. Все тикеты для админки и ответ на них
+app.get('/api/admin/tickets', requireOwner, (req, res) => {
   const db = loadDB();
-  const code = 'JOY-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-  db.invites[code] = { used: false, used_by: null };
+  res.json({ tickets: db.tickets || [] });
+});
+
+app.post('/api/admin/ticket/reply', requireOwner, (req, res) => {
+  const { ticket_id, reply_text } = req.body;
+  const db = loadDB();
+  const ticket = (db.tickets || []).find(t => t.id === ticket_id);
+
+  if (!ticket) return res.status(404).json({ message: 'тикет не найден' });
+
+  ticket.reply = reply_text.trim();
+  ticket.status = 'ответ получен';
   saveDB(db);
-  res.json({ invite: code, invites: db.invites });
+  res.json({ message: 'ответ отправлен пользователю', ticket });
 });
 
 // === ОБНОВЛЕНИЯ ===
@@ -479,7 +564,7 @@ app.post('/api/forum/threads', (req, res) => {
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
-  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ заблокирован' });
 
   const { title, content } = req.body;
   if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
@@ -506,7 +591,7 @@ app.post('/api/forum/threads/:id/reply', (req, res) => {
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
-  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ заблокирован' });
 
   const { text } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ message: 'введите текст' });
@@ -582,7 +667,7 @@ app.post('/api/support/ticket', (req, res) => {
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
-  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ заблокирован' });
 
   const { subject, message } = req.body;
   if (!subject || !message) return res.status(400).json({ message: 'заполните поля' });
