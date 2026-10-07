@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JOY</title>
+  <title>joy</title>
 
   <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -137,12 +137,17 @@
       user-select: none;
     }
 
-    /* Статус в шапке (без огромных дыр) */
+    /* Исправленное идеальное центрирование в бейджах */
     .status-badge {
-      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
       font-weight: 600;
       font-family: var(--font-mono);
-      padding: 2px 6px;
+      padding: 0 7px;
+      height: 20px;
+      line-height: 1;
       border-radius: 4px;
       text-transform: lowercase;
       letter-spacing: 0.02em;
@@ -152,10 +157,15 @@
     .status-updating { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 
     .role-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: 10px;
       font-weight: 600;
       font-family: var(--font-mono);
-      padding: 1px 6px;
+      padding: 0 6px;
+      height: 18px;
+      line-height: 1;
       border-radius: 4px;
       text-transform: uppercase;
     }
@@ -165,25 +175,56 @@
     .role-user { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
     .role-banned { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #f87171; }
 
-    #ddos-screen {
+    /* ЭКРАН CLOUDFLARE DDOS ЗАЩИТЫ */
+    #cf-screen {
       position: fixed;
       inset: 0;
-      z-index: 999;
-      background: var(--bg-dark);
+      z-index: 9999;
+      background: #06050a;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 24px;
       transition: opacity 0.4s var(--ease), visibility 0.4s;
     }
-    #ddos-screen.verified { opacity: 0; visibility: hidden; pointer-events: none; }
+    #cf-screen.verified { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .loader {
-      width: 38px;
-      height: 38px;
+    .cf-box {
+      max-width: 440px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+      text-align: center;
+    }
+
+    .cf-shield-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      animation: pulseGlow 2s infinite alternate;
+    }
+    @keyframes pulseGlow { 0% { box-shadow: 0 0 10px var(--accent-glow); } 100% { box-shadow: 0 0 24px var(--accent); } }
+
+    .cf-spinner {
+      width: 22px;
+      height: 22px;
       border: 2px solid transparent;
       border-top-color: var(--accent-bright);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -221,15 +262,19 @@
       user-select: none;
     }
 
+    /* Логотип: hover превращает joy в getjoy.vip */
     .brand-title-nav {
       font-family: var(--font-main);
       font-weight: 800;
       font-size: 19px;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.03em;
       background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       user-select: none;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.25s var(--ease);
     }
 
     .auth-tabs {
@@ -278,9 +323,9 @@
       backdrop-filter: blur(8px);
     }
 
-    /* Логотип плотно к статусу без разрывов */
+    /* Логотип и статус вплотную друг к другу */
     .brand-group {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
@@ -315,6 +360,13 @@
       width: 100%;
       margin: 0 auto;
       padding: 28px 16px;
+      transition: max-width 0.25s var(--ease);
+    }
+
+    /* Админка на весь экран для максимального контроля */
+    body.admin-wide-mode .main-content {
+      max-width: 1340px !important;
+      padding: 24px 20px;
     }
 
     .section { display: none; }
@@ -403,12 +455,12 @@
     .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .color-opt.active { border-color: #fff; }
 
-    /* Компактная карточка лаунчера */
+    /* Лаунчер карточка без лишних дыр */
     .launcher-info-box {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .info-cell {
@@ -442,7 +494,7 @@
       font-size: 12px;
     }
 
-    /* Тарифные карточки */
+    /* Тарифы */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -520,9 +572,14 @@
     }
 
     .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: 10px;
       font-weight: 600;
-      padding: 1px 6px;
+      padding: 0 6px;
+      height: 18px;
+      line-height: 1;
       border-radius: 4px;
       margin-right: 6px;
       text-transform: lowercase;
@@ -634,12 +691,28 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <div id="ddos-screen"><div class="loader"></div></div>
+  <!-- CLOUDFLARE DDOS ЗАЩИТА (АНАЛОГ CLOUDFLARE RAY SHIELD) -->
+  <div id="cf-screen">
+    <div class="cf-box">
+      <div class="cf-shield-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">getjoy.vip</h3>
+      <p class="text-muted" style="font-size: 12.5px; margin-bottom: 16px;">
+        проверка безопасности подключения перед входом на платформу...
+      </p>
+      <div style="font-size: 12px; color: #c4b5fd;">
+        <span class="cf-spinner"></span> верификация браузера и ddos-фильтрация
+      </div>
+    </div>
+  </div>
 
   <!-- АВТОРИЗАЦИЯ -->
   <div id="auth-screen">
     <div class="auth-box">
-      <div class="brand-title">JOY</div>
+      <div class="brand-title">joy</div>
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchAuthTab('login')">вход</button>
         <button class="auth-tab" onclick="switchAuthTab('register')">регистрация</button>
@@ -683,9 +756,9 @@
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
-        <!-- Логотип и статус без лишнего расстояния -->
+        <!-- Логотип: при hover меняется на getjoy.vip, без дырок до статуса -->
         <div class="brand-group">
-          <div class="brand-title-nav">JOY</div>
+          <span class="brand-title-nav" id="brand-logo" onmouseenter="this.innerText='getjoy.vip'" onmouseleave="this.innerText='joy'">joy</span>
           <span id="nav-build-status" class="status-badge status-stable">stable</span>
         </div>
         <nav class="nav-links">
@@ -697,7 +770,7 @@
     </header>
 
     <main class="main-content">
-      <!-- 1. ЛАУНЧЕР (АККУРАТНОЕ ИСПОЛЬЗОВАНИЕ ПРОСТРАНСТВА) -->
+      <!-- 1. ЛАУНЧЕР (АККУРАТНЫЙ И КОМПАКТНЫЙ) -->
       <section id="sec-launcher" class="section active">
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -727,75 +800,136 @@
             <button class="btn-outline" style="padding: 2px 8px; font-size: 10.5px;" onclick="apiResetHWID()">сбросить</button>
           </div>
 
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-violet" style="width: 100%;" onclick="downloadClient()">скачать лаунчер (joyloader.exe)</button>
-          </div>
+          <button class="btn-violet" style="width: 100%;" onclick="downloadClient()">скачать лаунчер (joyloader.exe)</button>
         </div>
       </section>
 
-      <!-- 2. ФОРУМ (БЕЗ ОШИБОК, ПУБЛИКАЦИЯ РАБОТАЕТ) -->
+      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО ВНУТРИ С ФИЛЬТРОМ ВСЕ / СВОЕ И ПРИВАТНОСТЬЮ) -->
       <section id="sec-forum" class="section">
         <div class="profile-card">
-          <div id="forum-index">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="text-muted" style="font-size: 12px;">дискуссии закрытого сообщества</span>
-              <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="toggleNewThread()">новая тема</button>
-            </div>
-
-            <!-- Форма темы -->
-            <div id="new-thread-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
-              <div class="form-group">
-                <label>тег темы</label>
-                <select id="t-tag-select">
-                  <option value="обсуждение">обсуждение</option>
-                  <option value="баг">баг</option>
-                  <option value="предложение">предложение</option>
-                  <option value="медиа">медиа</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>заголовок</label>
-                <input type="text" id="t-title" maxlength="90" placeholder="введите заголовок...">
-              </div>
-              <div class="form-group">
-                <label>сообщение</label>
-                <textarea id="t-content" maxlength="800" placeholder="опишите суть..."></textarea>
-              </div>
-              <button class="btn-violet" onclick="apiCreateThread()">опубликовать</button>
-            </div>
-
-            <div id="forum-threads-list"></div>
+          <div class="profile-sub-tabs">
+            <button class="profile-sub-tab active" onclick="switchForumSub('threads')">обсуждения</button>
+            <button class="profile-sub-tab" onclick="switchForumSub('cloud')">облако (маркетплейс)</button>
           </div>
 
-          <div id="forum-view" style="display: none;">
-            <button class="btn-outline" style="margin-bottom: 12px; padding: 4px 8px; font-size: 11px;" onclick="backToThreads()">← назад к темам</button>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <div>
-                <span id="view-t-tag" class="tag-badge"></span>
-                <span id="view-t-pinned" class="pin-badge" style="display: none;">📌 закреплено</span>
-                <h2 id="view-t-title" style="font-size: 16px; display: inline;"></h2>
+          <!-- Вкладка тем -->
+          <div id="forum-sub-threads" class="sub-view active">
+            <div id="forum-index">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span class="text-muted" style="font-size: 12px;">дискуссии закрытого сообщества</span>
+                <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="toggleNewThread()">новая тема</button>
               </div>
-              <div id="thread-actions"></div>
+
+              <!-- Форма создания темы -->
+              <div id="new-thread-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+                <div class="form-group">
+                  <label>тег темы</label>
+                  <select id="t-tag-select">
+                    <option value="обсуждение">обсуждение</option>
+                    <option value="баг">баг</option>
+                    <option value="предложение">предложение</option>
+                    <option value="медиа">медиа</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>заголовок</label>
+                  <input type="text" id="t-title" maxlength="90" placeholder="заголовок темы...">
+                </div>
+                <div class="form-group">
+                  <label>сообщение</label>
+                  <textarea id="t-content" maxlength="800" placeholder="текст..."></textarea>
+                </div>
+                <button class="btn-violet" onclick="apiCreateThread()">опубликовать</button>
+              </div>
+
+              <div id="forum-threads-list"></div>
             </div>
-            <div id="view-t-posts"></div>
-            <div class="profile-card" id="reply-box-container" style="margin-top: 14px;">
-              <label>ответить</label>
-              <textarea id="reply-text" maxlength="500" style="margin-bottom: 8px;"></textarea>
-              <button class="btn-violet" onclick="apiReplyThread()">отправить</button>
+
+            <div id="forum-view" style="display: none;">
+              <button class="btn-outline" style="margin-bottom: 12px; padding: 4px 8px; font-size: 11px;" onclick="backToThreads()">← назад к темам</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <span id="view-t-tag" class="tag-badge"></span>
+                  <span id="view-t-pinned" class="pin-badge" style="display: none;">📌 закреплено</span>
+                  <h2 id="view-t-title" style="font-size: 16px; display: inline;"></h2>
+                </div>
+                <div id="thread-actions"></div>
+              </div>
+              <div id="view-t-posts"></div>
+              <div class="profile-card" id="reply-box-container" style="margin-top: 14px;">
+                <label>ответить</label>
+                <textarea id="reply-text" maxlength="500" style="margin-bottom: 8px;"></textarea>
+                <button class="btn-violet" onclick="apiReplyThread()">отправить</button>
+              </div>
             </div>
+          </div>
+
+          <!-- Вкладка облака: фильтры все / только свое + приватный/публичный статус -->
+          <div id="forum-sub-cloud" class="sub-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: gap;">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="profile-sub-tabs" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+                  <button class="profile-sub-tab active" id="cloud-tab-btn-cfg" onclick="switchCloudType('configs')">конфиги (.cfg)</button>
+                  <button class="profile-sub-tab" id="cloud-tab-btn-lua" onclick="switchCloudType('scripts')">lua скрипты</button>
+                </div>
+                <select id="cloud-filter-author" style="width: auto; padding: 4px 8px; font-size: 11.5px; height: 28px;" onchange="renderCloudItems()">
+                  <option value="all">все авторы</option>
+                  <option value="my">только мои</option>
+                </select>
+              </div>
+              <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="toggleCloudUploadBox()">+ загрузить</button>
+            </div>
+
+            <!-- Форма загрузки в облако с выбором приватности -->
+            <div id="cloud-upload-box" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+              <div id="cloud-cfg-upload-section">
+                <label style="margin-bottom: 6px;">загрузить .cfg файл</label>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                  <label class="custom-file-upload">
+                    <span id="cloud-cfg-file-status">выбрать .cfg</span>
+                    <input type="file" id="cloud-cfg-file-input" accept=".cfg" onchange="previewCloudCfg(this)">
+                  </label>
+                  <select id="cloud-cfg-visibility" style="width: auto; padding: 6px 10px; font-size: 11.5px;">
+                    <option value="private">приватный (только мне)</option>
+                    <option value="public">публичный (в общий доступ)</option>
+                  </select>
+                </div>
+                <button class="btn-violet" onclick="apiUploadCloudCfg()">сохранить в облако</button>
+              </div>
+
+              <div id="cloud-lua-upload-section" style="display: none;">
+                <div class="form-group">
+                  <label>название (.lua)</label>
+                  <input type="text" id="cloud-lua-title" placeholder="resolver.lua">
+                </div>
+                <div class="form-group">
+                  <label>код скрипта</label>
+                  <textarea id="cloud-lua-code" class="mono" placeholder="-- lua api"></textarea>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                  <select id="cloud-lua-visibility" style="width: auto; padding: 6px 10px; font-size: 11.5px;">
+                    <option value="private">приватный (только мне)</option>
+                    <option value="public">публичный (в общий доступ)</option>
+                  </select>
+                </div>
+                <button class="btn-violet" onclick="apiUploadCloudLua()">сохранить скрипт</button>
+              </div>
+            </div>
+
+            <div id="cloud-rendered-list"></div>
           </div>
         </div>
       </section>
 
-      <!-- 3. АККАУНТ (ОБЗОР, ОБЛАКО КОНФИГОВ .CFG И LUA, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА) -->
+      <!-- 3. АККАУНТ (ОБЗОР, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА НА ВЕСЬ ЭКРАН) -->
       <section id="sec-profile" class="section">
         <div class="profile-card">
           <div id="profile-main-header" class="profile-header-banner">
             <div id="prof-avatar-box" class="profile-avatar-wrapper">
-              <div class="profile-avatar-letter" id="prof-avatar-fallback">U</div>
+              <div class="profile-avatar-letter" id="prof-avatar-fallback">u</div>
             </div>
             <div>
-              <div style="display: flex; align-items: baseline; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
                 <h2 id="prof-username" style="font-size: 17px; font-weight: 700;">user</h2>
                 <span class="role-badge role-user" id="prof-role">user</span>
                 <span class="uid-tag" id="prof-uid">uid 1</span>
@@ -806,13 +940,12 @@
 
           <div class="profile-sub-tabs">
             <button class="profile-sub-tab active" onclick="switchProfileSub('overview')">обзор</button>
-            <button class="profile-sub-tab" onclick="switchProfileSub('cloud')">облако (.cfg / .lua)</button>
             <button class="profile-sub-tab" onclick="switchProfileSub('subscription')">подписка</button>
             <button class="profile-sub-tab" onclick="switchProfileSub('settings')">настройки</button>
             <button class="profile-sub-tab" id="prof-subtab-admin" style="display: none; color: #f87171;" onclick="switchProfileSub('admin')">панель овнера</button>
           </div>
 
-          <!-- Обзор профиля -->
+          <!-- Обзор -->
           <div id="prof-sub-overview" class="sub-view active">
             <div class="form-group">
               <label>о себе</label>
@@ -820,57 +953,11 @@
             </div>
           </div>
 
-          <!-- Облако внутри аккаунта: конфиги файлом .cfg и lua -->
-          <div id="prof-sub-cloud" class="sub-view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <span class="text-muted" style="font-size: 12px;">облачные файлы привязаны к вашему аккаунту</span>
-            </div>
-
-            <!-- Загрузка конфига файлом .cfg (как фото, без колхозных чекбоксов) -->
-            <div style="background: rgba(7, 6, 11, 0.45); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 14px;">
-              <label style="margin-bottom: 6px;">загрузить конфиг (.cfg файлом)</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <label class="custom-file-upload">
-                  <span id="cfg-file-status">выбрать .cfg файл</span>
-                  <input type="file" id="cfg-file-input" accept=".cfg" onchange="previewCfgFile(this)">
-                </label>
-                <button class="btn-violet" style="padding: 6px 12px; font-size: 11.5px;" onclick="apiUploadCfgFile()">залить в облако</button>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 14px;">
-              <label style="margin-bottom: 6px;">сохраненные .cfg конфиги</label>
-              <div id="configs-list"></div>
-            </div>
-
-            <!-- Lua скрипты -->
-            <div style="border-top: 1px solid var(--border); padding-top: 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label style="margin: 0;">lua скрипты</label>
-                <button class="btn-outline" style="padding: 2px 8px; font-size: 10.5px;" onclick="toggleNewScriptForm()">+ добавить .lua</button>
-              </div>
-
-              <div id="new-script-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px;">
-                <div class="form-group">
-                  <label>название (.lua)</label>
-                  <input type="text" id="lua-title-input" placeholder="watermark.lua">
-                </div>
-                <div class="form-group">
-                  <label>код скрипта</label>
-                  <textarea id="lua-code-input" class="mono" placeholder="-- lua code..."></textarea>
-                </div>
-                <button class="btn-violet" onclick="apiSaveNewScript()">сохранить</button>
-              </div>
-
-              <div id="scripts-list"></div>
-            </div>
-          </div>
-
           <!-- Подписка -->
           <div id="prof-sub-subscription" class="sub-view">
             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(7, 6, 11, 0.45); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
               <div>
-                <div class="text-muted" style="font-size: 11px; text-transform: uppercase;">статус</div>
+                <div class="text-muted" style="font-size: 10.5px; text-transform: uppercase;">статус</div>
                 <div id="prof-sub-detail-status" style="font-size: 15px; font-weight: 700; color: #34d399;">нет активной подписки</div>
               </div>
             </div>
@@ -934,154 +1021,176 @@
             </div>
           </div>
 
-          <!-- Админка овнера -->
+          <!-- АДМИНКА ОВНЕРА (НА ВЕСЬ ЭКРАН + ЛОГИ ПОКУПОК + 2FA PIN) -->
           <div id="prof-sub-admin" class="sub-view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span style="font-weight: 700; color: #f87171;">панель создателя</span>
-              <button class="btn-violet" style="padding: 5px 10px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
+            <!-- Экран ввода 2FA PIN для овнера -->
+            <div id="admin-pin-screen" style="background: rgba(7, 6, 11, 0.6); border: 1px solid var(--accent); padding: 24px; border-radius: var(--radius); text-align: center; max-width: 360px; margin: 20px auto;">
+              <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">2fa мастер-доступ</h3>
+              <p class="text-muted" style="font-size: 12px; margin-bottom: 14px;">введите 6-значный пин-код для разблокировки панели овнера</p>
+              <input type="password" id="admin-pin-input" maxlength="6" class="mono" placeholder="••••••" style="text-align: center; font-size: 18px; letter-spacing: 6px; margin-bottom: 12px;">
+              <button class="btn-violet" style="width: 100%;" onclick="verifyAdminPin()">разблокировать</button>
             </div>
 
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <label style="color: #f87171;">статус билда</label>
-              <div style="display: flex; gap: 8px; margin-top: 4px;">
-                <select id="admin-build-status-select" style="max-width: 200px;">
-                  <option value="stable">stable (в сети)</option>
-                  <option value="testing">testing (тестирование)</option>
-                  <option value="updating">updating (на обновлении)</option>
-                </select>
-                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminChangeBuildStatus()">применить</button>
-              </div>
-            </div>
-
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <label style="color: #f87171; margin-bottom: 6px;">заливка бинарников</label>
-              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <label class="custom-file-upload">
-                  <span id="admin-payload-status">выбрать .dll</span>
-                  <input type="file" id="admin-file-payload" accept=".dll" onchange="document.getElementById('admin-payload-status').innerText = this.files[0].name">
-                </label>
-                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadPayload()">залить dll в память</button>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <label class="custom-file-upload">
-                  <span id="admin-build-status">выбрать joyloader.exe</span>
-                  <input type="file" id="admin-file-build" accept=".exe" onchange="document.getElementById('admin-build-status').innerText = this.files[0].name">
-                </label>
-                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadBuild()">залить лаунчер</button>
-              </div>
-            </div>
-
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label style="color: #f87171; margin: 0;">пользователи</label>
-                <span class="mono text-muted" id="admin-users-count" style="font-size: 11px;">всего: 0</span>
-              </div>
-              <input type="text" id="admin-users-search" placeholder="поиск..." oninput="filterAdminUsersList()" style="margin-bottom: 8px;">
-              <div style="max-height: 200px; overflow-y: auto;">
-                <table class="admin-table">
-                  <thead>
-                    <tr><th>uid</th><th>логин</th><th>роль</th><th>статус</th><th>ip слив</th><th>действие</th></tr>
-                  </thead>
-                  <tbody id="admin-users-table-body"></tbody>
-                </table>
-              </div>
-            </div>
-
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <label style="color: #f87171; margin-bottom: 6px;">управление аккаунтом</label>
-              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
-                <input type="text" id="admin-search-user" placeholder="логин...">
-                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminFindUser()">найти</button>
+            <!-- Разблокированная панель на весь экран -->
+            <div id="admin-full-content" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-weight: 700; color: #f87171; font-size: 15px;">панель управления овнера (полный доступ)</span>
+                <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
               </div>
 
-              <div id="admin-user-editor" style="display: none;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                  <span id="admin-target-name" style="font-weight: 700;">user</span>
-                  <span id="admin-target-status" class="mono text-muted" style="font-size: 11px;"></span>
+              <!-- 1. ЛОГИ ПОКУПОК И ПЛАТЕЖЕЙ С ВЫДАЧЕЙ САБКИ В 1 КЛИК -->
+              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="color: #f87171; margin: 0;">логи покупок и платежей</label>
+                  <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPayments()">обновить журнал</button>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                  <div>
-                    <label>роль</label>
-                    <select id="admin-target-role">
-                      <option value="owner">owner</option>
-                      <option value="admin">admin</option>
-                      <option value="tester">tester</option>
-                      <option value="user">user</option>
+                <div style="max-height: 220px; overflow-y: auto;">
+                  <table class="admin-table">
+                    <thead>
+                      <tr><th>id</th><th>юзер [uid]</th><th>сумма</th><th>дней</th><th>промо</th><th>статус</th><th>действие</th></tr>
+                    </thead>
+                    <tbody id="admin-payments-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 2. МОНИТОРИНГ ПОЛЬЗОВАТЕЛЕЙ -->
+              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="color: #f87171; margin: 0;">пользователи</label>
+                  <span class="mono text-muted" id="admin-users-count" style="font-size: 11px;">всего: 0</span>
+                </div>
+                <input type="text" id="admin-users-search" placeholder="быстрый поиск по нику или uid..." oninput="filterAdminUsersList()" style="margin-bottom: 8px;">
+                <div style="max-height: 260px; overflow-y: auto;">
+                  <table class="admin-table">
+                    <thead>
+                      <tr><th>uid</th><th>логин</th><th>роль</th><th>статус</th><th>web ip</th><th>client ip</th><th>hwid</th><th>действие</th></tr>
+                    </thead>
+                    <tbody id="admin-users-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 3. РЕДАКТОР АККАУНТА -->
+              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+                <label style="color: #f87171; margin-bottom: 6px;">управление аккаунтом</label>
+                <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                  <input type="text" id="admin-search-user" placeholder="логин...">
+                  <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminFindUser()">найти</button>
+                </div>
+
+                <div id="admin-user-editor" style="display: none;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span id="admin-target-name" style="font-weight: 700;">user</span>
+                    <span id="admin-target-status" class="mono text-muted" style="font-size: 11px;"></span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <div>
+                      <label>роль</label>
+                      <select id="admin-target-role">
+                        <option value="owner">owner</option>
+                        <option value="admin">admin</option>
+                        <option value="tester">tester</option>
+                        <option value="user">user</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>uid</label>
+                      <input type="number" id="admin-target-uid">
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 8px;">
+                    <label>сабка</label>
+                    <select id="admin-target-sub">
+                      <option value="none">без изменений</option>
+                      <option value="30d">+30 дней</option>
+                      <option value="90d">+90 дней</option>
+                      <option value="lifetime">lifetime</option>
+                      <option value="reset">обнулить</option>
                     </select>
                   </div>
-                  <div>
-                    <label>uid</label>
-                    <input type="number" id="admin-target-uid">
+                  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 6px; margin-bottom: 10px;">
+                    <select id="admin-target-banned">
+                      <option value="false">активен</option>
+                      <option value="true">бан</option>
+                    </select>
+                    <input type="text" id="admin-target-banreason" placeholder="причина...">
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminSaveUser()">сохранить</button>
+                    <button class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="adminResetUserHWID()">сбросить hwid</button>
                   </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 8px;">
-                  <label>сабка</label>
-                  <select id="admin-target-sub">
-                    <option value="none">без изменений</option>
-                    <option value="30d">+30 дней</option>
-                    <option value="90d">+90 дней</option>
-                    <option value="lifetime">lifetime</option>
-                    <option value="reset">обнулить</option>
+              </div>
+
+              <!-- 4. СТАТУС БИЛДА И БИНАРНИКИ -->
+              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 14px;">
+                <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+                  <label style="color: #f87171;">статус билда</label>
+                  <select id="admin-build-status-select" style="margin: 6px 0 10px 0;">
+                    <option value="stable">stable (в сети)</option>
+                    <option value="testing">testing (тестирование)</option>
+                    <option value="updating">updating (на обновлении)</option>
                   </select>
+                  <button class="btn-violet" style="width: 100%; font-size: 11px; padding: 5px;" onclick="adminChangeBuildStatus()">применить</button>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 6px; margin-bottom: 10px;">
-                  <select id="admin-target-banned">
-                    <option value="false">активен</option>
-                    <option value="true">бан</option>
-                  </select>
-                  <input type="text" id="admin-target-banreason" placeholder="причина...">
+
+                <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+                  <label style="color: #f87171; margin-bottom: 6px;">заливка бинарников</label>
+                  <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <label class="custom-file-upload">
+                      <span id="admin-payload-status">выбрать .dll</span>
+                      <input type="file" id="admin-file-payload" accept=".dll" onchange="document.getElementById('admin-payload-status').innerText = this.files[0].name">
+                    </label>
+                    <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadPayload()">залить dll в память</button>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <label class="custom-file-upload">
+                      <span id="admin-build-status">выбрать joyloader.exe</span>
+                      <input type="file" id="admin-file-build" accept=".exe" onchange="document.getElementById('admin-build-status').innerText = this.files[0].name">
+                    </label>
+                    <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadBuild()">залить лаунчер</button>
+                  </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                  <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminSaveUser()">сохранить</button>
-                  <button class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="adminResetUserHWID()">сбросить hwid</button>
+              </div>
+
+              <!-- 5. ПРОМОКОДЫ И ИНВАЙТЫ -->
+              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="color: #f87171; margin: 0;">промокоды (дни / скидка % / бесконечные)</label>
+                  <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPromos()">обновить</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+                  <input type="text" id="promo-code-input" placeholder="промокод">
+                  <input type="number" id="promo-days-input" placeholder="+ дни">
+                  <input type="number" id="promo-discount-input" placeholder="скидка %">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                  <input type="number" id="promo-uses-input" placeholder="макс юзов (0 = ∞)">
+                  <input type="number" id="promo-hours-input" placeholder="время в часах (0 = бессрочно)">
+                </div>
+                <button class="btn-violet" style="padding: 5px 12px; font-size: 11px; width: 100%;" onclick="adminCreatePromo()">создать промокод</button>
+                <div style="max-height: 160px; overflow-y: auto; margin-top: 10px;">
+                  <table class="admin-table">
+                    <thead><tr><th>код</th><th>бонус</th><th>юзы</th><th>срок</th><th>действие</th></tr></thead>
+                    <tbody id="admin-promos-table-body"></tbody>
+                  </table>
                 </div>
               </div>
-            </div>
 
-            <!-- Промокоды -->
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label style="color: #f87171; margin: 0;">промокоды</label>
-                <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPromos()">обновить</button>
+              <!-- 6. ИНВАЙТЫ -->
+              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="color: #f87171; margin: 0;">инвайты</label>
+                  <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать инвайт</button>
+                </div>
+                <div style="max-height: 160px; overflow-y: auto;">
+                  <table class="admin-table">
+                    <thead><tr><th>код</th><th>статус</th><th>юзер</th><th>действие</th></tr></thead>
+                    <tbody id="admin-invites-table-body"></tbody>
+                  </table>
+                </div>
               </div>
-              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 6px;">
-                <input type="text" id="promo-code-input" placeholder="промокод">
-                <input type="number" id="promo-days-input" placeholder="+ дни">
-                <input type="number" id="promo-discount-input" placeholder="скидка %">
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
-                <input type="number" id="promo-uses-input" placeholder="макс юзов (0 = ∞)">
-                <input type="number" id="promo-hours-input" placeholder="время в часах">
-              </div>
-              <button class="btn-violet" style="padding: 5px 12px; font-size: 11px; width: 100%;" onclick="adminCreatePromo()">создать промокод</button>
-              <div style="max-height: 160px; overflow-y: auto; margin-top: 10px;">
-                <table class="admin-table">
-                  <thead><tr><th>код</th><th>бонус</th><th>юзы</th><th>срок</th><th>действие</th></tr></thead>
-                  <tbody id="admin-promos-table-body"></tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Инвайты -->
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label style="color: #f87171; margin: 0;">инвайты</label>
-                <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать</button>
-              </div>
-              <div style="max-height: 160px; overflow-y: auto;">
-                <table class="admin-table">
-                  <thead><tr><th>код</th><th>статус</th><th>юзер</th><th>действие</th></tr></thead>
-                  <tbody id="admin-invites-table-body"></tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Патчноут -->
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
-              <label style="color: #f87171; margin-bottom: 6px;">опубликовать патч</label>
-              <input type="text" id="admin-upd-title" placeholder="заголовок..." style="margin-bottom: 6px;">
-              <textarea id="admin-upd-content" placeholder="список изменений..."></textarea>
-              <button class="btn-violet" style="margin-top: 8px; padding: 4px 10px; font-size: 11px;" onclick="adminPostUpdate()">опубликовать</button>
             </div>
           </div>
         </div>
@@ -1148,7 +1257,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛКА ПРОФИЛЯ -->
+  <!-- МОДАЛКА ПРОФИЛЯ ЮЗЕРА ПО КЛИКУ -->
   <div id="user-modal" class="modal-overlay" onclick="closeUserModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close-btn" onclick="closeUserModal()">✕</button>
@@ -1178,8 +1287,10 @@
     let stagedMediaType = null;
     let allAdminUsers = [];
 
-    let stagedCfgFileName = null;
-    let stagedCfgFileData = null;
+    let cloudType = 'configs'; // 'configs' | 'scripts'
+    let allCloudConfigs = [];
+    let allCloudScripts = [];
+    let stagedCloudCfg = null;
 
     let activeCheckoutPlan = { days: 30, basePrice: 900, finalPrice: 900, promoCode: null, extraDays: 0 };
 
@@ -1203,6 +1314,7 @@
     }
 
     function switchNav(sec) {
+      document.body.classList.remove('admin-wide-mode');
       document.querySelectorAll('.top-nav .nav-link').forEach(l => l.classList.remove('active'));
       const activeBtn = Array.from(document.querySelectorAll('.top-nav .nav-link')).find(b => b.getAttribute('onclick')?.includes(`'${sec}'`));
       if (activeBtn) activeBtn.classList.add('active');
@@ -1211,7 +1323,7 @@
       const targetSec = document.getElementById('sec-' + sec);
       if (targetSec) targetSec.classList.add('active');
 
-      if (sec === 'forum') { loadThreads(); }
+      if (sec === 'forum') { loadThreads(); loadCloudData(); }
       if (sec === 'updates') loadUpdates();
       if (sec === 'support') loadTickets();
       if (sec === 'profile') { switchProfileSub('overview'); }
@@ -1226,49 +1338,34 @@
       const targetSub = document.getElementById('prof-sub-' + sub);
       if (targetSub) targetSub.classList.add('active');
 
-      if (sub === 'cloud') { loadConfigs(); loadScripts(); }
-      if (sub === 'admin') { loadAdminUsers(); loadAdminInvites(); loadAdminPromos(); }
+      if (sub === 'admin') {
+        document.body.classList.add('admin-wide-mode');
+      } else {
+        document.body.classList.remove('admin-wide-mode');
+      }
     }
 
-    function selectColor(color, el) {
-      selectedColor = color;
-      document.querySelectorAll('.color-opt').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
+    function switchForumSub(sub) {
+      document.querySelectorAll('#sec-forum .profile-sub-tabs .profile-sub-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('#sec-forum .sub-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('forum-sub-' + sub).classList.add('active');
+
+      if (sub === 'cloud') { loadCloudData(); }
     }
 
-    async function previewAvatarLive(input) {
-      if (!input.files || input.files.length === 0) return;
-      const file = input.files[0];
-      if (file.size > 20 * 1024 * 1024) return triggerToast('файл больше 20MB');
-
-      shouldResetMedia = false;
-      stagedMediaType = file.type.startsWith('video') ? 'video' : 'image';
-      stagedMedia = await toBase64(file);
-
-      const box = document.getElementById('prof-avatar-box');
-      box.innerHTML = (stagedMediaType === 'video') 
-        ? `<video src="${stagedMedia}" autoplay loop muted playsinline></video>`
-        : `<img src="${stagedMedia}">`;
-      document.getElementById('upload-status-text').innerText = 'файл выбран ✓';
-    }
-
-    function resetAvatarToLetter() {
-      shouldResetMedia = true;
-      stagedMedia = null;
-      stagedMediaType = null;
-      document.getElementById('edit-avatar-file').value = '';
-      document.getElementById('upload-status-text').innerText = 'загрузить файл';
-      const box = document.getElementById('prof-avatar-box');
-      box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${selectedColor};">${(currentUser ? currentUser.username.charAt(0) : 'U').toUpperCase()}</div>`;
-    }
-
+    // Проверка Cloudflare (задержка 1.8с для реалистичной проверки соединения)
     window.addEventListener('DOMContentLoaded', async () => {
+      setTimeout(() => {
+        document.getElementById('cf-screen').classList.add('verified');
+      }, 1800);
+
       try { 
         const res = await fetch('/api/verify-ip'); 
         const d = await res.json();
         updateGlobalStatusBadge(d.build_status);
       } catch (e) {}
-      setTimeout(() => document.getElementById('ddos-screen').classList.add('verified'), 350);
 
       const token = localStorage.getItem('token');
       if (token) loadUserProfile();
@@ -1415,7 +1512,285 @@
       } catch (err) { triggerToast(err.message); }
     }
 
-    // Покупка и чекаут
+    // === ОБЛАКО ВНУТРИ ФОРУМА (МАРКЕТПЛЕЙС) ===
+    function switchCloudType(type) {
+      cloudType = type;
+      document.getElementById('cloud-tab-btn-cfg').classList.toggle('active', type === 'configs');
+      document.getElementById('cloud-tab-btn-lua').classList.toggle('active', type === 'scripts');
+
+      document.getElementById('cloud-cfg-upload-section').style.display = (type === 'configs') ? 'block' : 'none';
+      document.getElementById('cloud-lua-upload-section').style.display = (type === 'scripts') ? 'block' : 'none';
+
+      renderCloudItems();
+    }
+
+    function toggleCloudUploadBox() {
+      const el = document.getElementById('cloud-upload-box');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function loadCloudData() {
+      const token = localStorage.getItem('token');
+      try {
+        const [resCfg, resLua] = await Promise.all([
+          fetch('/api/configs', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/api/scripts', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        const dCfg = await resCfg.json();
+        const dLua = await resLua.json();
+
+        allCloudConfigs = dCfg.configs || [];
+        allCloudScripts = dLua.scripts || [];
+        renderCloudItems();
+      } catch (e) {}
+    }
+
+    function renderCloudItems() {
+      const c = document.getElementById('cloud-rendered-list');
+      c.innerHTML = '';
+      const filter = document.getElementById('cloud-filter-author').value;
+
+      if (cloudType === 'configs') {
+        let list = allCloudConfigs;
+        if (filter === 'my') {
+          list = list.filter(x => x.author.toLowerCase() === currentUser.username.toLowerCase());
+        }
+
+        if (list.length === 0) {
+          c.innerHTML = '<p class="text-muted" style="font-size:12px;">конфигов не найдено</p>';
+          return;
+        }
+
+        list.forEach(cfg => {
+          const div = document.createElement('div');
+          div.className = 'profile-card';
+          div.style.display = 'flex';
+          div.style.justifyContent = 'space-between';
+          div.style.alignItems = 'center';
+          div.style.padding = '12px 14px';
+          div.style.marginBottom = '8px';
+
+          const visBadge = cfg.is_public ? '<span class="ticket-badge">публичный</span>' : '<span class="status-badge status-testing">приватный</span>';
+          div.innerHTML = `
+            <div>
+              <div style="font-weight: 700; font-size: 13.5px;" class="mono">${cfg.name} ${visBadge}</div>
+              <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
+                автор: <span class="author-clickable" onclick="openUserProfileModal('${cfg.author}')">${cfg.author}</span> • код: <span class="copy-chip" onclick="navigator.clipboard.writeText('${cfg.id}'); triggerToast('код скопирован')">${cfg.id}</span>
+              </div>
+            </div>
+            <div>
+              <button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="downloadCfgFileLocally('${cfg.name}', '${encodeURIComponent(cfg.data)}')">скачать .cfg</button>
+              ${cfg.author.toLowerCase() === currentUser.username.toLowerCase() || currentUser.role === 'owner' ? `<button class="del-btn" onclick="apiDeleteCloudCfg('${cfg.id}')">[удалить]</button>` : ''}
+            </div>
+          `;
+          c.appendChild(div);
+        });
+      } else {
+        let list = allCloudScripts;
+        if (filter === 'my') {
+          list = list.filter(x => x.author.toLowerCase() === currentUser.username.toLowerCase());
+        }
+
+        if (list.length === 0) {
+          c.innerHTML = '<p class="text-muted" style="font-size:12px;">lua скриптов не найдено</p>';
+          return;
+        }
+
+        list.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'profile-card';
+          div.style.display = 'flex';
+          div.style.justifyContent = 'space-between';
+          div.style.alignItems = 'center';
+          div.style.padding = '12px 14px';
+          div.style.marginBottom = '8px';
+
+          const visBadge = s.is_public ? '<span class="ticket-badge">публичный</span>' : '<span class="status-badge status-testing">приватный</span>';
+          div.innerHTML = `
+            <div>
+              <div style="font-weight: 700; font-size: 13.5px;" class="mono">${s.title} ${visBadge}</div>
+              <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
+                автор: <span class="author-clickable" onclick="openUserProfileModal('${s.author}')">${s.author}</span> • статус: <span style="color:${s.enabled ? '#34d399' : '#f87171'}">${s.enabled ? 'активен' : 'выкл'}</span>
+              </div>
+            </div>
+            <div>
+              <button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="apiToggleCloudScript(${s.id})">${s.enabled ? 'выключить' : 'включить'}</button>
+              ${s.author.toLowerCase() === currentUser.username.toLowerCase() || currentUser.role === 'owner' ? `<button class="del-btn" onclick="apiDeleteCloudScript(${s.id})">[удалить]</button>` : ''}
+            </div>
+          `;
+          c.appendChild(div);
+        });
+      }
+    }
+
+    function previewCloudCfg(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        stagedCloudCfg = { name: file.name, data: e.target.result };
+        document.getElementById('cloud-cfg-file-status').innerText = `${file.name} ✓`;
+      };
+      reader.readAsText(file);
+    }
+
+    async function apiUploadCloudCfg() {
+      if (!stagedCloudCfg) return triggerToast('выберите .cfg файл');
+      const token = localStorage.getItem('token');
+      const is_public = document.getElementById('cloud-cfg-visibility').value === 'public';
+
+      try {
+        const res = await fetch('/api/configs/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ 
+            filename: stagedCloudCfg.name, 
+            file_data: stagedCloudCfg.data,
+            is_public: is_public 
+          })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        stagedCloudCfg = null;
+        document.getElementById('cloud-cfg-file-input').value = '';
+        document.getElementById('cloud-cfg-file-status').innerText = 'выбрать .cfg';
+        toggleCloudUploadBox();
+        loadCloudData();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function apiUploadCloudLua() {
+      const token = localStorage.getItem('token');
+      const title = document.getElementById('cloud-lua-title').value.trim();
+      const code = document.getElementById('cloud-lua-code').value.trim();
+      const is_public = document.getElementById('cloud-lua-visibility').value === 'public';
+
+      if (!title || !code) return triggerToast('заполните поля скрипта');
+
+      try {
+        const res = await fetch('/api/scripts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ title, code, is_public })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        document.getElementById('cloud-lua-title').value = '';
+        document.getElementById('cloud-lua-code').value = '';
+        toggleCloudUploadBox();
+        loadCloudData();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    function downloadCfgFileLocally(filename, encodedData) {
+      const raw = decodeURIComponent(encodedData);
+      const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    async function apiDeleteCloudCfg(id) {
+      if (!confirm('удалить конфиг?')) return;
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/configs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) loadCloudData();
+    }
+
+    async function apiToggleCloudScript(id) {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/scripts/${id}/toggle`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) loadCloudData();
+    }
+
+    async function apiDeleteCloudScript(id) {
+      if (!confirm('удалить скрипт?')) return;
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/scripts/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) loadCloudData();
+    }
+
+    // === 2FA ВЕРИФИКАЦИЯ ОВНЕРА ДЛЯ АДМИНКИ ===
+    async function verifyAdminPin() {
+      const pin = document.getElementById('admin-pin-input').value.trim();
+      const token = localStorage.getItem('token');
+      if (!pin) return triggerToast('введите пин-код');
+
+      try {
+        const res = await fetch('/api/admin/verify-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pin })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        document.getElementById('admin-pin-screen').style.display = 'none';
+        document.getElementById('admin-full-content').style.display = 'block';
+        triggerToast('2FA успешно подтвержден');
+
+        loadAdminUsers();
+        loadAdminPayments();
+        loadAdminPromos();
+        loadAdminInvites();
+      } catch (e) {
+        triggerToast(e.message);
+      }
+    }
+
+    // === ЛОГИ ПОКУПОК И ВЫДАЧА САБКИ В 1 КЛИК ===
+    async function loadAdminPayments() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/payments', { headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        const tbody = document.getElementById('admin-payments-table-body');
+        tbody.innerHTML = '';
+
+        if (!d.payments || d.payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align: center;">платежей нет</td></tr>';
+          return;
+        }
+
+        d.payments.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="mono" style="font-size:11px;">${p.id}</td>
+            <td><b>${p.username}</b> <span class="uid-tag">uid ${p.user_uid}</span></td>
+            <td>${p.amount} ₽</td>
+            <td style="color:#34d399;">+${p.plan_days} дн.</td>
+            <td class="mono" style="font-size:11px;">${p.promo}</td>
+            <td><span class="role-badge role-${p.status === 'успешно' ? 'tester' : 'admin'}">${p.status}</span></td>
+            <td><button class="btn-outline" style="padding: 2px 7px; font-size: 10px;" onclick="adminGrantPaymentSub('${p.id}')">выдать сабку</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {}
+    }
+
+    async function adminGrantPaymentSub(paymentId) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/payments/grant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ payment_id: paymentId })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        loadAdminPayments();
+        loadAdminUsers();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    // === ЧЕКАУТ ПОДПИСКИ ===
     function openCheckoutModal(days, price) {
       activeCheckoutPlan = { 
         days: days, 
@@ -1475,28 +1850,57 @@
 
     async function proceedPayment() {
       const token = localStorage.getItem('token');
-      if (activeCheckoutPlan.promoCode) {
-        try {
-          const res = await fetch('/api/promo/redeem', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ 
-              code: activeCheckoutPlan.promoCode, 
-              plan_days: activeCheckoutPlan.days 
-            })
-          });
-          const d = await res.json();
-          if (!res.ok) throw new Error(d.message);
+      try {
+        const res = await fetch('/api/payment/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ 
+            plan_days: activeCheckoutPlan.days,
+            amount: activeCheckoutPlan.finalPrice,
+            promo_code: activeCheckoutPlan.promoCode
+          })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
 
-          triggerToast(d.message);
-          closeCheckoutModal();
-          renderUser(d.user);
-          return;
-        } catch (e) {
-          return triggerToast(e.message);
-        }
+        triggerToast(d.message);
+        closeCheckoutModal();
+        renderUser(d.user);
+      } catch (e) {
+        triggerToast(e.message);
       }
-      triggerToast('платежный шлюз временно в тестовом режиме');
+    }
+
+    function selectColor(color, el) {
+      selectedColor = color;
+      document.querySelectorAll('.color-opt').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    async function previewAvatarLive(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      if (file.size > 20 * 1024 * 1024) return triggerToast('файл больше 20MB');
+
+      shouldResetMedia = false;
+      stagedMediaType = file.type.startsWith('video') ? 'video' : 'image';
+      stagedMedia = await toBase64(file);
+
+      const box = document.getElementById('prof-avatar-box');
+      box.innerHTML = (stagedMediaType === 'video') 
+        ? `<video src="${stagedMedia}" autoplay loop muted playsinline></video>`
+        : `<img src="${stagedMedia}">`;
+      document.getElementById('upload-status-text').innerText = 'файл выбран ✓';
+    }
+
+    function resetAvatarToLetter() {
+      shouldResetMedia = true;
+      stagedMedia = null;
+      stagedMediaType = null;
+      document.getElementById('edit-avatar-file').value = '';
+      document.getElementById('upload-status-text').innerText = 'загрузить файл';
+      const box = document.getElementById('prof-avatar-box');
+      box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${selectedColor};">${(currentUser ? currentUser.username.charAt(0) : 'U').toUpperCase()}</div>`;
     }
 
     function toBase64(file) {
@@ -1525,180 +1929,6 @@
       localStorage.removeItem('token');
       document.getElementById('dashboard-screen').style.display = 'none';
       document.getElementById('auth-screen').style.display = 'flex';
-    }
-
-    // === КОНФИГИ ФАЙЛОМ .CFG ===
-    function previewCfgFile(input) {
-      if (!input.files || input.files.length === 0) return;
-      const file = input.files[0];
-      stagedCfgFileName = file.name;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        stagedCfgFileData = e.target.result;
-        document.getElementById('cfg-file-status').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-      };
-      reader.readAsText(file);
-    }
-
-    async function apiUploadCfgFile() {
-      if (!stagedCfgFileName || !stagedCfgFileData) {
-        return triggerToast('сначала выберите .cfg файл');
-      }
-
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/configs/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ 
-            filename: stagedCfgFileName, 
-            file_data: stagedCfgFileData 
-          })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        triggerToast(d.message);
-        document.getElementById('cfg-file-input').value = '';
-        document.getElementById('cfg-file-status').innerText = 'выбрать .cfg файл';
-        stagedCfgFileName = null;
-        stagedCfgFileData = null;
-        loadConfigs();
-      } catch (e) {
-        triggerToast(e.message);
-      }
-    }
-
-    async function loadConfigs() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/configs', { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await res.json();
-        const c = document.getElementById('configs-list');
-        c.innerHTML = '';
-
-        if (!d.configs || d.configs.length === 0) {
-          c.innerHTML = '<p class="text-muted" style="font-size:12px;">нет сохраненных конфигов</p>';
-          return;
-        }
-
-        d.configs.forEach(cfg => {
-          const div = document.createElement('div');
-          div.className = 'profile-card';
-          div.style.display = 'flex';
-          div.style.justifyContent = 'space-between';
-          div.style.alignItems = 'center';
-          div.style.padding = '10px 12px';
-          div.style.marginBottom = '6px';
-          div.innerHTML = `
-            <div>
-              <div style="font-weight: 700; font-size: 13px;" class="mono">${cfg.name}</div>
-              <div class="text-muted" style="font-size: 10.5px;">код: <span class="copy-chip" onclick="navigator.clipboard.writeText('${cfg.id}'); triggerToast('код скопирован')">${cfg.id}</span></div>
-            </div>
-            <div>
-              <button class="btn-outline" style="padding: 2px 7px; font-size: 10.5px;" onclick="downloadCfgFileLocally('${cfg.name}', '${encodeURIComponent(cfg.data)}')">скачать .cfg</button>
-              <button class="del-btn" onclick="apiDeleteConfig('${cfg.id}')">[удалить]</button>
-            </div>
-          `;
-          c.appendChild(div);
-        });
-      } catch (e) {}
-    }
-
-    function downloadCfgFileLocally(filename, encodedData) {
-      const raw = decodeURIComponent(encodedData);
-      const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    }
-
-    async function apiDeleteConfig(id) {
-      if (!confirm('удалить конфиг?')) return;
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/configs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) loadConfigs();
-    }
-
-    // === LUA СКРИПТЫ ===
-    function toggleNewScriptForm() {
-      const el = document.getElementById('new-script-form');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
-    async function loadScripts() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/scripts', { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await res.json();
-        const c = document.getElementById('scripts-list');
-        c.innerHTML = '';
-
-        if (!d.scripts || d.scripts.length === 0) {
-          c.innerHTML = '<p class="text-muted" style="font-size:12px;">скриптов пока нет</p>';
-          return;
-        }
-
-        d.scripts.forEach(s => {
-          const div = document.createElement('div');
-          div.className = 'profile-card';
-          div.style.display = 'flex';
-          div.style.justifyContent = 'space-between';
-          div.style.alignItems = 'center';
-          div.style.padding = '10px 12px';
-          div.style.marginBottom = '6px';
-          div.innerHTML = `
-            <div>
-              <div style="font-weight: 700; font-size: 13px;" class="mono">${s.title}</div>
-              <div class="text-muted" style="font-size: 10.5px;">статус: <span style="color: ${s.enabled ? '#34d399' : '#f87171'}">${s.enabled ? 'активен' : 'выкл'}</span></div>
-            </div>
-            <div>
-              <button class="btn-outline" style="padding: 2px 7px; font-size: 10.5px;" onclick="apiToggleScript(${s.id})">${s.enabled ? 'выключить' : 'включить'}</button>
-              <button class="del-btn" onclick="apiDeleteScript(${s.id})">[удалить]</button>
-            </div>
-          `;
-          c.appendChild(div);
-        });
-      } catch (e) {}
-    }
-
-    async function apiSaveNewScript() {
-      const token = localStorage.getItem('token');
-      const title = document.getElementById('lua-title-input').value.trim();
-      const code = document.getElementById('lua-code-input').value.trim();
-
-      if (!title || !code) return triggerToast('заполните поля скрипта');
-
-      try {
-        const res = await fetch('/api/scripts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ title, code })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        triggerToast(d.message);
-        document.getElementById('lua-title-input').value = '';
-        document.getElementById('lua-code-input').value = '';
-        document.getElementById('new-script-form').style.display = 'none';
-        loadScripts();
-      } catch (e) { triggerToast(e.message); }
-    }
-
-    async function apiToggleScript(id) {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/scripts/${id}/toggle`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) loadScripts();
-    }
-
-    async function apiDeleteScript(id) {
-      if (!confirm('удалить скрипт?')) return;
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/scripts/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) loadScripts();
     }
 
     // === АДМИНКА ===
@@ -1767,7 +1997,7 @@
       tbody.innerHTML = '';
 
       if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align: center;">пусто</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align: center;">пусто</td></tr>';
         return;
       }
 
@@ -1786,7 +2016,9 @@
           <td style="font-weight: 600;">${u.username}</td>
           <td><span class="role-badge role-${u.role}">${u.role}</span></td>
           <td>${statusHtml}</td>
-          <td>${ipWarning}</td>
+          <td class="mono" style="font-size: 11px;">${u.web_ip}</td>
+          <td class="mono" style="font-size: 11px;">${ipWarning}</td>
+          <td>${u.hwid ? '<span style="color:#f87171;">занят</span>' : '<span style="color:#34d399;">чист</span>'}</td>
           <td><button class="btn-outline" style="padding: 2px 6px; font-size: 10px;" onclick="selectAdminUserToEdit('${u.username}')">выбрать</button></td>
         `;
         tbody.appendChild(tr);
@@ -2058,7 +2290,7 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // ФОРУМ (БЕЗ ОШИБОК ПУБЛИКАЦИИ)
+    // ФОРУМ
     async function loadThreads() {
       const res = await fetch('/api/forum/threads');
       const d = await res.json();
@@ -2189,7 +2421,7 @@
                 <span class="uid-tag">uid ${p.author_uid || 1}</span>
               </div>
             </div>
-            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
+            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id}, ${p.id})">[удалить]</button>` : ''}
           </div>
           <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${p.text}</div>
         `;
