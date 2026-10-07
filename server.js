@@ -17,7 +17,6 @@ if (!fs.existsSync(BUILDS_DIR)) {
   fs.mkdirSync(BUILDS_DIR, { recursive: true });
 }
 
-// Генератор инвайтов: JOY-<10 символов>-<15 символов>
 function generateInviteCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const genPart = (len) => {
@@ -35,7 +34,7 @@ function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = {
       next_uid: 1,
-      build_status: 'stable', // stable | testing | updating
+      build_status: 'stable',
       tg_bot_token: '',
       tg_chat_id: '',
       users: {},
@@ -296,7 +295,47 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
-// Активация промокода
+// ПРОВЕРКА И ПРИМЕНЕНИЕ ПРОМОКОДА (ДНИ + СКИДКА % + ЛИМИТЫ + ВРЕМЯ)
+app.post('/api/promo/validate', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
+
+  const code = (req.body.code || '').trim().toUpperCase();
+  const promo = db.promos[code];
+
+  if (!promo) return res.status(400).json({ message: 'промокод не существует' });
+
+  const now = Date.now();
+
+  // Проверка срока действия промокода
+  if (promo.expires_at && promo.expires_at < now) {
+    return res.status(400).json({ message: 'срок действия промокода истек' });
+  }
+
+  // Проверка лимита активаций (если max_uses > 0, то есть не бесконечный)
+  if (promo.max_uses > 0 && promo.used_count >= promo.max_uses) {
+    return res.status(400).json({ message: 'лимит использований промокода исчерпан' });
+  }
+
+  // Проверка, использовал ли уже этот юзер
+  if (promo.users_activated && promo.users_activated.includes(user.username)) {
+    return res.status(400).json({ message: 'вы уже использовали этот промокод' });
+  }
+
+  res.json({
+    valid: true,
+    code: promo.code,
+    days: promo.days || 0,
+    discount_percent: promo.discount_percent || 0
+  });
+});
+
+// Активация промокода (начисление дней / покупка)
 app.post('/api/promo/redeem', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -306,25 +345,34 @@ app.post('/api/promo/redeem', (req, res) => {
   const user = db.users[userKey];
   if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
 
-  const promoKey = (req.body.code || '').trim().toUpperCase();
-  const promo = db.promos[promoKey];
+  const code = (req.body.code || '').trim().toUpperCase();
+  const planDays = parseInt(req.body.plan_days) || 0; // если применяется при оформлении тарифа
 
-  if (!promo) return res.status(400).json({ message: 'промокод не существует' });
-  if (promo.used_count >= promo.max_uses) return res.status(400).json({ message: 'лимит активаций исчерпан' });
+  const promo = db.promos[code];
+  if (!promo) return res.status(400).json({ message: 'промокод не найден' });
+
+  const now = Date.now();
+  if (promo.expires_at && promo.expires_at < now) {
+    return res.status(400).json({ message: 'срок действия промокода истек' });
+  }
+  if (promo.max_uses > 0 && promo.used_count >= promo.max_uses) {
+    return res.status(400).json({ message: 'лимит использований исчерпан' });
+  }
   if (promo.users_activated && promo.users_activated.includes(user.username)) {
     return res.status(400).json({ message: 'вы уже активировали этот промокод' });
   }
 
-  const now = Date.now();
-  const daysMs = promo.days * 24 * 60 * 60 * 1000;
-  if (user.sub_until === -1) {
-    return res.status(400).json({ message: 'у вас уже активна бессрочная подписка' });
-  }
-
-  if (user.sub_until > now) {
-    user.sub_until += daysMs;
-  } else {
-    user.sub_until = now + daysMs;
+  // Начисляем дни (из промокода + из выбранного тарифа)
+  const totalDaysToAdd = (promo.days || 0) + planDays;
+  if (totalDaysToAdd > 0) {
+    if (user.sub_until !== -1) {
+      const daysMs = totalDaysToAdd * 24 * 60 * 60 * 1000;
+      if (user.sub_until > now) {
+        user.sub_until += daysMs;
+      } else {
+        user.sub_until = now + daysMs;
+      }
+    }
   }
 
   promo.used_count++;
@@ -332,7 +380,12 @@ app.post('/api/promo/redeem', (req, res) => {
   promo.users_activated.push(user.username);
 
   saveDB(db);
-  res.json({ message: `активировано +${promo.days} дн. подписки`, user });
+
+  let msg = 'промокод успешно активирован';
+  if (promo.days > 0) msg += ` (+${promo.days} дн.)`;
+  if (promo.discount_percent > 0) msg += ` (скидка ${promo.discount_percent}%)`;
+
+  res.json({ message: msg, user });
 });
 
 // Сброс HWID
@@ -372,7 +425,7 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// API авторизации лаунчера
+// Авторизация лаунчера
 app.post('/api/client/auth', (req, res) => {
   const { username, password, hwid } = req.body;
   if (!username || !password || !hwid) {
@@ -856,7 +909,6 @@ app.post('/api/admin/user/update', requireOwner, (req, res) => {
   res.json({ message: `аккаунт ${target.username} обновлен`, target });
 });
 
-// Статус софта (только stable, testing, updating)
 app.post('/api/admin/status', requireOwner, (req, res) => {
   const { status } = req.body;
   const db = loadDB();
@@ -866,15 +918,6 @@ app.post('/api/admin/status', requireOwner, (req, res) => {
     return res.json({ message: `статус изменен на ${status}`, build_status: status });
   }
   res.status(400).json({ message: 'неверный статус' });
-});
-
-app.post('/api/admin/telegram', requireOwner, (req, res) => {
-  const { token, chat_id } = req.body;
-  const db = loadDB();
-  db.tg_bot_token = (token || '').trim();
-  db.tg_chat_id = (chat_id || '').trim();
-  saveDB(db);
-  res.json({ message: 'настройки telegram сохранены' });
 });
 
 app.post('/api/admin/upload-payload', requireOwner, (req, res) => {
@@ -915,7 +958,6 @@ app.get('/api/admin/invites', requireOwner, (req, res) => {
   res.json({ invites: list });
 });
 
-// Создание инвайтов: JOY-<10 букв/цифр>-<15 букв/цифр>
 app.post('/api/admin/create-invite', requireOwner, (req, res) => {
   const db = loadDB();
   const code = generateInviteCode();
@@ -935,36 +977,51 @@ app.delete('/api/admin/invite/:code', requireOwner, (req, res) => {
   res.status(404).json({ message: 'не найден' });
 });
 
+// === ПРОМОКОДЫ В АДМИНКЕ (ДНИ + СКИДКА % + ЛИМИТЫ + ВРЕМЯ) ===
+app.get('/api/admin/promos', requireOwner, (req, res) => {
+  const db = loadDB();
+  const list = Object.values(db.promos || []);
+  list.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+  res.json({ promos: list });
+});
+
 app.post('/api/admin/promo/create', requireOwner, (req, res) => {
-  const { code, days, max_uses } = req.body;
-  if (!code || !days) return res.status(400).json({ message: 'заполните поля' });
+  const { code, days, discount_percent, max_uses, duration_hours } = req.body;
+  if (!code || (!days && !discount_percent)) {
+    return res.status(400).json({ message: 'укажите код и хотя бы один бонус (дни или скидку)' });
+  }
+
   const db = loadDB();
   const promoKey = code.trim().toUpperCase();
+
+  const hours = parseFloat(duration_hours);
+  const expiresAt = (hours && hours > 0) ? (Date.now() + Math.round(hours * 3600 * 1000)) : null;
+  const uses = parseInt(max_uses);
+
   db.promos[promoKey] = {
     code: promoKey,
-    days: parseInt(days),
-    max_uses: parseInt(max_uses) || 1,
+    days: parseInt(days) || 0,
+    discount_percent: Math.min(100, Math.max(0, parseInt(discount_percent) || 0)),
+    max_uses: (uses && uses > 0) ? uses : 0, // 0 = бесконечно
     used_count: 0,
-    users_activated: []
+    expires_at: expiresAt,
+    users_activated: [],
+    created_at: Date.now()
   };
+
   saveDB(db);
-  res.json({ message: 'промокод создан' });
+  res.json({ message: `промокод ${promoKey} успешно создан`, promo: db.promos[promoKey] });
 });
 
-app.get('/api/admin/tickets', requireOwner, (req, res) => {
+app.delete('/api/admin/promo/:code', requireOwner, (req, res) => {
   const db = loadDB();
-  res.json({ tickets: db.tickets || [] });
-});
-
-app.post('/api/admin/ticket/reply', requireOwner, (req, res) => {
-  const { ticket_id, reply_text } = req.body;
-  const db = loadDB();
-  const ticket = (db.tickets || []).find(t => t.id === ticket_id);
-  if (!ticket) return res.status(404).json({ message: 'не найден' });
-  ticket.reply = reply_text.trim();
-  ticket.status = 'ответ получен';
-  saveDB(db);
-  res.json({ message: 'ответ отправлен', ticket });
+  const code = req.params.code.trim().toUpperCase();
+  if (db.promos[code]) {
+    delete db.promos[code];
+    saveDB(db);
+    return res.json({ message: 'промокод удален' });
+  }
+  res.status(404).json({ message: 'промокод не найден' });
 });
 
 app.get('/api/updates', (req, res) => {
@@ -987,7 +1044,6 @@ app.post('/api/updates', requireOwner, (req, res) => {
   saveDB(db);
 
   sendTelegramNotification(`🚀 <b>Новое обновление JOY</b>\n\n<b>${item.title}</b>\n\n${item.content}`);
-
   res.json({ update: item });
 });
 
