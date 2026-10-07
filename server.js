@@ -18,8 +18,8 @@ if (!fs.existsSync(BUILDS_DIR)) {
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = {
-      next_uid: 1, // первый зарегистрировавшийся забирает честный UID 1
-      users: {},   // никаких фейковых аккаунтов dev:dev
+      next_uid: 1,
+      users: {},
       invites: {
         'JOY-DEV-KEY1': { used: false, used_by: null },
         'JOY-TEST-2026': { used: false, used_by: null },
@@ -57,11 +57,10 @@ function saveDB(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.error('Ошибка базы:', e);
+    console.error('Ошибка записи в базу:', e);
   }
 }
 
-// Защита от спама по IP
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -95,7 +94,6 @@ function checkCooldown(username, action, cooldownSec) {
 
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 
-// Регистрация с присвоением UID
 app.post('/api/register', (req, res) => {
   const { invite_code, username, password } = req.body;
   if (!invite_code || !username || !password) {
@@ -115,7 +113,6 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'логин занят' });
   }
 
-  // Присваиваем следующий порядковый UID
   const assignedUid = db.next_uid || 1;
   db.next_uid = assignedUid + 1;
 
@@ -144,7 +141,6 @@ app.post('/api/register', (req, res) => {
   });
 });
 
-// Вход
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   const db = loadDB();
@@ -160,7 +156,6 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Профиль
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'сессия истекла' });
@@ -173,7 +168,6 @@ app.get('/api/profile', (req, res) => {
   res.json({ user });
 });
 
-// Обновление профиля
 app.post('/api/profile/update', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'не авторизован' });
@@ -200,7 +194,6 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
-// Сброс HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -214,7 +207,6 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
-// Выдача лоадера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) {
@@ -233,7 +225,6 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// ФОРУМ
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => ({
@@ -328,7 +319,7 @@ app.delete('/api/forum/threads/:id', (req, res) => {
   const idx = db.threads.findIndex(t => t.id === tId);
   if (idx === -1) return res.status(404).json({ message: 'тема не найдена' });
 
-  if (db.threads[idx].author !== user.username && user.username !== 'dev') {
+  if (db.threads[idx].author !== user.username && user.uid !== 1) {
     return res.status(403).json({ message: 'нет прав на удаление' });
   }
 
@@ -353,7 +344,7 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   const pIdx = (thread.posts || []).findIndex(p => p.id === pId);
   if (pIdx === -1) return res.status(404).json({ message: 'сообщение не найдено' });
 
-  if (thread.posts[pIdx].author !== user.username && user.username !== 'dev') {
+  if (thread.posts[pIdx].author !== user.username && user.uid !== 1) {
     return res.status(403).json({ message: 'нет прав на удаление' });
   }
 
@@ -362,7 +353,6 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   res.json({ message: 'сообщение удалено' });
 });
 
-// ТИКЕТЫ
 app.post('/api/support/ticket', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
@@ -393,7 +383,7 @@ app.post('/api/support/ticket', (req, res) => {
   db.tickets.unshift(ticket);
   saveDB(db);
 
-  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username} [UID: ${user.uid}]: ${ticket.subject}`);
+  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username} [uid ${user.uid}]: ${ticket.subject}`);
   res.json({ message: 'обращение отправлено', ticket });
 });
 
@@ -415,7 +405,7 @@ app.delete('/api/support/ticket/:id', (req, res) => {
   const db = loadDB();
   const tId = req.params.id;
 
-  const idx = (db.tickets || []).findIndex(t => t.id === tId && t.userKey === userKey);
+  const idx = (db.tickets || []).findIndex(t => t.id === tId && (t.userKey === userKey || userKey === 'dev'));
   if (idx === -1) return res.status(404).json({ message: 'тикет не найден' });
 
   db.tickets.splice(idx, 1);
