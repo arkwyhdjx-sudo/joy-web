@@ -35,11 +35,7 @@
       -ms-overflow-style: none;
     }
 
-    *::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      height: 0;
-    }
+    *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
     body {
       background-color: var(--bg-dark);
@@ -97,7 +93,7 @@
       opacity: 0.6;
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       background: rgba(14, 13, 22, 0.8);
       border: 1px solid var(--border);
@@ -110,13 +106,8 @@
       transition: all 0.25s var(--ease);
     }
 
-    textarea { 
-      resize: none !important; 
-      min-height: 80px; 
-      overflow-y: auto;
-    }
-
-    input:focus, textarea:focus { 
+    textarea { resize: none !important; min-height: 80px; overflow-y: auto; }
+    input:focus, textarea:focus, select:focus { 
       border-color: var(--accent-bright); 
       background: var(--surface-elevated); 
       box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12); 
@@ -143,7 +134,6 @@
       box-shadow: 0 4px 15px var(--accent-glow);
     }
     .btn-violet:hover { transform: translateY(-1.5px); box-shadow: 0 6px 22px rgba(168, 85, 247, 0.4); }
-    .btn-violet:active { transform: translateY(0); }
 
     .btn-outline {
       background: transparent;
@@ -151,7 +141,6 @@
       color: var(--text-main);
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
-    .btn-outline:active { transform: translateY(0); }
 
     .uid-tag {
       color: var(--text-muted);
@@ -160,6 +149,21 @@
       font-weight: 500;
       user-select: none;
     }
+
+    /* Роли */
+    .role-badge {
+      font-size: 10px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .role-owner { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .role-admin { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .role-tester { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .role-user { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
 
     #ddos-screen {
       position: fixed;
@@ -286,14 +290,8 @@
       animation: tabSlide 0.25s var(--ease);
     }
 
-    /* Админ ссылка в шапке */
-    .admin-nav-link {
-      color: #f87171 !important;
-    }
-    .admin-nav-link.active::after {
-      background: #f87171 !important;
-      box-shadow: 0 0 10px #f87171 !important;
-    }
+    .admin-nav-link { color: #f87171 !important; font-weight: 600; }
+    .admin-nav-link.active::after { background: #f87171 !important; box-shadow: 0 0 10px #f87171 !important; }
 
     .switch-pill {
       display: inline-flex;
@@ -314,11 +312,7 @@
       cursor: pointer;
       transition: all 0.2s var(--ease);
     }
-    .switch-btn.active {
-      background: var(--surface-elevated);
-      color: #fff;
-      font-weight: 600;
-    }
+    .switch-btn.active { background: var(--surface-elevated); color: #fff; font-weight: 600; }
 
     .main-content {
       flex-grow: 1;
@@ -359,19 +353,9 @@
       border: 1px solid var(--border-light);
       flex-shrink: 0;
       background: #09080e;
-      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
-    }
-    .profile-avatar-wrapper:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 16px var(--accent-glow);
     }
 
-    .profile-avatar-wrapper img, .profile-avatar-wrapper video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
+    .profile-avatar-wrapper img, .profile-avatar-wrapper video { width: 100%; height: 100%; object-fit: cover; }
     .profile-avatar-letter {
       width: 100%;
       height: 100%;
@@ -382,7 +366,6 @@
       font-size: 22px;
       font-weight: 700;
       color: #fff;
-      transition: background 0.3s ease;
     }
 
     .profile-sub-tabs {
@@ -427,28 +410,12 @@
       font-size: 12px;
       font-weight: 500;
       transition: all 0.2s var(--ease);
-      user-select: none;
     }
-    .custom-file-upload:hover {
-      border-color: var(--accent);
-      background: rgba(139, 92, 246, 0.08);
-      color: #fff;
-    }
-    .custom-file-upload input[type="file"] {
-      display: none;
-    }
+    .custom-file-upload input[type="file"] { display: none; }
 
     .color-picker { display: flex; gap: 8px; margin-top: 6px; }
-    .color-opt {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform 0.2s var(--ease), border-color 0.2s;
-    }
-    .color-opt:hover { transform: scale(1.15); }
-    .color-opt.active { border-color: #fff; transform: scale(1.1); }
+    .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+    .color-opt.active { border-color: #fff; }
 
     .pricing-grid {
       display: grid;
@@ -464,31 +431,11 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: all 0.25s var(--ease);
-    }
-    .pricing-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px -10px var(--accent-glow);
-    }
-    .pricing-card.featured {
-      border-color: var(--accent);
     }
 
-    .plan-period {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .plan-price {
-      font-family: var(--font-mono);
-      font-size: 24px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 20px;
-    }
+    .pricing-card.featured { border-color: var(--accent); }
+    .plan-period { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .plan-price { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 20px; }
 
     .forum-item {
       background: var(--surface);
@@ -502,11 +449,7 @@
       cursor: pointer;
       transition: all 0.2s var(--ease);
     }
-    .forum-item:hover {
-      border-color: var(--accent);
-      background: var(--surface-elevated);
-      transform: translateX(3px);
-    }
+    .forum-item:hover { border-color: var(--accent); background: var(--surface-elevated); transform: translateX(3px); }
 
     .ticket-badge {
       padding: 2px 6px;
@@ -517,17 +460,8 @@
       color: #c4b5fd;
     }
 
-    .del-btn {
-      color: #f87171;
-      font-size: 11px;
-      background: none;
-      border: none;
-      padding: 0;
-      margin-left: 10px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .del-btn:hover { text-decoration: underline; opacity: 0.8; }
+    .del-btn { color: #f87171; font-size: 11px; background: none; border: none; cursor: pointer; margin-left: 8px; }
+    .del-btn:hover { text-decoration: underline; }
 
     .mini-avatar {
       width: 32px;
@@ -543,25 +477,10 @@
       background: #09080e;
     }
     .mini-avatar img, .mini-avatar video { width: 100%; height: 100%; object-fit: cover; }
-    .mini-avatar-letter {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 13px;
-      color: #fff;
-    }
+    .mini-avatar-letter { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: #fff; }
 
-    .author-clickable {
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .author-clickable:hover {
-      color: var(--accent-bright);
-    }
+    .author-clickable { cursor: pointer; }
+    .author-clickable:hover { color: var(--accent-bright); }
 
     #user-modal {
       position: fixed;
@@ -584,22 +503,9 @@
       border-radius: var(--radius);
       padding: 24px;
       position: relative;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-      animation: popIn 0.25s var(--ease);
     }
 
-    .modal-close-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px;
-    }
-    .modal-close-btn:hover { color: #fff; }
+    .modal-close-btn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
 
     #toast {
       position: fixed;
@@ -639,7 +545,7 @@
 
   <div id="ddos-screen"><div class="loader"></div></div>
 
-  <!-- ВХОД / РЕГИСТРАЦИЯ -->
+  <!-- АВТОРИЗАЦИЯ -->
   <div id="auth-screen">
     <div class="auth-box">
       <div class="brand-title">JOY.CC</div>
@@ -682,7 +588,7 @@
     </div>
   </div>
 
-  <!-- ОСНОВНАЯ ПАНЕЛЬ -->
+  <!-- ДЭШБОРД -->
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
@@ -693,7 +599,7 @@
           <button class="nav-link" data-i18n="nav_forum" onclick="switchNav('forum')">форум</button>
           <button class="nav-link" data-i18n="nav_support" onclick="switchNav('support')">поддержка</button>
           <button class="nav-link" data-i18n="nav_sub" onclick="switchNav('sub')">подписка</button>
-          <!-- Скрытая вкладка админки (только UID 1) -->
+          <!-- Кнопка админки видна только UID 1 / OWNER -->
           <button class="nav-link admin-nav-link" id="nav-btn-admin" style="display: none;" onclick="switchNav('admin')">админ</button>
         </nav>
       </div>
@@ -715,7 +621,6 @@
       <!-- ПРОФИЛЬ -->
       <section id="sec-profile" class="section active">
         <div class="profile-card">
-          <!-- Шапка профиля -->
           <div id="profile-main-header" class="profile-header-banner">
             <div id="prof-avatar-box" class="profile-avatar-wrapper">
               <div class="profile-avatar-letter" id="prof-avatar-fallback">U</div>
@@ -723,6 +628,7 @@
             <div>
               <div style="display: flex; align-items: baseline; gap: 8px;">
                 <h2 id="prof-username" style="font-size: 17px; font-weight: 700;">user</h2>
+                <span class="role-badge role-user" id="prof-role">user</span>
                 <span class="uid-tag" id="prof-uid">uid 1</span>
               </div>
               <div id="prof-invite" class="mono text-muted" style="font-size: 11px; margin-top: 2px;">JOY-XXXX-XXXX</div>
@@ -735,8 +641,11 @@
             <button class="profile-sub-tab" data-i18n="subtab_security" onclick="switchProfileSub('security')">безопасность (hwid)</button>
           </div>
 
-          <!-- Обзор -->
           <div id="sub-overview" class="sub-view active">
+            <div class="form-group">
+              <label>статус подписки</label>
+              <p id="prof-sub-status" style="font-weight: 600; color: var(--text-muted); margin-bottom: 14px;">не активна</p>
+            </div>
             <div class="form-group">
               <label data-i18n="lbl_bio">о себе</label>
               <p id="prof-bio-text" class="text-muted" style="margin-bottom: 18px; font-size: 13px;">—</p>
@@ -744,7 +653,6 @@
             <button class="btn-violet" onclick="downloadClient()" data-i18n="btn_download_client">скачать лаунчер (joyloader.exe)</button>
           </div>
 
-          <!-- Настройки -->
           <div id="sub-settings" class="sub-view">
             <div class="form-group">
               <label data-i18n="lbl_avatar_file">аватарка (gif / mp4 / png / jpg)</label>
@@ -779,7 +687,6 @@
             <button class="btn-violet" onclick="apiSaveProfile()" data-i18n="btn_save_profile">сохранить изменения</button>
           </div>
 
-          <!-- HWID -->
           <div id="sub-security" class="sub-view">
             <p class="text-muted" style="margin-bottom: 8px;" data-i18n="lbl_hwid_desc">привязка оборудования лаунчера:</p>
             <div id="prof-hwid" class="mono text-muted" style="background: #09080e; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); margin-bottom: 14px;">
@@ -790,48 +697,104 @@
         </div>
       </section>
 
-      <!-- ПАТЧНОУТЫ (ОБНОВЛЕНИЯ) -->
+      <!-- ПАТЧНОУТЫ -->
       <section id="sec-updates" class="section">
         <h2 style="font-size: 17px; margin-bottom: 14px;" data-i18n="nav_updates">обновления</h2>
         <div id="updates-list"></div>
       </section>
 
-      <!-- ПРИВАТНАЯ АДМИН-ПАНЕЛЬ (ТОЛЬКО UID 1) -->
+      <!-- АДМИН-ПАНЕЛЬ (ТОЛЬКО ДЛЯ OWNER) -->
       <section id="sec-admin" class="section">
-        <h2 style="font-size: 17px; margin-bottom: 14px; color: #f87171;">панель разработчика (uid 1)</h2>
-        
-        <!-- Загрузка бинарника JoyLoader.exe -->
+        <h2 style="font-size: 17px; margin-bottom: 14px; color: #f87171;">панель управления проектом (owner)</h2>
+
+        <!-- УПРАВЛЕНИЕ ЛЮБЫМ АККАУНТОМ -->
         <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">залить новый билд лаунчера (.exe)</label>
-          <p class="text-muted" style="margin-bottom: 12px; font-size: 12px;">выберите скомпилированный exe файл. он заменит бинарник на сервере и будет выдаваться всем пользователям при клике на «скачать лаунчер».</p>
+          <label style="color: #f87171; margin-bottom: 8px;">управление аккаунтами пользователей</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" id="admin-search-user" placeholder="логин пользователя...">
+            <button class="btn-violet" onclick="adminFindUser()">найти</button>
+          </div>
+
+          <div id="admin-user-editor" style="display: none; background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span id="admin-target-name" style="font-weight: 700; font-size: 15px;">user</span>
+              <span id="admin-target-status" class="mono text-muted" style="font-size: 11px;"></span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <div>
+                <label>роль</label>
+                <select id="admin-target-role">
+                  <option value="owner">owner</option>
+                  <option value="admin">admin</option>
+                  <option value="tester">tester</option>
+                  <option value="user">user</option>
+                </select>
+              </div>
+              <div>
+                <label>uid (любое число)</label>
+                <input type="number" id="admin-target-uid">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>подписка</label>
+              <select id="admin-target-sub">
+                <option value="none">без изменений</option>
+                <option value="30d">+30 дней</option>
+                <option value="90d">+90 дней</option>
+                <option value="lifetime">lifetime (навсегда)</option>
+                <option value="reset">снять подписку (обнулить)</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 14px;">
+              <button class="btn-violet" onclick="adminSaveUser()">применить изменения</button>
+              <button class="btn-outline" onclick="adminResetUserHWID()">сбросить hwid юзеру</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ПРОМОКОДЫ -->
+        <div class="profile-card">
+          <label style="color: #f87171; margin-bottom: 8px;">создание промокодов</label>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+            <input type="text" id="promo-code-input" placeholder="промокод (напр. JOY2026)">
+            <input type="number" id="promo-days-input" placeholder="дней сабки (напр. 30)">
+            <input type="number" id="promo-uses-input" placeholder="кол-во активаций (напр. 5)">
+          </div>
+          <button class="btn-violet" onclick="adminCreatePromo()">создать промокод</button>
+        </div>
+
+        <!-- ЗАГРУЗКА БИЛДА -->
+        <div class="profile-card">
+          <label style="color: #f87171; margin-bottom: 8px;">залить билд лаунчера (.exe)</label>
           <div style="display: flex; gap: 10px; align-items: center;">
             <label class="custom-file-upload">
               <span id="admin-build-status">выбрать joyloader.exe</span>
               <input type="file" id="admin-file-build" accept=".exe" onchange="document.getElementById('admin-build-status').innerText = this.files[0].name">
             </label>
-            <button class="btn-violet" onclick="adminUploadBuild()">загрузить билд на сервер</button>
+            <button class="btn-violet" onclick="adminUploadBuild()">залить на сервер</button>
           </div>
         </div>
 
-        <!-- Публикация нового патчноута -->
+        <!-- ПАТЧНОУТ -->
         <div class="profile-card">
           <label style="color: #f87171; margin-bottom: 8px;">опубликовать обновление</label>
           <div class="form-group">
-            <label>версия / название патча</label>
-            <input type="text" id="admin-upd-title" maxlength="90" placeholder="билд 1.0.3 / добавлены чамсы и фикс инжекта">
+            <input type="text" id="admin-upd-title" placeholder="название патча...">
           </div>
           <div class="form-group">
-            <label>список изменений (changelog)</label>
-            <textarea id="admin-upd-content" maxlength="1200" placeholder="- добавлен хук&#10;- переработана анимация поиска&#10;- ускорена загрузка"></textarea>
+            <textarea id="admin-upd-content" placeholder="список изменений..."></textarea>
           </div>
-          <button class="btn-violet" onclick="adminPostUpdate()">опубликовать патч</button>
+          <button class="btn-violet" onclick="adminPostUpdate()">опубликовать</button>
         </div>
 
-        <!-- Генератор инвайтов -->
+        <!-- ИНВАЙТЫ -->
         <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">генератор инвайт-кодов</label>
-          <button class="btn-outline" onclick="adminGenerateInvite()">сгенерировать новый инвайт</button>
-          <div id="admin-last-invite" class="mono" style="margin-top: 12px; color: var(--accent-bright); font-size: 13px;"></div>
+          <label style="color: #f87171; margin-bottom: 8px;">генератор инвайтов</label>
+          <button class="btn-outline" onclick="adminGenerateInvite()">сгенерировать инвайт</button>
+          <div id="admin-last-invite" class="mono" style="margin-top: 8px; color: var(--accent-bright);"></div>
         </div>
       </section>
 
@@ -906,33 +869,40 @@
         </div>
       </section>
 
-      <!-- ПОДПИСКИ -->
+      <!-- ПОДПИСКИ И ПРОМОКОДЫ -->
       <section id="sec-sub" class="section">
         <h2 style="font-size: 17px; margin-bottom: 14px;" data-i18n="title_plans">тарифные периоды</h2>
-        <div class="pricing-grid">
+        <div class="pricing-grid" style="margin-bottom: 20px;">
           <div class="pricing-card">
-            <div class="plan-period" data-i18n="plan_1m">1 месяц</div>
+            <div class="plan-period">1 месяц</div>
             <div class="plan-price" id="price-1m">900 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled>недоступно</button>
           </div>
-
           <div class="pricing-card featured">
-            <div class="plan-period" style="color: var(--accent-bright);" data-i18n="plan_3m">3 месяца</div>
+            <div class="plan-period" style="color: var(--accent-bright);">3 месяца</div>
             <div class="plan-price" id="price-3m">2 300 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled>недоступно</button>
           </div>
-
           <div class="pricing-card">
-            <div class="plan-period" data-i18n="plan_12m">12 месяцев</div>
+            <div class="plan-period">12 месяцев</div>
             <div class="plan-price" id="price-12m">8 000 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled>недоступно</button>
+          </div>
+        </div>
+
+        <!-- Активация промокода -->
+        <div class="profile-card">
+          <label>активация промокода</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <input type="text" id="promo-input-code" placeholder="введите промокод...">
+            <button class="btn-violet" onclick="apiRedeemPromo()">активировать</button>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ПО КЛИКУ НА АВТОРА -->
+  <!-- МОДАЛКА ПРОФИЛЯ -->
   <div id="user-modal" onclick="closeUserModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close-btn" onclick="closeUserModal()">✕</button>
@@ -941,6 +911,7 @@
         <div>
           <div style="display: flex; align-items: baseline; gap: 6px;">
             <h3 id="modal-username" style="font-size: 16px; font-weight: 700;">user</h3>
+            <span class="role-badge role-user" id="modal-role">user</span>
             <span class="uid-tag" id="modal-uid">uid 0</span>
           </div>
           <div id="modal-date" class="text-muted" style="font-size: 11px; margin-top: 2px;">на проекте с ...</div>
@@ -970,65 +941,16 @@
       USD: { '1m': '$10', '3m': '$25', '12m': '$85' }
     };
 
-    const i18n = {
-      ru: {
-        tab_login: 'вход', tab_reg: 'регистрация', lbl_username: 'логин', lbl_pass: 'пароль',
-        lbl_invite: 'инвайт-код', lbl_pass_confirm: 'подтверждение', btn_login: 'войти',
-        btn_register: 'зарегистрироваться', nav_profile: 'профиль', nav_updates: 'обновления',
-        nav_forum: 'форум', nav_support: 'поддержка', nav_sub: 'подписка', btn_logout: 'выйти',
-        subtab_overview: 'обзор', subtab_settings: 'настройки', subtab_security: 'безопасность (hwid)',
-        lbl_bio: 'о себе', btn_download_client: 'скачать лаунчер (joyloader.exe)',
-        lbl_avatar_file: 'аватарка (файл gif / mp4 / png / jpg)', btn_reset_avatar: 'сбросить до буквы',
-        lbl_avatar_color: 'цвет буквы (если файл не выбран)', lbl_edit_bio: 'биография',
-        btn_save_profile: 'сохранить изменения', lbl_hwid_desc: 'привязка оборудования лаунчера:',
-        btn_reset_hwid: 'сбросить hwid', title_plans: 'тарифные периоды',
-        plan_1m: '1 месяц', plan_3m: '3 месяца', plan_12m: '12 месяцев',
-        status_disabled: 'недоступно', btn_new_thread: 'новая тема',
-        lbl_thread_title: 'заголовок', lbl_thread_msg: 'сообщение', btn_publish: 'опубликовать',
-        btn_back_threads: '← к темам', lbl_reply: 'ответить', btn_send_reply: 'отправить',
-        title_support: 'анонимная поддержка',
-        desc_support: 'задайте вопрос разработчикам. тикет доступен только вам, а ответ поступит в список ниже.',
-        lbl_ticket_subj: 'тема', lbl_ticket_msg: 'сообщение', btn_send_ticket: 'отправить',
-        title_my_tickets: 'ваши обращения'
-      },
-      en: {
-        tab_login: 'login', tab_reg: 'register', lbl_username: 'username', lbl_pass: 'password',
-        lbl_invite: 'invite code', lbl_pass_confirm: 'confirm password', btn_login: 'sign in',
-        btn_register: 'sign up', nav_profile: 'profile', nav_updates: 'updates',
-        nav_forum: 'forum', nav_support: 'support', nav_sub: 'subscription', btn_logout: 'logout',
-        subtab_overview: 'overview', subtab_settings: 'settings', subtab_security: 'security (hwid)',
-        lbl_bio: 'about', btn_download_client: 'download client (joyloader.exe)',
-        lbl_avatar_file: 'avatar file (gif / mp4 / png / jpg)', btn_reset_avatar: 'reset to letter',
-        lbl_avatar_color: 'letter color (if no file)', lbl_edit_bio: 'biography',
-        btn_save_profile: 'save changes', lbl_hwid_desc: 'launcher hardware binding:',
-        btn_reset_hwid: 'reset hwid', title_plans: 'subscription plans',
-        plan_1m: '1 month', plan_3m: '3 months', plan_12m: '12 months',
-        status_disabled: 'unavailable', btn_new_thread: 'new thread',
-        lbl_thread_title: 'title', lbl_thread_msg: 'message', btn_publish: 'publish',
-        btn_back_threads: '← to threads', lbl_reply: 'reply', btn_send_reply: 'send',
-        title_support: 'anonymous support',
-        desc_support: 'contact developers securely. tickets are visible only to you.',
-        lbl_ticket_subj: 'subject', lbl_ticket_msg: 'message', btn_send_ticket: 'send ticket',
-        title_my_tickets: 'your tickets'
-      }
-    };
-
     function setLang(lang) {
       currentLang = lang;
       document.getElementById('btn-lang-ru').classList.toggle('active', lang === 'ru');
       document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
-
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (i18n[lang][key]) el.innerText = i18n[lang][key];
-      });
     }
 
     function setCurrency(curr) {
       currentCurrency = curr;
       document.getElementById('btn-curr-rub').classList.toggle('active', curr === 'RUB');
       document.getElementById('btn-curr-usd').classList.toggle('active', curr === 'USD');
-
       document.getElementById('price-1m').innerText = prices[curr]['1m'];
       document.getElementById('price-3m').innerText = prices[curr]['3m'];
       document.getElementById('price-12m').innerText = prices[curr]['12m'];
@@ -1087,20 +1009,12 @@
       selectedColor = color;
       document.querySelectorAll('.color-opt').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
-      
-      if (!stagedMedia && (!currentUser || !currentUser.avatar_media)) {
-        const fallback = document.getElementById('prof-avatar-fallback');
-        if (fallback) fallback.style.background = color;
-      }
     }
 
     async function previewAvatarLive(input) {
       if (!input.files || input.files.length === 0) return;
       const file = input.files[0];
-
-      if (file.size > 20 * 1024 * 1024) {
-        return triggerToast('файл больше 20MB');
-      }
+      if (file.size > 20 * 1024 * 1024) return triggerToast('файл больше 20MB');
 
       shouldResetMedia = false;
       stagedMediaType = file.type.startsWith('video') ? 'video' : 'image';
@@ -1108,23 +1022,12 @@
 
       const box = document.getElementById('prof-avatar-box');
       box.innerHTML = '';
-
       if (stagedMediaType === 'video') {
-        const vid = document.createElement('video');
-        vid.src = stagedMedia;
-        vid.autoplay = true;
-        vid.loop = true;
-        vid.muted = true;
-        vid.playsInline = true;
-        box.appendChild(vid);
+        box.innerHTML = `<video src="${stagedMedia}" autoplay loop muted playsinline></video>`;
       } else {
-        const img = document.createElement('img');
-        img.src = stagedMedia;
-        box.appendChild(img);
+        box.innerHTML = `<img src="${stagedMedia}">`;
       }
-
       document.getElementById('upload-status-text').innerText = 'файл выбран ✓';
-      triggerToast('превью обновлено, нажмите «сохранить»');
     }
 
     function resetAvatarToLetter() {
@@ -1135,15 +1038,7 @@
       document.getElementById('upload-status-text').innerText = 'загрузить файл';
 
       const box = document.getElementById('prof-avatar-box');
-      box.innerHTML = '';
-      const div = document.createElement('div');
-      div.className = 'profile-avatar-letter';
-      div.id = 'prof-avatar-fallback';
-      div.innerText = (currentUser ? currentUser.username.charAt(0) : 'U').toUpperCase();
-      div.style.background = selectedColor;
-      box.appendChild(div);
-
-      triggerToast('сброшено до буквы. нажмите «сохранить»');
+      box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${selectedColor};">${(currentUser ? currentUser.username.charAt(0) : 'U').toUpperCase()}</div>`;
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1218,32 +1113,36 @@
       document.getElementById('edit-bio').value = u.bio || '';
       updateBioCounter();
 
-      // Открываем вкладку «Админ» ТОЛЬКО если это UID 1
+      // Отображение роли
+      const rEl = document.getElementById('prof-role');
+      rEl.className = `role-badge role-${u.role || 'user'}`;
+      rEl.innerText = u.role || 'user';
+
+      // Статус подписки
+      const subEl = document.getElementById('prof-sub-status');
+      if (u.sub_until === -1) {
+        subEl.innerText = 'активна (lifetime навсегда)';
+        subEl.style.color = '#34d399';
+      } else if (u.sub_until > Date.now()) {
+        subEl.innerText = `активна (до ${new Date(u.sub_until).toLocaleDateString()})`;
+        subEl.style.color = '#34d399';
+      } else {
+        subEl.innerText = 'не активна';
+        subEl.style.color = 'var(--text-muted)';
+      }
+
+      // Открытие кнопки «админ» только для owner
       const navAdmin = document.getElementById('nav-btn-admin');
-      if (navAdmin) navAdmin.style.display = (u.uid === 1) ? 'inline-block' : 'none';
+      if (navAdmin) navAdmin.style.display = (u.uid === 1 || u.role === 'owner') ? 'inline-block' : 'none';
 
       const box = document.getElementById('prof-avatar-box');
       box.innerHTML = '';
-
       if (u.avatar_media && u.avatar_type === 'video') {
-        const vid = document.createElement('video');
-        vid.src = u.avatar_media;
-        vid.autoplay = true;
-        vid.loop = true;
-        vid.muted = true;
-        vid.playsInline = true;
-        box.appendChild(vid);
+        box.innerHTML = `<video src="${u.avatar_media}" autoplay loop muted playsinline></video>`;
       } else if (u.avatar_media && u.avatar_type === 'image') {
-        const img = document.createElement('img');
-        img.src = u.avatar_media;
-        box.appendChild(img);
+        box.innerHTML = `<img src="${u.avatar_media}">`;
       } else {
-        const div = document.createElement('div');
-        div.className = 'profile-avatar-letter';
-        div.id = 'prof-avatar-fallback';
-        div.innerText = u.username.charAt(0).toUpperCase();
-        div.style.background = u.avatar_color || '#8b5cf6';
-        box.appendChild(div);
+        box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${u.avatar_color || '#8b5cf6'}">${u.username.charAt(0).toUpperCase()}</div>`;
       }
 
       document.getElementById('prof-hwid').innerText = u.hwid || 'ожидает запуска клиента';
@@ -1253,12 +1152,7 @@
       const token = localStorage.getItem('token');
       const bio = document.getElementById('edit-bio').value;
 
-      let payload = {
-        bio: bio,
-        avatar_color: selectedColor,
-        reset_media: shouldResetMedia
-      };
-
+      let payload = { bio: bio, avatar_color: selectedColor, reset_media: shouldResetMedia };
       if (stagedMedia && !shouldResetMedia) {
         payload.avatar_media = stagedMedia;
         payload.avatar_type = stagedMediaType;
@@ -1279,7 +1173,27 @@
         document.getElementById('upload-status-text').innerText = 'загрузить файл';
         renderUser(d.user);
         triggerToast('профиль сохранен');
-      } catch (err) { triggerToast(err.message || 'ошибка сохранения'); }
+      } catch (err) { triggerToast(err.message); }
+    }
+
+    async function apiRedeemPromo() {
+      const code = document.getElementById('promo-input-code').value.trim();
+      const token = localStorage.getItem('token');
+      if (!code) return triggerToast('введите код');
+
+      try {
+        const res = await fetch('/api/promo/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ code })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        document.getElementById('promo-input-code').value = '';
+        renderUser(d.user);
+      } catch (err) { triggerToast(err.message); }
     }
 
     function toBase64(file) {
@@ -1293,10 +1207,7 @@
 
     async function apiResetHWID() {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/hwid/reset', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/hwid/reset', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
       const d = await res.json();
       triggerToast(d.message);
     }
@@ -1312,56 +1223,126 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // === ДЕЙСТВИЯ В АДМИН-ПАНЕЛИ ===
+    // === ФУНКЦИОНАЛ АДМИН-ПАНЕЛИ ===
+    let loadedAdminTarget = null;
 
-    // Загрузка файла лаунчера на сервер
-    async function adminUploadBuild() {
-      const fileInput = document.getElementById('admin-file-build');
-      if (!fileInput.files || fileInput.files.length === 0) {
-        return triggerToast('выберите .exe файл');
-      }
-
-      const file = fileInput.files[0];
+    async function adminFindUser() {
+      const uName = document.getElementById('admin-search-user').value.trim();
       const token = localStorage.getItem('token');
-      triggerToast('загрузка бинарника...');
-
-      const base64 = await toBase64(file);
+      if (!uName) return triggerToast('введите логин');
 
       try {
-        const res = await fetch('/api/admin/upload-build', {
+        const res = await fetch(`/api/admin/user/${encodeURIComponent(uName)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        loadedAdminTarget = d.target;
+        document.getElementById('admin-user-editor').style.display = 'block';
+        document.getElementById('admin-target-name').innerText = d.target.username;
+        document.getElementById('admin-target-role').value = d.target.role || 'user';
+        document.getElementById('admin-target-uid').value = d.target.uid;
+
+        const subText = d.target.sub_until === -1 ? 'lifetime' : (d.target.sub_until > Date.now() ? `до ${new Date(d.target.sub_until).toLocaleDateString()}` : 'нет сабки');
+        document.getElementById('admin-target-status').innerText = `сабка: ${subText} | hwid: ${d.target.hwid ? 'привязан' : 'свободен'}`;
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function adminSaveUser() {
+      if (!loadedAdminTarget) return;
+      const token = localStorage.getItem('token');
+      const role = document.getElementById('admin-target-role').value;
+      const uid = document.getElementById('admin-target-uid').value;
+      const sub_mode = document.getElementById('admin-target-sub').value;
+
+      try {
+        const res = await fetch('/api/admin/user/update', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ file_base64: base64 })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            username: loadedAdminTarget.username,
+            role,
+            uid,
+            sub_mode
+          })
         });
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
 
         triggerToast(d.message);
-        fileInput.value = '';
-        document.getElementById('admin-build-status').innerText = 'выбрать joyloader.exe';
-      } catch (e) {
-        triggerToast(e.message || 'ошибка загрузки');
-      }
+        adminFindUser();
+      } catch (e) { triggerToast(e.message); }
     }
 
-    // Публикация обновления из админки
+    async function adminResetUserHWID() {
+      if (!loadedAdminTarget) return;
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/user/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ username: loadedAdminTarget.username, reset_hwid: true })
+        });
+        const d = await res.json();
+        triggerToast('hwid пользователя сброшен');
+        adminFindUser();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function adminCreatePromo() {
+      const token = localStorage.getItem('token');
+      const code = document.getElementById('promo-code-input').value.trim();
+      const days = document.getElementById('promo-days-input').value;
+      const max_uses = document.getElementById('promo-uses-input').value;
+
+      if (!code || !days) return triggerToast('заполните код и дни');
+
+      try {
+        const res = await fetch('/api/admin/promo/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ code, days, max_uses })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        document.getElementById('promo-code-input').value = '';
+        document.getElementById('promo-days-input').value = '';
+        document.getElementById('promo-uses-input').value = '';
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function adminUploadBuild() {
+      const fileInput = document.getElementById('admin-file-build');
+      if (!fileInput.files || fileInput.files.length === 0) return triggerToast('выберите exe файл');
+
+      const token = localStorage.getItem('token');
+      triggerToast('загрузка бинарника...');
+      const base64 = await toBase64(fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/admin/upload-build', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ file_base64: base64 })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+        triggerToast(d.message);
+      } catch (e) { triggerToast(e.message); }
+    }
+
     async function adminPostUpdate() {
       const token = localStorage.getItem('token');
       const title = document.getElementById('admin-upd-title').value.trim();
       const content = document.getElementById('admin-upd-content').value.trim();
 
-      if (!title || !content) return triggerToast('заполните все поля');
-
       try {
         const res = await fetch('/api/updates', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ title, content })
         });
         const d = await res.json();
@@ -1373,7 +1354,6 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // Генерация инвайта из админки
     async function adminGenerateInvite() {
       const token = localStorage.getItem('token');
       try {
@@ -1382,14 +1362,12 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
         document.getElementById('admin-last-invite').innerText = `создан ключ: ${d.invite}`;
-        triggerToast('инвайт сгенерирован');
+        triggerToast('инвайт готов');
       } catch (e) { triggerToast(e.message); }
     }
 
-    // === ПУБЛИЧНЫЙ ПРОФИЛЬ ПО КЛИКУ ===
+    // === ПУБЛИЧНЫЙ ПРОФИЛЬ МОДАЛКА ===
     async function openUserProfileModal(username) {
       try {
         const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
@@ -1399,41 +1377,26 @@
         const u = d.user;
         document.getElementById('modal-username').innerText = u.username;
         document.getElementById('modal-uid').innerText = `uid ${u.uid}`;
+        document.getElementById('modal-role').innerText = u.role || 'user';
+        document.getElementById('modal-role').className = `role-badge role-${u.role || 'user'}`;
         document.getElementById('modal-date').innerText = `на проекте с ${new Date(u.created_at).toLocaleDateString()}`;
         document.getElementById('modal-bio').innerText = u.bio || 'пользователь ничего о себе не написал.';
 
         const box = document.getElementById('modal-avatar-box');
         box.innerHTML = '';
-
         if (u.avatar_media && u.avatar_type === 'video') {
-          const vid = document.createElement('video');
-          vid.src = u.avatar_media;
-          vid.autoplay = true;
-          vid.loop = true;
-          vid.muted = true;
-          vid.playsInline = true;
-          box.appendChild(vid);
+          box.innerHTML = `<video src="${u.avatar_media}" autoplay loop muted playsinline></video>`;
         } else if (u.avatar_media && u.avatar_type === 'image') {
-          const img = document.createElement('img');
-          img.src = u.avatar_media;
-          box.appendChild(img);
+          box.innerHTML = `<img src="${u.avatar_media}">`;
         } else {
-          const div = document.createElement('div');
-          div.className = 'profile-avatar-letter';
-          div.innerText = u.username.charAt(0).toUpperCase();
-          div.style.background = u.avatar_color || '#8b5cf6';
-          box.appendChild(div);
+          box.innerHTML = `<div class="profile-avatar-letter" style="background:${u.avatar_color || '#8b5cf6'}">${u.username.charAt(0).toUpperCase()}</div>`;
         }
 
         document.getElementById('user-modal').classList.add('active');
-      } catch (e) {
-        triggerToast('не удалось загрузить профиль');
-      }
+      } catch (e) { triggerToast('не удалось загрузить профиль'); }
     }
 
-    function closeUserModal(e) {
-      document.getElementById('user-modal').classList.remove('active');
-    }
+    function closeUserModal() { document.getElementById('user-modal').classList.remove('active'); }
 
     function renderMiniAvatar(author, avatarMedia, avatarType, avatarColor) {
       if (avatarMedia && avatarType === 'video') {
@@ -1441,7 +1404,7 @@
       } else if (avatarMedia && avatarType === 'image') {
         return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><img src="${avatarMedia}"></div>`;
       } else {
-        return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><div class="mini-avatar-letter" style="background: ${avatarColor || '#8b5cf6'};">${author.charAt(0).toUpperCase()}</div></div>`;
+        return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><div class="mini-avatar-letter" style="background:${avatarColor || '#8b5cf6'}">${author.charAt(0).toUpperCase()}</div></div>`;
       }
     }
 
@@ -1460,16 +1423,16 @@
       d.updates.forEach(u => {
         const div = document.createElement('div');
         div.className = 'profile-card';
-        const isDev = currentUser && currentUser.uid === 1;
+        const isOwner = currentUser && (currentUser.uid === 1 || currentUser.role === 'owner');
         div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
             <div>
               <div style="font-weight: 700; font-size: 15px; color: var(--accent-bright);">${u.title}</div>
-              <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
+              <div class="text-muted" style="font-size: 11px;">
                 <span class="author-clickable" onclick="openUserProfileModal('${u.author}')">${u.author}</span> • ${new Date(u.created_at).toLocaleDateString()}
               </div>
             </div>
-            ${isDev ? `<button class="del-btn" onclick="apiDeleteUpdate(${u.id})">[удалить]</button>` : ''}
+            ${isOwner ? `<button class="del-btn" onclick="apiDeleteUpdate(${u.id})">[удалить]</button>` : ''}
           </div>
           <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.6;">${u.content}</div>
         `;
@@ -1480,10 +1443,7 @@
     async function apiDeleteUpdate(id) {
       if (!confirm('удалить этот патч?')) return;
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/updates/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/updates/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) loadUpdates();
     }
 
@@ -1504,7 +1464,8 @@
               <div style="font-weight: 600; font-size: 14px;">${t.title}</div>
               <div class="text-muted" style="font-size: 11.5px; margin-top: 2px;">
                 <span class="author-clickable" onclick="event.stopPropagation(); openUserProfileModal('${t.author}')">${t.author}</span>
-                <span class="uid-tag" style="margin: 0 4px;">uid ${t.author_uid || 1}</span>
+                <span class="role-badge role-${t.author_role || 'user'}" style="margin: 0 4px;">${t.author_role || 'user'}</span>
+                <span class="uid-tag">uid ${t.author_uid || 1}</span>
                 • ${new Date(t.created_at).toLocaleDateString()}
               </div>
             </div>
@@ -1552,7 +1513,7 @@
 
       const actBox = document.getElementById('thread-actions');
       actBox.innerHTML = '';
-      if (currentUser && (currentUser.username === d.thread.author || currentUser.uid === 1)) {
+      if (currentUser && (currentUser.username === d.thread.author || currentUser.role === 'owner')) {
         actBox.innerHTML = `<button class="del-btn" onclick="apiDeleteThread(${d.thread.id})">[удалить тему]</button>`;
       }
 
@@ -1563,8 +1524,8 @@
             ${renderMiniAvatar(d.thread.author, d.thread.author_avatar_media, d.thread.author_avatar_type, d.thread.author_avatar_color)}
             <div>
               <span class="author-clickable" style="font-weight: 600;" onclick="openUserProfileModal('${d.thread.author}')">${d.thread.author}</span>
-              <span class="uid-tag" style="margin-left: 4px;">uid ${d.thread.author_uid || 1}</span>
-              <span class="text-muted" style="font-size: 11px; margin-left: 6px;">(автор)</span>
+              <span class="role-badge role-${d.thread.author_role || 'user'}" style="margin: 0 4px;">${d.thread.author_role || 'user'}</span>
+              <span class="uid-tag">uid ${d.thread.author_uid || 1}</span>
             </div>
           </div>
           <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${d.thread.content}</div>
@@ -1574,14 +1535,15 @@
       (d.thread.posts || []).forEach(p => {
         const postDiv = document.createElement('div');
         postDiv.className = 'profile-card';
-        const canDel = currentUser && (currentUser.username === p.author || currentUser.uid === 1);
+        const canDel = currentUser && (currentUser.username === p.author || currentUser.role === 'owner');
         postDiv.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               ${renderMiniAvatar(p.author, p.author_avatar_media, p.author_avatar_type, p.author_avatar_color)}
               <div>
                 <span class="author-clickable" style="font-weight: 600;" onclick="openUserProfileModal('${p.author}')">${p.author}</span>
-                <span class="uid-tag" style="margin-left: 4px;">uid ${p.author_uid || 1}</span>
+                <span class="role-badge role-${p.author_role || 'user'}" style="margin: 0 4px;">${p.author_role || 'user'}</span>
+                <span class="uid-tag">uid ${p.author_uid || 1}</span>
               </div>
             </div>
             ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
@@ -1620,19 +1582,13 @@
     async function apiDeleteThread(id) {
       if (!confirm('удалить эту тему?')) return;
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/forum/threads/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/forum/threads/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) backToThreads();
     }
 
     async function apiDeletePost(tId, pId) {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/forum/threads/${tId}/post/${pId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/forum/threads/${tId}/post/${pId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) openThread(tId);
     }
 
@@ -1653,7 +1609,6 @@
 
         document.getElementById('ticket-subj').value = '';
         document.getElementById('ticket-msg').value = '';
-        document.getElementById('ticket-msg-counter').innerText = '0 / 600';
         triggerToast('обращение отправлено');
         loadTickets();
       } catch (e) { triggerToast(e.message); }
@@ -1661,9 +1616,7 @@
 
     async function loadTickets() {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/support/my-tickets', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/support/my-tickets', { headers: { 'Authorization': `Bearer ${token}` } });
       const d = await res.json();
       const c = document.getElementById('tickets-list');
       c.innerHTML = '';
@@ -1697,10 +1650,7 @@
 
     async function apiDeleteTicket(id) {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/support/ticket/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/support/ticket/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) loadTickets();
     }
   </script>
