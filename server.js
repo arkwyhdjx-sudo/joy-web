@@ -113,21 +113,77 @@ function sendTelegramNotification(text) {
   req.end();
 }
 
-const ipRequests = new Map();
-app.use('/api', (req, res, next) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-  const now = Date.now();
-  let record = ipRequests.get(ip);
+// ============================================================
+// НАСТОЯЩИЙ ДВИЖОК CLOUDFLARE PROOF-OF-WORK ЗАЩИТЫ ОТ DDOS
+// ============================================================
+const POW_SECRET = 'joy_shield_kernel_key_2026_' + Math.random().toString(36);
+const verifiedIps = new Map(); // IP -> timestamp окончания действия пропуска
 
-  if (!record || now - record.firstRequest > 10000) {
-    record = { count: 1, firstRequest: now };
-    ipRequests.set(ip, record);
-  } else {
-    record.count++;
-    if (record.count > 70) {
-      return res.status(429).json({ message: 'лимит запросов превышен' });
-    }
+// Эндпоинт генерации реальной математической задачи
+app.get('/api/challenge', (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const ts = Date.now();
+  const difficulty = 4; // 4 шестнадцатеричных нуля (~65,000 хэшей, около 1.5 сек на CPU)
+  const salt = crypto.randomBytes(8).toString('hex');
+  const payload = `${ip}:${ts}:${difficulty}:${salt}`;
+  const sig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
+
+  res.json({ payload, sig, difficulty });
+});
+
+// Проверка решения браузера
+app.post('/api/challenge/verify', (req, res) => {
+  const { payload, sig, nonce } = req.body;
+  if (!payload || !sig || nonce === undefined) {
+    return res.status(400).json({ error: 'invalid_params' });
   }
+
+  // 1. Проверяем подпись задачи
+  const expectedSig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
+  if (sig !== expectedSig) {
+    return res.status(403).json({ error: 'invalid_signature' });
+  }
+
+  // 2. Проверяем время (задача не должна быть старше 90 секунд)
+  const parts = payload.split(':');
+  const ip = parts[0];
+  const ts = parseInt(parts[1]);
+  const difficulty = parseInt(parts[2]);
+
+  if (Date.now() - ts > 90000 || Date.now() - ts < 0) {
+    return res.status(403).json({ error: 'challenge_expired' });
+  }
+
+  // 3. Проверяем хэш решения
+  const calculatedHash = crypto.createHash('sha256').update(`${payload}:${nonce}`).digest('hex');
+  const targetPrefix = '0'.repeat(difficulty);
+
+  if (!calculatedHash.startsWith(targetPrefix)) {
+    return res.status(403).json({ error: 'proof_of_work_failed' });
+  }
+
+  // Проверка пройдена успешно — выдаем пропуск на 24 часа для этого IP
+  verifiedIps.set(ip, Date.now() + (24 * 3600 * 1000));
+  res.json({ status: 'verified', message: 'DDoS защита пройдена успешно' });
+});
+
+// Защитный шлюз: блокирует любые API запросы ботов, если задача не решена
+app.use('/api', (req, res, next) => {
+  // Исключения: сам вызов проверки и авторизация клиента
+  if (req.path === '/challenge' || req.path === '/challenge/verify' || req.path.startsWith('/client/')) {
+    return next();
+  }
+
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const expiresAt = verifiedIps.get(ip);
+
+  if (!expiresAt || expiresAt < Date.now()) {
+    return res.status(403).json({ 
+      error: 'shield_challenge_required', 
+      message: 'доступ заблокирован: необходимо пройти верификацию браузера' 
+    });
+  }
+
   next();
 });
 
@@ -152,7 +208,7 @@ app.get('/api/verify-ip', (req, res) => {
   res.json({ status: 'ok', build_status: db.build_status });
 });
 
-// Проверка и установка персонального PIN-кода 2FA
+// Установка личного PIN-кода 2FA
 app.post('/api/user/set-pin', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -169,7 +225,7 @@ app.post('/api/user/set-pin', (req, res) => {
 
   user.security_pin = pin.trim();
   saveDB(db);
-  res.json({ message: 'пин-код безопасности успешно установлен' });
+  res.json({ message: 'персональный 2fa пин-код сохранен' });
 });
 
 app.post('/api/user/verify-pin', (req, res) => {
@@ -183,7 +239,7 @@ app.post('/api/user/verify-pin', (req, res) => {
 
   const { pin } = req.body;
   if (!user.security_pin) {
-    return res.json({ status: 'success', message: 'пин не задан (доступ открыт)' });
+    return res.json({ status: 'success', message: 'пин не задан' });
   }
 
   if (user.security_pin === pin.trim()) {
@@ -450,6 +506,7 @@ app.get('/api/admin/payments', requireOwner, (req, res) => {
   res.json({ payments: db.payments || [] });
 });
 
+// HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -464,6 +521,7 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
+// Скачивание лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
@@ -485,7 +543,7 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// Лаунчер Auth
+// API лаунчера
 app.post('/api/client/auth', (req, res) => {
   const { username, password, hwid } = req.body;
   if (!username || !password || !hwid) {
@@ -609,7 +667,7 @@ app.delete('/api/configs/:id', (req, res) => {
   res.json({ message: 'конфиг удален' });
 });
 
-// Lua скрипты
+// Скрипты
 app.get('/api/scripts', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -704,7 +762,6 @@ app.post('/api/support/ticket', (req, res) => {
   saveDB(db);
 
   sendTelegramNotification(`🚨 <b>Новый тикет поддержки JOY</b>\n\n<b>От:</b> ${user.username} [UID: ${user.uid}]\n<b>Тема:</b> ${ticket.subject}\n<b>Сообщение:</b> ${ticket.message}`);
-
   res.json({ message: 'обращение отправлено', ticket });
 });
 
@@ -919,7 +976,7 @@ app.post('/api/admin/self-lifetime', requireOwner, (req, res) => {
   res.json({ message: 'вам выдана lifetime сабка и роль owner', user });
 });
 
-// СПИСОК ЮЗЕРОВ (СКРЫВАЕМ IP ДЛЯ ОВНЕРА)
+// СПИСОК ЮЗЕРОВ: ТВОЙ IP НАВСЕГДА СКРЫТ
 app.get('/api/admin/users', requireOwner, (req, res) => {
   const db = loadDB();
   const list = Object.values(db.users).map(u => {
