@@ -239,7 +239,7 @@
       color: #fff;
     }
 
-    /* ЭКРАН CLOUDFLARE DDOS */
+    /* РЕАЛЬНЫЙ ЭКРАН CLOUDFLARE POW DDOS SHIELD */
     #cf-screen {
       position: fixed;
       inset: 0;
@@ -281,8 +281,8 @@
     @keyframes pulseGlow { 0% { box-shadow: 0 0 10px var(--accent-glow); } 100% { box-shadow: 0 0 24px var(--accent); } }
 
     .cf-spinner {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       border: 2px solid transparent;
       border-top-color: var(--accent-bright);
       border-radius: 50%;
@@ -328,7 +328,6 @@
       user-select: none;
     }
 
-    /* АНИМАЦИЯ ПЕЧАТИ joy -> getjoy.vip */
     .brand-title-nav {
       font-family: var(--font-main);
       font-weight: 800;
@@ -436,7 +435,6 @@
     .section { display: none; }
     .section.active { display: block; animation: tabFade 0.3s var(--ease); }
 
-    /* ПРОЗРАЧНЫЕ СТЕКЛЯННЫЕ КАРТОЧКИ (БЕЗ ВОНЮЧИХ ГЛУХИХ ФОНОВ) */
     .profile-card {
       background: var(--surface-glass);
       backdrop-filter: blur(20px);
@@ -563,7 +561,6 @@
       font-size: 12px;
     }
 
-    /* Тарифы */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -617,7 +614,6 @@
     }
     .quiet-logout-btn:hover { color: #f87171; text-decoration: underline; }
 
-    /* Форум */
     .forum-item {
       background: var(--surface-glass);
       backdrop-filter: blur(14px);
@@ -764,7 +760,7 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <!-- CLOUDFLARE SHIELD -->
+  <!-- РЕАЛЬНЫЙ CLOUDFLARE POW DDOS SHIELD -->
   <div id="cf-screen">
     <div class="cf-box">
       <div class="cf-shield-icon">
@@ -773,11 +769,11 @@
         </svg>
       </div>
       <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">getjoy.vip</h3>
-      <p class="text-muted" style="font-size: 12.5px; margin-bottom: 16px;">
-        проверка безопасности подключения перед входом на платформу...
+      <p class="text-muted" style="font-size: 12.5px; margin-bottom: 14px;">
+        криптографическая проверка браузера и ddos-фильтрация...
       </p>
-      <div style="font-size: 12px; color: #c4b5fd;">
-        <span class="cf-spinner"></span> верификация браузера и ddos-фильтрация
+      <div id="cf-status-label" style="font-size: 12px; color: #c4b5fd;">
+        <span class="cf-spinner"></span> получение задачи proof-of-work...
       </div>
     </div>
   </div>
@@ -830,7 +826,6 @@
     <header class="top-nav">
       <div class="nav-left">
         <div class="brand-group">
-          <!-- Typewriter эффект: плавно печатается getjoy.vip при наведении -->
           <span class="brand-title-nav" id="brand-logo" onmouseenter="startTypewriter(true)" onmouseleave="startTypewriter(false)">joy</span>
           <span id="nav-build-status" class="status-badge status-stable">stable</span>
         </div>
@@ -877,7 +872,7 @@
         </div>
       </section>
 
-      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО МАРКЕТПЛЕЙС) -->
+      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО ВНУТРИ) -->
       <section id="sec-forum" class="section">
         <div class="profile-card">
           <div class="profile-sub-tabs">
@@ -893,7 +888,7 @@
                 <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="toggleNewThread()">новая тема</button>
               </div>
 
-              <!-- Форма создания темы с кастомным селектором -->
+              <!-- Форма создания темы -->
               <div id="new-thread-form" style="display: none; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
                 <div class="form-group">
                   <label>тег темы</label>
@@ -943,7 +938,7 @@
             </div>
           </div>
 
-          <!-- Облако (маркетплейс) с кастомными селекторами -->
+          <!-- Облако (маркетплейс) -->
           <div id="forum-sub-cloud" class="sub-view">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <div style="display: flex; gap: 8px; align-items: center;">
@@ -952,7 +947,6 @@
                   <button class="profile-sub-tab" id="cloud-tab-btn-lua" onclick="switchCloudType('scripts')">lua скрипты</button>
                 </div>
                 
-                <!-- Кастомный фильтр "все / только мои" -->
                 <div class="c-select-wrapper" id="c-cloud-author-filter" style="width: 140px;">
                   <div class="c-select-trigger" onclick="toggleCustomDropdown('c-cloud-author-filter')">
                     <span class="c-select-val">все авторы</span>
@@ -967,7 +961,7 @@
               <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="toggleCloudUploadBox()">+ загрузить</button>
             </div>
 
-            <!-- Загрузка в облако с кастомным дропдауном приватности -->
+            <!-- Загрузка в облако -->
             <div id="cloud-upload-box" style="display: none; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
               <div id="cloud-cfg-upload-section">
                 <label style="margin-bottom: 6px;">загрузить .cfg файл</label>
@@ -1020,7 +1014,7 @@
         </div>
       </section>
 
-      <!-- 3. АККАУНТ (ОБЗОР, ПОДПИСКА, НАСТРОЙКИ С 2FA ПИНОМ, АДМИНКА) -->
+      <!-- 3. АККАУНТ -->
       <section id="sec-profile" class="section">
         <div class="profile-card">
           <div id="profile-main-header" class="profile-header-banner">
@@ -1085,7 +1079,7 @@
             </div>
           </div>
 
-          <!-- Настройки + Установка личного 2FA PIN -->
+          <!-- Настройки с личным 2FA -->
           <div id="prof-sub-settings" class="sub-view">
             <div class="form-group">
               <label>аватарка (gif / mp4 / png / jpg)</label>
@@ -1114,12 +1108,11 @@
               <textarea id="edit-bio" maxlength="250" placeholder="о себе..."></textarea>
             </div>
 
-            <!-- БЛОК ПЕРСОНАЛЬНОГО 2FA PIN-КОДА -->
             <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
               <label style="margin-bottom: 4px;">персональный 2fa пин-код</label>
-              <p class="text-muted" style="font-size: 11.5px; margin-bottom: 8px;">установите 4–8 значный защитный пин для защиты важных действий и входа в админку.</p>
+              <p class="text-muted" style="font-size: 11.5px; margin-bottom: 8px;">установите собственный пин (4-8 цифр) для защиты аккаунта и панели.</p>
               <div style="display: flex; gap: 8px; max-width: 320px;">
-                <input type="password" id="user-pin-input" maxlength="8" class="mono" placeholder="введите новый пин...">
+                <input type="password" id="user-pin-input" maxlength="8" class="mono" placeholder="новый пин...">
                 <button class="btn-outline" style="font-size: 11px; padding: 7px 12px;" onclick="apiSaveUserPin()">сохранить пин</button>
               </div>
             </div>
@@ -1130,12 +1123,11 @@
             </div>
           </div>
 
-          <!-- Админка овнера (на весь экран, разблокируется персональным пином) -->
+          <!-- Админка овнера (на весь экран) -->
           <div id="prof-sub-admin" class="sub-view">
-            <!-- Экран проверки персонального PIN -->
             <div id="admin-pin-screen" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-accent); padding: 24px; border-radius: var(--radius); text-align: center; max-width: 360px; margin: 20px auto;">
               <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">2fa подтверждение</h3>
-              <p class="text-muted" style="font-size: 12px; margin-bottom: 14px;">введите ваш персональный пин-код для входа в панель</p>
+              <p class="text-muted" style="font-size: 12px; margin-bottom: 14px;">введите ваш персональный пин-код для разблокировки</p>
               <input type="password" id="admin-pin-input" maxlength="8" class="mono" placeholder="••••" style="text-align: center; font-size: 18px; letter-spacing: 6px; margin-bottom: 12px;">
               <button class="btn-violet" style="width: 100%;" onclick="verifyAdminPin()">разблокировать</button>
             </div>
@@ -1162,7 +1154,7 @@
                 </div>
               </div>
 
-              <!-- Пользователи (твой IP защищен и скрыт) -->
+              <!-- Пользователи (твой IP скрыт) -->
               <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">пользователи</label>
@@ -1203,7 +1195,7 @@
                     </div>
                   </div>
                   <div class="form-group" style="margin-bottom: 8px;">
-                    <label>сабка (дней или lifetime)</label>
+                    <label>сабка</label>
                     <input type="text" id="admin-target-sub" placeholder="30d / 90d / lifetime / reset">
                   </div>
                   <div style="display: flex; gap: 8px;">
@@ -1422,7 +1414,7 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // Обработка клика вне кастомных селекторов
+    // Кастомные селекторы
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.c-select-wrapper')) {
         document.querySelectorAll('.c-select-wrapper').forEach(w => w.classList.remove('open'));
@@ -1505,7 +1497,220 @@
       if (sub === 'cloud') { loadCloudData(); }
     }
 
-    // Сохранение личного 2FA PIN пользователем
+    // =======================================================
+    // НАСТОЯЩИЙ PROOF-OF-WORK КЛИЕНТСКИЙ РЕШАТЕЛЬ ЗАДАЧИ
+    // =======================================================
+    async function solveRealPoWChallenge() {
+      const label = document.getElementById('cf-status-label');
+      try {
+        // 1. Получаем задачу от сервера
+        const res = await fetch('/api/challenge');
+        const { payload, sig, difficulty } = await res.json();
+
+        label.innerHTML = `<span class="cf-spinner"></span> вычисление криптографического PoW вызова...`;
+
+        // 2. Реальное вычисление SHA-256 через Web Crypto API браузера
+        const encoder = new TextEncoder();
+        const targetPrefix = '0'.repeat(difficulty);
+        let nonce = 0;
+        let solved = false;
+
+        while (!solved) {
+          const testString = `${payload}:${nonce}`;
+          const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(testString));
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (hashHex.startsWith(targetPrefix)) {
+            solved = true;
+            break;
+          }
+          nonce++;
+          // Уступаем поток каждые 800 итераций, чтобы UI плавно крутился
+          if (nonce % 800 === 0) {
+            await new Promise(r => setTimeout(r, 0));
+          }
+        }
+
+        label.innerHTML = `<span class="cf-spinner"></span> проверка решения сервером...`;
+
+        // 3. Отправляем найденный nonce серверу для проверки
+        const verifyRes = await fetch('/api/challenge/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload, sig, nonce })
+        });
+        const vData = await verifyRes.json();
+
+        if (vData.status === 'verified') {
+          // Успешно пройдено! Плавное скрытие экрана
+          document.getElementById('cf-screen').classList.add('verified');
+        } else {
+          label.innerText = 'ошибка решения задачи, повтор...';
+          setTimeout(solveRealPoWChallenge, 1000);
+        }
+      } catch (e) {
+        // Если ошибка связи - пробуем еще раз
+        setTimeout(solveRealPoWChallenge, 1000);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Запускаем реальный вызов защиты
+      solveRealPoWChallenge();
+
+      try { 
+        const res = await fetch('/api/verify-ip'); 
+        const d = await res.json();
+        updateGlobalStatusBadge(d.build_status);
+      } catch (e) {}
+
+      const token = localStorage.getItem('token');
+      if (token) loadUserProfile();
+    });
+
+    function updateGlobalStatusBadge(status) {
+      const b = document.getElementById('nav-build-status');
+      if (!b) return;
+      b.className = `status-badge status-${status || 'stable'}`;
+      b.innerText = status || 'stable';
+    }
+
+    async function apiLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        localStorage.setItem('token', d.token);
+        updateGlobalStatusBadge(d.build_status);
+        renderUser(d.user);
+      } catch (err) { triggerToast(err.message); }
+    }
+
+    async function apiRegister(e) {
+      e.preventDefault();
+      const invite_code = document.getElementById('reg-invite').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const p1 = document.getElementById('reg-p1').value;
+      const p2 = document.getElementById('reg-p2').value;
+
+      if (p1 !== p2) return triggerToast('пароли не совпадают');
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invite_code, username, password: p1 })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        localStorage.setItem('token', d.token);
+        renderUser(d.user);
+      } catch (err) { triggerToast(err.message); }
+    }
+
+    async function loadUserProfile() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+          const d = await res.json();
+          if (d.banned) triggerToast(d.message);
+          throw new Error();
+        }
+        const d = await res.json();
+        updateGlobalStatusBadge(d.build_status);
+        renderUser(d.user);
+      } catch (e) { apiLogout(); }
+    }
+
+    function renderUser(u) {
+      currentUser = u;
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').style.display = 'flex';
+
+      document.getElementById('prof-username').innerText = u.username;
+      document.getElementById('prof-uid').innerText = `uid ${u.uid || 1}`;
+      document.getElementById('prof-invite').innerText = u.invite_code;
+      document.getElementById('prof-bio-text').innerText = u.bio || '—';
+      document.getElementById('edit-bio').value = u.bio || '';
+
+      const rEl = document.getElementById('prof-role');
+      rEl.className = `role-badge role-${u.role || 'user'}`;
+      rEl.innerText = u.role || 'user';
+
+      let subStr = 'нет активной подписки';
+      let subColor = 'var(--text-muted)';
+      if (u.sub_until === -1) {
+        subStr = 'lifetime';
+        subColor = '#34d399';
+      } else if (u.sub_until > Date.now()) {
+        const diffDays = Math.ceil((u.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
+        subStr = `${diffDays} дней`;
+        subColor = '#34d399';
+      }
+
+      document.getElementById('launcher-sub-days').innerText = subStr;
+      document.getElementById('launcher-sub-days').style.color = subColor;
+      document.getElementById('prof-sub-detail-status').innerText = subStr;
+      document.getElementById('prof-sub-detail-status').style.color = subColor;
+
+      document.getElementById('launcher-last-launch').innerText = u.last_launch ? new Date(u.last_launch).toLocaleString() : 'не запускался';
+      document.getElementById('launcher-hwid-val').innerText = u.hwid || 'не привязан';
+
+      const isOwner = (u.username === 'dev' || u.uid === 1 || u.role === 'owner');
+      document.getElementById('prof-subtab-admin').style.display = isOwner ? 'inline-block' : 'none';
+
+      const box = document.getElementById('prof-avatar-box');
+      box.innerHTML = '';
+      if (u.avatar_media && u.avatar_type === 'video') {
+        box.innerHTML = `<video src="${u.avatar_media}" autoplay loop muted playsinline></video>`;
+      } else if (u.avatar_media && u.avatar_type === 'image') {
+        box.innerHTML = `<img src="${u.avatar_media}">`;
+      } else {
+        box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${u.avatar_color || '#8b5cf6'}">${u.username.charAt(0).toUpperCase()}</div>`;
+      }
+    }
+
+    async function apiSaveProfile() {
+      const token = localStorage.getItem('token');
+      const bio = document.getElementById('edit-bio').value;
+
+      let payload = { bio: bio, avatar_color: selectedColor, reset_media: shouldResetMedia };
+      if (stagedMedia && !shouldResetMedia) {
+        payload.avatar_media = stagedMedia;
+        payload.avatar_type = stagedMediaType;
+      }
+
+      try {
+        const res = await fetch('/api/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        shouldResetMedia = false;
+        stagedMedia = null;
+        stagedMediaType = null;
+        document.getElementById('upload-status-text').innerText = 'загрузить файл';
+        renderUser(d.user);
+        triggerToast('профиль сохранен');
+      } catch (err) { triggerToast(err.message); }
+    }
+
+    // Сохранение личного 2FA PIN
     async function apiSaveUserPin() {
       const pin = document.getElementById('user-pin-input').value.trim();
       const token = localStorage.getItem('token');
@@ -1522,12 +1727,10 @@
 
         triggerToast(d.message);
         document.getElementById('user-pin-input').value = '';
-      } catch (e) {
-        triggerToast(e.message);
-      }
+      } catch (e) { triggerToast(e.message); }
     }
 
-    // Верификация персонального PIN овнера
+    // Верификация PIN овнера
     async function verifyAdminPin() {
       const pin = document.getElementById('admin-pin-input').value.trim();
       const token = localStorage.getItem('token');
@@ -1550,9 +1753,7 @@
         loadAdminPayments();
         loadAdminPromos();
         loadAdminInvites();
-      } catch (e) {
-        triggerToast(e.message);
-      }
+      } catch (e) { triggerToast(e.message); }
     }
 
     async function loadAdminPayments() {
@@ -2409,7 +2610,7 @@
                 <span class="uid-tag">uid ${p.author_uid || 1}</span>
               </div>
             </div>
-            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
+            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id}, ${p.id})">[удалить]</button>` : ''}
           </div>
           <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${p.text}</div>
         `;
