@@ -43,7 +43,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient Background Glow */
     .ambient-container {
       position: fixed;
       inset: 0;
@@ -97,7 +96,7 @@
       text-transform: uppercase;
     }
 
-    input {
+    input, textarea {
       width: 100%;
       background: rgba(15, 13, 23, 0.7);
       border: 1px solid var(--border);
@@ -110,12 +109,14 @@
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    textarea { resize: vertical; min-height: 80px; }
+
     input.mono-input {
       font-family: var(--font-mono);
       letter-spacing: 0.06em;
     }
 
-    input:focus {
+    input:focus, textarea:focus {
       border-color: var(--accent-bright);
       box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
       background: var(--surface-elevated);
@@ -170,7 +171,7 @@
       transform: none !important;
     }
 
-    /* --- ЧИСТЫЙ МИНИМАЛИСТИЧНЫЙ ЛОАДЕР ЗАЩИТЫ (БЕЗ ТЕКСТА) --- */
+    /* DDoS Screen */
     #ddos-screen {
       position: fixed;
       inset: 0;
@@ -214,7 +215,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* --- AUTH SCREEN --- */
+    /* Auth */
     #auth-screen {
       position: relative;
       z-index: 10;
@@ -233,7 +234,6 @@
       border-radius: calc(var(--radius) + 2px);
       padding: 36px 32px;
       box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px -10px var(--accent-glow);
-      animation: modalFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .brand-title {
@@ -272,20 +272,18 @@
     .auth-tab.active {
       color: #fff;
       background: var(--surface-elevated);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
 
     .auth-form { display: none; }
     .auth-form.active { display: block; }
 
-    /* --- DASHBOARD SCREEN --- */
+    /* Dashboard */
     #dashboard-screen {
       position: relative;
       z-index: 10;
       display: none;
       flex-direction: column;
       min-height: 100vh;
-      animation: screenFade 0.4s ease;
     }
 
     header.top-nav {
@@ -318,7 +316,6 @@
       padding: 6px 0;
       cursor: pointer;
       position: relative;
-      transition: color 0.2s;
     }
 
     .nav-link:hover, .nav-link.active { color: var(--text-main); }
@@ -364,7 +361,7 @@
       font-size: 22px;
       font-weight: 700;
       letter-spacing: -0.02em;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .pricing-grid {
@@ -374,7 +371,6 @@
     }
 
     .glow-card {
-      position: relative;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -387,7 +383,6 @@
     .glow-card:hover {
       border-color: var(--accent);
       transform: translateY(-4px);
-      box-shadow: 0 16px 36px -12px rgba(139, 92, 246, 0.25);
     }
 
     .plan-period {
@@ -403,7 +398,6 @@
       font-family: var(--font-mono);
       font-size: 34px;
       font-weight: 700;
-      color: var(--text-main);
       margin-bottom: 28px;
     }
 
@@ -435,8 +429,86 @@
       font-family: var(--font-mono);
       font-size: 12px;
       margin: 16px 0;
-      word-break: break-all;
       color: #c4b5fd;
+    }
+
+    /* СТИЛИ ФОРУМА */
+    .forum-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .thread-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .thread-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .thread-item:hover {
+      border-color: var(--accent);
+      background: var(--surface-elevated);
+      transform: translateX(4px);
+    }
+
+    .thread-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .thread-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .thread-replies-badge {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid var(--accent);
+      color: #c4b5fd;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .thread-view {
+      display: none;
+    }
+
+    .post-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .post-author {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--accent-bright);
+      margin-bottom: 8px;
+    }
+
+    .post-text {
+      font-size: 14px;
+      color: var(--text-main);
+      white-space: pre-wrap;
     }
 
     #toast {
@@ -445,31 +517,19 @@
       right: 28px;
       background: var(--surface-elevated);
       border: 1px solid var(--accent);
-      box-shadow: 0 10px 25px -5px var(--accent-glow);
       color: var(--text-main);
       padding: 12px 20px;
       border-radius: var(--radius);
       font-size: 13px;
-      font-weight: 500;
       z-index: 1000;
       transform: translateY(100px);
       opacity: 0;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s ease;
     }
 
     #toast.show {
       transform: translateY(0);
       opacity: 1;
-    }
-
-    @keyframes modalFadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes screenFade {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     @media (max-width: 768px) {
@@ -487,12 +547,10 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <!-- МИНИМАЛИСТИЧНЫЙ ЛОАДЕР (ПРОВЕРКА IP НА СЕРВЕРЕ) -->
   <div id="ddos-screen">
     <div class="shield-loader"></div>
   </div>
 
-  <!-- ШЛЮЗ АВТОРИЗАЦИИ -->
   <div id="auth-screen">
     <div class="auth-box">
       <div class="brand-title">JOY.CC</div>
@@ -502,49 +560,47 @@
         <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
       </div>
 
-      <!-- Вход -->
       <form id="form-login" class="auth-form active" onsubmit="apiLogin(event)">
         <div class="form-group">
           <label>Логин</label>
-          <input type="text" id="login-username" name="username" required autocomplete="username">
+          <input type="text" id="login-username" required autocomplete="username">
         </div>
         <div class="form-group">
           <label>Пароль</label>
-          <input type="password" id="login-password" name="password" required autocomplete="current-password">
+          <input type="password" id="login-password" required autocomplete="current-password">
         </div>
         <button type="submit" id="btn-login-submit" class="btn-violet" style="width: 100%; margin-top: 8px;">Войти</button>
       </form>
 
-      <!-- Регистрация -->
       <form id="form-register" class="auth-form" onsubmit="apiRegister(event)">
         <div class="form-group">
           <label>Инвайт-код</label>
-          <input type="text" id="reg-invite" name="invite_code" class="mono-input" placeholder="JOY-XXXX-XXXX" required autocomplete="off">
+          <input type="text" id="reg-invite" class="mono-input" placeholder="JOY-XXXX-XXXX" required>
         </div>
         <div class="form-group">
           <label>Логин</label>
-          <input type="text" id="reg-username" name="username" required autocomplete="username">
+          <input type="text" id="reg-username" required>
         </div>
         <div class="form-group">
           <label>Пароль</label>
-          <input type="password" id="reg-p1" name="password" required autocomplete="new-password">
+          <input type="password" id="reg-p1" required>
         </div>
         <div class="form-group">
           <label>Подтверждение пароля</label>
-          <input type="password" id="reg-p2" name="confirm_password" required autocomplete="new-password">
+          <input type="password" id="reg-p2" required>
         </div>
         <button type="submit" id="btn-reg-submit" class="btn-violet" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
       </form>
     </div>
   </div>
 
-  <!-- ВНУТРЕННЯЯ ПАНЕЛЬ -->
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
         <div class="brand-title" style="margin: 0; font-size: 18px;">JOY.CC</div>
         <nav class="nav-links">
           <button class="nav-link active" onclick="switchNav('sub')">Подписка</button>
+          <button class="nav-link" onclick="switchNav('forum')">Форум</button>
           <button class="nav-link" onclick="switchNav('cfg')">Конфигурации</button>
           <button class="nav-link" onclick="switchNav('profile')">Профиль</button>
         </nav>
@@ -565,19 +621,66 @@
           <div class="glow-card">
             <div class="plan-period">1 месяц</div>
             <div class="plan-price">900 ₽</div>
-            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+            <button class="btn-disabled" style="margin-top: auto;" disabled>Временно недоступно</button>
           </div>
-
           <div class="glow-card">
             <div class="plan-period" style="color: var(--accent-bright);">3 месяца</div>
             <div class="plan-price">2 300 ₽</div>
-            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+            <button class="btn-disabled" style="margin-top: auto;" disabled>Временно недоступно</button>
           </div>
-
           <div class="glow-card">
             <div class="plan-period">12 месяцев</div>
             <div class="plan-price">8 000 ₽</div>
-            <button class="btn-disabled" style="margin-top: auto;" disabled onclick="checkout()">Временно недоступно</button>
+            <button class="btn-disabled" style="margin-top: auto;" disabled>Временно недоступно</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ФОРУМ -->
+      <section id="sec-forum" class="section">
+        <div id="forum-index">
+          <div class="forum-header">
+            <h1 class="section-title" style="margin: 0;">Обсуждения</h1>
+            <button class="btn-violet" onclick="toggleNewThreadModal()">Создать тему</button>
+          </div>
+
+          <!-- Форма создания темы -->
+          <div id="new-thread-box" style="display: none; background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-bottom: 24px;">
+            <div class="form-group">
+              <label>Заголовок темы</label>
+              <input type="text" id="thread-title-input" placeholder="Название обсуждения...">
+            </div>
+            <div class="form-group">
+              <label>Содержание</label>
+              <textarea id="thread-content-input" placeholder="Текст вашего сообщения..."></textarea>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn-violet" onclick="apiCreateThread()">Опубликовать</button>
+              <button class="btn-outline" onclick="toggleNewThreadModal()">Отмена</button>
+            </div>
+          </div>
+
+          <div class="thread-list" id="thread-list-container">
+            <!-- Сюда подгружаются треды -->
+          </div>
+        </div>
+
+        <!-- Страница конкретного треда -->
+        <div id="forum-thread-view" class="thread-view">
+          <button class="btn-outline" style="margin-bottom: 20px;" onclick="backToForumList()">← Все темы</button>
+          <h2 id="view-thread-title" style="font-size: 20px; margin-bottom: 16px;"></h2>
+          
+          <div id="view-posts-container">
+            <!-- Сообщения треда -->
+          </div>
+
+          <!-- Ответ в тред -->
+          <div class="post-box" style="margin-top: 24px;">
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label>Ваш ответ</label>
+              <textarea id="reply-text-input" placeholder="Напишите ответ..."></textarea>
+            </div>
+            <button class="btn-violet" onclick="apiSendReply()">Отправить</button>
           </div>
         </div>
       </section>
@@ -608,7 +711,7 @@
               <span class="text-muted">Срок действия</span>
               <span id="prof-sub-status" style="color: var(--text-muted);">Неактивна</span>
             </div>
-            <button class="btn-violet" id="btn-download" style="width: 100%; margin-top: 24px;" onclick="downloadLoader()">
+            <button class="btn-violet" style="width: 100%; margin-top: 24px;" onclick="triggerToast('Клиент готовится')">
               Скачать клиент
             </button>
           </div>
@@ -636,6 +739,8 @@
   <div id="toast"></div>
 
   <script>
+    let currentThreadId = null;
+
     function triggerToast(msg) {
       const toast = document.getElementById('toast');
       toast.innerText = msg;
@@ -662,25 +767,16 @@
 
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('sec-' + sec).classList.add('active');
+
+      if (sec === 'forum') loadForumThreads();
     }
 
-    // === ПРОВЕРКА IP ПРИ ВХОДЕ (РЕАЛЬНЫЙ ЗАПРОС К СЕРВЕРУ) ===
     window.addEventListener('DOMContentLoaded', async () => {
       const screen = document.getElementById('ddos-screen');
-
       try {
-        const res = await fetch('/api/verify-ip');
-        if (!res.ok) {
-          const err = await res.json();
-          triggerToast(err.message || 'Ошибка сети');
-        }
-      } catch (e) {
-        // Сервер пока не запущен локально
-      } finally {
-        setTimeout(() => {
-          screen.classList.add('verified');
-        }, 600);
-      }
+        await fetch('/api/verify-ip');
+      } catch (e) {}
+      setTimeout(() => screen.classList.add('verified'), 600);
 
       const token = localStorage.getItem('token');
       if (token) loadUserProfile();
@@ -688,11 +784,8 @@
 
     async function apiLogin(e) {
       e.preventDefault();
-      const submitBtn = document.getElementById('btn-login-submit');
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
-
-      submitBtn.disabled = true;
 
       try {
         const res = await fetch('/api/login', {
@@ -700,34 +793,24 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Ошибка авторизации');
+        if (!res.ok) throw new Error(data.message || 'Ошибка');
 
         localStorage.setItem('token', data.token);
         renderDashboard(data.user);
-        triggerToast('Успешный вход');
       } catch (err) {
         triggerToast(err.message);
-      } finally {
-        submitBtn.disabled = false;
       }
     }
 
     async function apiRegister(e) {
       e.preventDefault();
-      const submitBtn = document.getElementById('btn-reg-submit');
       const inviteCode = document.getElementById('reg-invite').value.trim();
       const username = document.getElementById('reg-username').value.trim();
       const p1 = document.getElementById('reg-p1').value;
       const p2 = document.getElementById('reg-p2').value;
 
-      if (p1 !== p2) {
-        triggerToast('Пароли не совпадают');
-        return;
-      }
-
-      submitBtn.disabled = true;
+      if (p1 !== p2) return triggerToast('Пароли не совпадают');
 
       try {
         const res = await fetch('/api/register', {
@@ -735,17 +818,13 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ invite_code: inviteCode, username, password: p1 })
         });
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Ошибка регистрации');
+        if (!res.ok) throw new Error(data.message || 'Ошибка');
 
         localStorage.setItem('token', data.token);
         renderDashboard(data.user);
-        triggerToast('Регистрация завершена');
       } catch (err) {
         triggerToast(err.message);
-      } finally {
-        submitBtn.disabled = false;
       }
     }
 
@@ -757,9 +836,7 @@
         const res = await fetch('/api/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        if (!res.ok) throw new Error('Сессия устарела');
-
+        if (!res.ok) throw new Error('Сессия недействительна');
         const data = await res.json();
         renderDashboard(data.user);
       } catch (err) {
@@ -771,28 +848,13 @@
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('dashboard-screen').style.display = 'flex';
 
-      document.getElementById('prof-username').innerText = user.username || 'operator';
-      document.getElementById('prof-invite').innerText = user.invite_code || '—';
+      document.getElementById('prof-username').innerText = user.username;
+      document.getElementById('prof-invite').innerText = user.invite_code;
 
-      const subStatus = document.getElementById('prof-sub-status');
+      const sub = document.getElementById('prof-sub-status');
       if (user.subscription_expires) {
-        subStatus.innerText = `Активна (до ${user.subscription_expires})`;
-        subStatus.style.color = '#4ade80';
-      } else {
-        subStatus.innerText = 'Неактивна';
-        subStatus.style.color = 'var(--text-muted)';
-      }
-
-      const hwidStatus = document.getElementById('prof-hwid-status');
-      const hwidVal = document.getElementById('prof-hwid-val');
-      if (user.hwid) {
-        hwidStatus.innerText = 'Привязано';
-        hwidStatus.style.color = '#4ade80';
-        hwidVal.innerText = user.hwid;
-      } else {
-        hwidStatus.innerText = 'Не привязано';
-        hwidStatus.style.color = 'var(--text-muted)';
-        hwidVal.innerText = 'Ожидает первого входа через лаунчер';
+        sub.innerText = `Активна (до ${user.subscription_expires})`;
+        sub.style.color = '#4ade80';
       }
     }
 
@@ -803,20 +865,11 @@
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Ошибка сброса HWID');
-        triggerToast(data.message || 'HWID успешно сброшен');
-      } catch (err) {
-        triggerToast(err.message);
+        const d = await res.json();
+        triggerToast(d.message);
+      } catch (e) {
+        triggerToast(e.message);
       }
-    }
-
-    function downloadLoader() {
-      triggerToast('Запрос на скачивание отправлен');
-    }
-
-    function checkout() {
-      triggerToast('Прием платежей временно приостановлен');
     }
 
     function apiLogout() {
@@ -824,7 +877,135 @@
       document.getElementById('dashboard-screen').style.display = 'none';
       document.getElementById('auth-screen').style.display = 'flex';
       switchAuthTab('login');
-      triggerToast('Вы вышли из учетной записи');
+    }
+
+    // === ЛОГИКА ФОРУМА ===
+
+    async function loadForumThreads() {
+      try {
+        const res = await fetch('/api/forum/threads');
+        const data = await res.json();
+        const container = document.getElementById('thread-list-container');
+        container.innerHTML = '';
+
+        data.threads.forEach(t => {
+          const item = document.createElement('div');
+          item.className = 'thread-item';
+          item.onclick = () => openThread(t.id);
+          item.innerHTML = `
+            <div>
+              <div class="thread-title">${t.title}</div>
+              <div class="thread-meta">Автор: <span class="mono">${t.author}</span> • ${new Date(t.created_at).toLocaleDateString()}</div>
+            </div>
+            <div class="thread-replies-badge">${t.replies_count} отв.</div>
+          `;
+          container.appendChild(item);
+        });
+      } catch (err) {
+        triggerToast('Не удалось загрузить темы');
+      }
+    }
+
+    function toggleNewThreadModal() {
+      const box = document.getElementById('new-thread-box');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function apiCreateThread() {
+      const title = document.getElementById('thread-title-input').value;
+      const content = document.getElementById('thread-content-input').value;
+      const token = localStorage.getItem('token');
+
+      if (!title || !content) return triggerToast('Заполните все поля');
+
+      try {
+        const res = await fetch('/api/forum/threads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ title, content })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        document.getElementById('thread-title-input').value = '';
+        document.getElementById('thread-content-input').value = '';
+        toggleNewThreadModal();
+        loadForumThreads();
+        triggerToast('Тема опубликована');
+      } catch (err) {
+        triggerToast(err.message);
+      }
+    }
+
+    async function openThread(id) {
+      currentThreadId = id;
+      try {
+        const res = await fetch(`/api/forum/threads/${id}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        document.getElementById('forum-index').style.display = 'none';
+        const view = document.getElementById('forum-thread-view');
+        view.style.display = 'block';
+
+        document.getElementById('view-thread-title').innerText = data.thread.title;
+        const postsCont = document.getElementById('view-posts-container');
+        postsCont.innerHTML = `
+          <div class="post-box">
+            <div class="post-author">${data.thread.author} (Автор темы) • ${new Date(data.thread.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            <div class="post-text">${data.thread.content}</div>
+          </div>
+        `;
+
+        if (data.thread.posts) {
+          data.thread.posts.forEach(p => {
+            const pDiv = document.createElement('div');
+            pDiv.className = 'post-box';
+            pDiv.innerHTML = `
+              <div class="post-author">${p.author} • ${new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+              <div class="post-text">${p.text}</div>
+            `;
+            postsCont.appendChild(pDiv);
+          });
+        }
+      } catch (err) {
+        triggerToast(err.message);
+      }
+    }
+
+    function backToForumList() {
+      currentThreadId = null;
+      document.getElementById('forum-thread-view').style.display = 'none';
+      document.getElementById('forum-index').style.display = 'block';
+      loadForumThreads();
+    }
+
+    async function apiSendReply() {
+      const text = document.getElementById('reply-text-input').value;
+      const token = localStorage.getItem('token');
+      if (!text.trim()) return;
+
+      try {
+        const res = await fetch(`/api/forum/threads/${currentThreadId}/reply`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        document.getElementById('reply-text-input').value = '';
+        openThread(currentThreadId);
+        triggerToast('Ответ отправлен');
+      } catch (err) {
+        triggerToast(err.message);
+      }
     }
   </script>
 </body>
