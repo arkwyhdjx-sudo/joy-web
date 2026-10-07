@@ -154,7 +154,6 @@
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
     .btn-outline:active { transform: translateY(0); }
 
-    /* Чистый текстовый UID без рамки */
     .uid-tag {
       color: var(--text-muted);
       font-family: var(--font-mono);
@@ -399,7 +398,6 @@
     .sub-view { display: none; }
     .sub-view.active { display: block; animation: tabFade 0.25s var(--ease); }
 
-    /* Описание профиля с принудительным переносом длинных строк */
     #prof-bio-text {
       word-break: break-word;
       overflow-wrap: anywhere;
@@ -523,6 +521,80 @@
     }
     .del-btn:hover { text-decoration: underline; opacity: 0.8; }
 
+    /* Мини-аватарка в сообщениях форума */
+    .mini-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      background: #09080e;
+    }
+    .mini-avatar img, .mini-avatar video { width: 100%; height: 100%; object-fit: cover; }
+    .mini-avatar-letter {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .author-clickable {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .author-clickable:hover {
+      color: var(--accent-bright);
+    }
+
+    /* Модалка профиля пользователя */
+    #user-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1001;
+      background: rgba(7, 6, 11, 0.75);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #user-modal.active { display: flex; animation: fadeIn 0.2s var(--ease); }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      animation: popIn 0.25s var(--ease);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+    }
+    .modal-close-btn:hover { color: #fff; }
+
     #toast {
       position: fixed;
       bottom: 20px;
@@ -611,6 +683,7 @@
         <div class="brand-title" style="margin: 0; font-size: 16px;">JOY.CC</div>
         <nav class="nav-links">
           <button class="nav-link active" data-i18n="nav_profile" onclick="switchNav('profile')">профиль</button>
+          <button class="nav-link" data-i18n="nav_updates" onclick="switchNav('updates')">обновления</button>
           <button class="nav-link" data-i18n="nav_forum" onclick="switchNav('forum')">форум</button>
           <button class="nav-link" data-i18n="nav_support" onclick="switchNav('support')">поддержка</button>
           <button class="nav-link" data-i18n="nav_sub" onclick="switchNav('sub')">подписка</button>
@@ -709,28 +782,27 @@
         </div>
       </section>
 
-      <!-- ПОДПИСКИ -->
-      <section id="sec-sub" class="section">
-        <h2 style="font-size: 17px; margin-bottom: 14px;" data-i18n="title_plans">тарифные периоды</h2>
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <div class="plan-period" data-i18n="plan_1m">1 месяц</div>
-            <div class="plan-price" id="price-1m">900 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
-          </div>
-
-          <div class="pricing-card featured">
-            <div class="plan-period" style="color: var(--accent-bright);" data-i18n="plan_3m">3 месяца</div>
-            <div class="plan-price" id="price-3m">2 300 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
-          </div>
-
-          <div class="pricing-card">
-            <div class="plan-period" data-i18n="plan_12m">12 месяцев</div>
-            <div class="plan-price" id="price-12m">8 000 ₽</div>
-            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
-          </div>
+      <!-- ОБНОВЛЕНИЯ (CHANGELOG) -->
+      <section id="sec-updates" class="section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h2 style="font-size: 17px;" data-i18n="nav_updates">обновления</h2>
+          <button id="btn-show-new-update" class="btn-violet" style="display: none;" onclick="toggleNewUpdateForm()" data-i18n="btn_new_update">опубликовать патч</button>
         </div>
+
+        <!-- Форма публикации доступна только dev (UID 1) -->
+        <div id="new-update-form" style="display: none; background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); margin-bottom: 14px;">
+          <div class="form-group">
+            <label>версия / название патча</label>
+            <input type="text" id="upd-title" maxlength="100" placeholder="билд 1.0.2 / фикс крашей...">
+          </div>
+          <div class="form-group">
+            <label>список изменений</label>
+            <textarea id="upd-content" maxlength="1200" placeholder="- добавлена поддержка lua&#10;- обновлен хук"></textarea>
+          </div>
+          <button class="btn-violet" onclick="apiCreateUpdate()">опубликовать</button>
+        </div>
+
+        <div id="updates-list"></div>
       </section>
 
       <!-- ФОРУМ -->
@@ -782,7 +854,7 @@
         <div class="profile-card">
           <h2 style="font-size: 16px; margin-bottom: 6px;" data-i18n="title_support">анонимная поддержка</h2>
           <p class="text-muted" style="margin-bottom: 14px; font-size: 12.5px;" data-i18n="desc_support">
-            задайте вопрос разработчикам. тикет уйдет в защищенную очередь, а ответ будет здесь.
+            задайте вопрос разработчикам. тикет доступен только вам, а ответ поступит в список ниже.
           </p>
           <div class="form-group">
             <label data-i18n="lbl_ticket_subj">тема</label>
@@ -803,7 +875,52 @@
           <div id="tickets-list"></div>
         </div>
       </section>
+
+      <!-- ПОДПИСКИ -->
+      <section id="sec-sub" class="section">
+        <h2 style="font-size: 17px; margin-bottom: 14px;" data-i18n="title_plans">тарифные периоды</h2>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="plan-period" data-i18n="plan_1m">1 месяц</div>
+            <div class="plan-price" id="price-1m">900 ₽</div>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+          </div>
+
+          <div class="pricing-card featured">
+            <div class="plan-period" style="color: var(--accent-bright);" data-i18n="plan_3m">3 месяца</div>
+            <div class="plan-price" id="price-3m">2 300 ₽</div>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+          </div>
+
+          <div class="pricing-card">
+            <div class="plan-period" data-i18n="plan_12m">12 месяцев</div>
+            <div class="plan-price" id="price-12m">8 000 ₽</div>
+            <button class="btn-outline" style="margin-top: auto; opacity: 0.5;" disabled data-i18n="status_disabled">недоступно</button>
+          </div>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ЮЗЕРА ПО КЛИКУ -->
+  <div id="user-modal" onclick="closeUserModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeUserModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+        <div id="modal-avatar-box" class="profile-avatar-wrapper" style="width: 52px; height: 52px;"></div>
+        <div>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <h3 id="modal-username" style="font-size: 16px; font-weight: 700;">user</h3>
+            <span class="uid-tag" id="modal-uid">uid 0</span>
+          </div>
+          <div id="modal-date" class="text-muted" style="font-size: 11px; margin-top: 2px;">на проекте с ...</div>
+        </div>
+      </div>
+      <div>
+        <label style="margin-bottom: 4px;">о себе</label>
+        <p id="modal-bio" class="text-muted" style="font-size: 13px; word-break: break-word; white-space: pre-wrap;">—</p>
+      </div>
+    </div>
   </div>
 
   <div id="toast"></div>
@@ -827,8 +944,8 @@
       ru: {
         tab_login: 'вход', tab_reg: 'регистрация', lbl_username: 'логин', lbl_pass: 'пароль',
         lbl_invite: 'инвайт-код', lbl_pass_confirm: 'подтверждение', btn_login: 'войти',
-        btn_register: 'зарегистрироваться', nav_profile: 'профиль', nav_forum: 'форум',
-        nav_support: 'поддержка', nav_sub: 'подписка', btn_logout: 'выйти',
+        btn_register: 'зарегистрироваться', nav_profile: 'профиль', nav_updates: 'обновления',
+        nav_forum: 'форум', nav_support: 'поддержка', nav_sub: 'подписка', btn_logout: 'выйти',
         subtab_overview: 'обзор', subtab_settings: 'настройки', subtab_security: 'безопасность (hwid)',
         lbl_bio: 'о себе', btn_download_client: 'скачать лаунчер (joyloader.exe)',
         lbl_avatar_file: 'аватарка (файл gif / mp4 / png / jpg)', btn_reset_avatar: 'сбросить до буквы',
@@ -836,19 +953,19 @@
         btn_save_profile: 'сохранить изменения', lbl_hwid_desc: 'привязка оборудования лаунчера:',
         btn_reset_hwid: 'сбросить hwid', title_plans: 'тарифные периоды',
         plan_1m: '1 месяц', plan_3m: '3 месяца', plan_12m: '12 месяцев',
-        status_disabled: 'недоступно', btn_new_thread: 'новая тема',
+        status_disabled: 'недоступно', btn_new_thread: 'новая тема', btn_new_update: 'опубликовать патч',
         lbl_thread_title: 'заголовок', lbl_thread_msg: 'сообщение', btn_publish: 'опубликовать',
         btn_back_threads: '← к темам', lbl_reply: 'ответить', btn_send_reply: 'отправить',
         title_support: 'анонимная поддержка',
-        desc_support: 'задайте вопрос разработчикам. тикет уйдет в защищенную очередь, а ответ будет здесь.',
+        desc_support: 'задайте вопрос разработчикам. тикет доступен только вам, а ответ поступит в список ниже.',
         lbl_ticket_subj: 'тема', lbl_ticket_msg: 'сообщение', btn_send_ticket: 'отправить',
         title_my_tickets: 'ваши обращения'
       },
       en: {
         tab_login: 'login', tab_reg: 'register', lbl_username: 'username', lbl_pass: 'password',
         lbl_invite: 'invite code', lbl_pass_confirm: 'confirm password', btn_login: 'sign in',
-        btn_register: 'sign up', nav_profile: 'profile', nav_forum: 'forum',
-        nav_support: 'support', nav_sub: 'subscription', btn_logout: 'logout',
+        btn_register: 'sign up', nav_profile: 'profile', nav_updates: 'updates',
+        nav_forum: 'forum', nav_support: 'support', nav_sub: 'subscription', btn_logout: 'logout',
         subtab_overview: 'overview', subtab_settings: 'settings', subtab_security: 'security (hwid)',
         lbl_bio: 'about', btn_download_client: 'download client (joyloader.exe)',
         lbl_avatar_file: 'avatar file (gif / mp4 / png / jpg)', btn_reset_avatar: 'reset to letter',
@@ -856,11 +973,11 @@
         btn_save_profile: 'save changes', lbl_hwid_desc: 'launcher hardware binding:',
         btn_reset_hwid: 'reset hwid', title_plans: 'subscription plans',
         plan_1m: '1 month', plan_3m: '3 months', plan_12m: '12 months',
-        status_disabled: 'unavailable', btn_new_thread: 'new thread',
+        status_disabled: 'unavailable', btn_new_thread: 'new thread', btn_new_update: 'post update',
         lbl_thread_title: 'title', lbl_thread_msg: 'message', btn_publish: 'publish',
         btn_back_threads: '← to threads', lbl_reply: 'reply', btn_send_reply: 'send',
         title_support: 'anonymous support',
-        desc_support: 'contact developers securely. tickets are private and answers will appear here.',
+        desc_support: 'contact developers securely. tickets are visible only to you.',
         lbl_ticket_subj: 'subject', lbl_ticket_msg: 'message', btn_send_ticket: 'send ticket',
         title_my_tickets: 'your tickets'
       }
@@ -917,6 +1034,7 @@
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('sec-' + sec).classList.add('active');
 
+      if (sec === 'updates') loadUpdates();
       if (sec === 'forum') loadThreads();
       if (sec === 'support') loadTickets();
     }
@@ -1070,6 +1188,10 @@
       document.getElementById('edit-bio').value = u.bio || '';
       updateBioCounter();
 
+      // Показываем кнопку публикации обновлений только разработчику (UID 1)
+      const btnUpd = document.getElementById('btn-show-new-update');
+      if (btnUpd) btnUpd.style.display = (u.uid === 1) ? 'inline-flex' : 'none';
+
       const box = document.getElementById('prof-avatar-box');
       box.innerHTML = '';
 
@@ -1160,6 +1282,133 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
+    // === КАРТОЧКА ПРОФИЛЯ ПО КЛИКУ ===
+    async function openUserProfileModal(username) {
+      try {
+        const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
+        const d = await res.json();
+        if (!res.ok) throw new Error();
+
+        const u = d.user;
+        document.getElementById('modal-username').innerText = u.username;
+        document.getElementById('modal-uid').innerText = `uid ${u.uid}`;
+        document.getElementById('modal-date').innerText = `на проекте с ${new Date(u.created_at).toLocaleDateString()}`;
+        document.getElementById('modal-bio').innerText = u.bio || 'пользователь ничего о себе не написал.';
+
+        const box = document.getElementById('modal-avatar-box');
+        box.innerHTML = '';
+
+        if (u.avatar_media && u.avatar_type === 'video') {
+          const vid = document.createElement('video');
+          vid.src = u.avatar_media;
+          vid.autoplay = true;
+          vid.loop = true;
+          vid.muted = true;
+          vid.playsInline = true;
+          box.appendChild(vid);
+        } else if (u.avatar_media && u.avatar_type === 'image') {
+          const img = document.createElement('img');
+          img.src = u.avatar_media;
+          box.appendChild(img);
+        } else {
+          const div = document.createElement('div');
+          div.className = 'profile-avatar-letter';
+          div.innerText = u.username.charAt(0).toUpperCase();
+          div.style.background = u.avatar_color || '#8b5cf6';
+          box.appendChild(div);
+        }
+
+        document.getElementById('user-modal').classList.add('active');
+      } catch (e) {
+        triggerToast('не удалось загрузить профиль');
+      }
+    }
+
+    function closeUserModal(e) {
+      document.getElementById('user-modal').classList.remove('active');
+    }
+
+    // Генерация HTML мини-аватарки
+    function renderMiniAvatar(author, avatarMedia, avatarType, avatarColor) {
+      if (avatarMedia && avatarType === 'video') {
+        return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><video src="${avatarMedia}" autoplay loop muted playsinline></video></div>`;
+      } else if (avatarMedia && avatarType === 'image') {
+        return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><img src="${avatarMedia}"></div>`;
+      } else {
+        return `<div class="mini-avatar" onclick="openUserProfileModal('${author}')"><div class="mini-avatar-letter" style="background: ${avatarColor || '#8b5cf6'};">${author.charAt(0).toUpperCase()}</div></div>`;
+      }
+    }
+
+    // === ОБНОВЛЕНИЯ ===
+    async function loadUpdates() {
+      const res = await fetch('/api/updates');
+      const d = await res.json();
+      const c = document.getElementById('updates-list');
+      c.innerHTML = '';
+
+      if (!d.updates || d.updates.length === 0) {
+        c.innerHTML = '<p class="text-muted" style="font-size: 12.5px;">патчей пока не выходило</p>';
+        return;
+      }
+
+      d.updates.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'profile-card';
+        const isDev = currentUser && currentUser.uid === 1;
+        div.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <div style="font-weight: 700; font-size: 15px; color: var(--accent-bright);">${u.title}</div>
+              <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
+                <span class="author-clickable" onclick="openUserProfileModal('${u.author}')">${u.author}</span> • ${new Date(u.created_at).toLocaleDateString()}
+              </div>
+            </div>
+            ${isDev ? `<button class="del-btn" onclick="apiDeleteUpdate(${u.id})">[удалить]</button>` : ''}
+          </div>
+          <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.6;">${u.content}</div>
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function toggleNewUpdateForm() {
+      const el = document.getElementById('new-update-form');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function apiCreateUpdate() {
+      const token = localStorage.getItem('token');
+      const title = document.getElementById('upd-title').value.trim();
+      const content = document.getElementById('upd-content').value.trim();
+
+      try {
+        const res = await fetch('/api/updates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ title, content })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        document.getElementById('upd-title').value = '';
+        document.getElementById('upd-content').value = '';
+        toggleNewUpdateForm();
+        loadUpdates();
+        triggerToast('обновление опубликовано');
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    async function apiDeleteUpdate(id) {
+      if (!confirm('удалить этот патч?')) return;
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/updates/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) loadUpdates();
+    }
+
+    // === ФОРУМ ===
     async function loadThreads() {
       const res = await fetch('/api/forum/threads');
       const d = await res.json();
@@ -1169,17 +1418,19 @@
       d.threads.forEach(t => {
         const div = document.createElement('div');
         div.className = 'forum-item';
-        div.onclick = () => openThread(t.id);
         div.innerHTML = `
-          <div>
-            <div style="font-weight: 600; font-size: 14px;">${t.title}</div>
-            <div class="text-muted" style="font-size: 11.5px; margin-top: 2px;">
-              <span>${t.author}</span>
-              <span class="uid-tag" style="margin: 0 4px;">uid ${t.author_uid || 1}</span>
-              • ${new Date(t.created_at).toLocaleDateString()}
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%;" onclick="openThread(${t.id})">
+            ${renderMiniAvatar(t.author, t.author_avatar_media, t.author_avatar_type, t.author_avatar_color)}
+            <div style="flex-grow: 1;">
+              <div style="font-weight: 600; font-size: 14px;">${t.title}</div>
+              <div class="text-muted" style="font-size: 11.5px; margin-top: 2px;">
+                <span class="author-clickable" onclick="event.stopPropagation(); openUserProfileModal('${t.author}')">${t.author}</span>
+                <span class="uid-tag" style="margin: 0 4px;">uid ${t.author_uid || 1}</span>
+                • ${new Date(t.created_at).toLocaleDateString()}
+              </div>
             </div>
+            <div class="ticket-badge">${t.replies_count} отв.</div>
           </div>
-          <div class="ticket-badge">${t.replies_count} отв.</div>
         `;
         c.appendChild(div);
       });
@@ -1229,12 +1480,15 @@
       const c = document.getElementById('view-t-posts');
       c.innerHTML = `
         <div class="profile-card">
-          <div class="text-muted" style="font-size: 11.5px; margin-bottom: 6px;">
-            ${d.thread.author} 
-            <span class="uid-tag" style="margin-left: 4px;">uid ${d.thread.author_uid || 1}</span>
-            (автор)
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            ${renderMiniAvatar(d.thread.author, d.thread.author_avatar_media, d.thread.author_avatar_type, d.thread.author_avatar_color)}
+            <div>
+              <span class="author-clickable" style="font-weight: 600;" onclick="openUserProfileModal('${d.thread.author}')">${d.thread.author}</span>
+              <span class="uid-tag" style="margin-left: 4px;">uid ${d.thread.author_uid || 1}</span>
+              <span class="text-muted" style="font-size: 11px; margin-left: 6px;">(автор)</span>
+            </div>
           </div>
-          <div>${d.thread.content}</div>
+          <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${d.thread.content}</div>
         </div>
       `;
 
@@ -1243,14 +1497,17 @@
         postDiv.className = 'profile-card';
         const canDel = currentUser && (currentUser.username === p.author || currentUser.uid === 1);
         postDiv.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-            <span class="text-muted" style="font-size: 11.5px;">
-              ${p.author}
-              <span class="uid-tag" style="margin-left: 4px;">uid ${p.author_uid || 1}</span>
-            </span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              ${renderMiniAvatar(p.author, p.author_avatar_media, p.author_avatar_type, p.author_avatar_color)}
+              <div>
+                <span class="author-clickable" style="font-weight: 600;" onclick="openUserProfileModal('${p.author}')">${p.author}</span>
+                <span class="uid-tag" style="margin-left: 4px;">uid ${p.author_uid || 1}</span>
+              </div>
+            </div>
             ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
           </div>
-          <div>${p.text}</div>
+          <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${p.text}</div>
         `;
         c.appendChild(postDiv);
       });
@@ -1300,6 +1557,7 @@
       if (res.ok) openThread(tId);
     }
 
+    // === ТИКЕТЫ ===
     async function apiSendTicket() {
       const token = localStorage.getItem('token');
       const subject = document.getElementById('ticket-subj').value.trim();
