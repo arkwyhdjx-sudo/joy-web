@@ -177,7 +177,7 @@
     .role-user { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
     .role-banned { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #f87171; }
 
-    /* КАСТОМНЫЕ ВЫПАДАЮЩИЕ СПИСКИ (БЕЗ ДЕФОЛТНЫХ СИНИХ МЕНЮ) */
+    /* КАСТОМНЫЕ СЕЛЕКТОРЫ БЕЗ СИНИХ ДЕФОЛТНЫХ СПИСКОВ */
     .c-select-wrapper {
       position: relative;
       user-select: none;
@@ -239,7 +239,7 @@
       color: #fff;
     }
 
-    /* РЕАЛЬНЫЙ ЭКРАН CLOUDFLARE POW DDOS SHIELD */
+    /* РЕАЛЬНЫЙ CLOUDFLARE TURNSTILE ВИДЖЕТ С ГАЛОЧКОЙ */
     #cf-screen {
       position: fixed;
       inset: 0;
@@ -254,42 +254,49 @@
     }
     #cf-screen.verified { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .cf-box {
-      max-width: 440px;
-      width: 100%;
-      background: rgba(14, 13, 22, 0.7);
+    .cf-turnstile-box {
+      width: 320px;
+      background: rgba(18, 16, 28, 0.7);
       backdrop-filter: blur(24px);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 32px 28px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-      text-align: center;
+      border-radius: 6px;
+      padding: 14px 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
     }
 
-    .cf-shield-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(139, 92, 246, 0.15);
-      border: 1px solid var(--accent);
-      display: inline-flex;
+    .cf-checkbox-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.04);
+      display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
-      animation: pulseGlow 2s infinite alternate;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      flex-shrink: 0;
     }
-    @keyframes pulseGlow { 0% { box-shadow: 0 0 10px var(--accent-glow); } 100% { box-shadow: 0 0 24px var(--accent); } }
+    .cf-checkbox-btn:hover {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.15);
+    }
+    .cf-checkbox-btn.checked {
+      border-color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+    }
 
     .cf-spinner {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border: 2px solid transparent;
       border-top-color: var(--accent-bright);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      display: inline-block;
-      margin-right: 8px;
-      vertical-align: middle;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -614,6 +621,7 @@
     }
     .quiet-logout-btn:hover { color: #f87171; text-decoration: underline; }
 
+    /* Форум */
     .forum-item {
       background: var(--surface-glass);
       backdrop-filter: blur(14px);
@@ -760,25 +768,27 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <!-- РЕАЛЬНЫЙ CLOUDFLARE POW DDOS SHIELD -->
+  <!-- РЕАЛЬНЫЙ CLOUDFLARE TURNSTILE ВИДЖЕТ С ГАЛОЧКОЙ -->
   <div id="cf-screen">
-    <div class="cf-box">
-      <div class="cf-shield-icon">
+    <div class="cf-turnstile-box">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Кликабельный чекбокс проверки -->
+        <div class="cf-checkbox-btn" id="cf-checkbox" onclick="handleTurnstileClick()"></div>
+        <div style="text-align: left;">
+          <div id="cf-label" style="font-size: 13px; font-weight: 600; color: #fff;">Подтвердите, что вы человек</div>
+          <div id="cf-sublabel" style="font-size: 10.5px; color: var(--text-muted);">getjoy.vip • проверка безопасности</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; opacity: 0.8;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-      </div>
-      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">getjoy.vip</h3>
-      <p class="text-muted" style="font-size: 12.5px; margin-bottom: 14px;">
-        криптографическая проверка браузера и ddos-фильтрация...
-      </p>
-      <div id="cf-status-label" style="font-size: 12px; color: #c4b5fd;">
-        <span class="cf-spinner"></span> получение задачи proof-of-work...
+        <span style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 2px;">JOY Shield</span>
       </div>
     </div>
   </div>
 
-  <!-- АВТОРИЗАЦИЯ -->
+  <!-- АВТОРИЗАЦИЯ (С ПОДДЕРЖКОЙ 2FA PIN ПРИ ВХОДЕ) -->
   <div id="auth-screen">
     <div class="auth-box">
       <div class="brand-title">joy</div>
@@ -788,15 +798,29 @@
       </div>
 
       <form id="form-login" class="auth-form active" onsubmit="apiLogin(event)">
-        <div class="form-group">
-          <label>логин</label>
-          <input type="text" id="login-username" maxlength="24" required>
+        <!-- Шаг 1: Логин и пароль -->
+        <div id="login-step-credentials">
+          <div class="form-group">
+            <label>логин</label>
+            <input type="text" id="login-username" maxlength="24" required>
+          </div>
+          <div class="form-group">
+            <label>пароль</label>
+            <input type="password" id="login-password" maxlength="64" required>
+          </div>
         </div>
-        <div class="form-group">
-          <label>пароль</label>
-          <input type="password" id="login-password" maxlength="64" required>
+
+        <!-- Шаг 2: Ввод 2FA PIN-кода (показывается только если на аккаунте есть PIN) -->
+        <div id="login-step-pin" style="display: none;">
+          <div class="form-group">
+            <label>2fa пин-код</label>
+            <input type="password" id="login-pin" maxlength="8" class="mono" placeholder="••••" style="text-align: center; font-size: 16px; letter-spacing: 4px;">
+            <div class="text-muted" style="font-size: 11px; margin-top: 4px;">аккаунт защищен персональным 2FA пином</div>
+          </div>
+          <button type="button" class="quiet-logout-btn" style="margin-bottom: 10px;" onclick="resetLoginPinStep()">← назад к паролю</button>
         </div>
-        <button type="submit" class="btn-violet" style="width: 100%;">войти</button>
+
+        <button type="submit" id="login-submit-btn" class="btn-violet" style="width: 100%;">войти</button>
       </form>
 
       <form id="form-register" class="auth-form" onsubmit="apiRegister(event)">
@@ -872,7 +896,7 @@
         </div>
       </section>
 
-      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО ВНУТРИ) -->
+      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО МАРКЕТПЛЕЙС) -->
       <section id="sec-forum" class="section">
         <div class="profile-card">
           <div class="profile-sub-tabs">
@@ -1110,7 +1134,7 @@
 
             <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
               <label style="margin-bottom: 4px;">персональный 2fa пин-код</label>
-              <p class="text-muted" style="font-size: 11.5px; margin-bottom: 8px;">установите собственный пин (4-8 цифр) для защиты аккаунта и панели.</p>
+              <p class="text-muted" style="font-size: 11.5px; margin-bottom: 8px;">установите собственный пин (4-8 цифр) для защиты аккаунта при входе.</p>
               <div style="display: flex; gap: 8px; max-width: 320px;">
                 <input type="password" id="user-pin-input" maxlength="8" class="mono" placeholder="новый пин...">
                 <button class="btn-outline" style="font-size: 11px; padding: 7px 12px;" onclick="apiSaveUserPin()">сохранить пин</button>
@@ -1154,7 +1178,7 @@
                 </div>
               </div>
 
-              <!-- Пользователи (твой IP скрыт) -->
+              <!-- Пользователи -->
               <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">пользователи</label>
@@ -1195,7 +1219,7 @@
                     </div>
                   </div>
                   <div class="form-group" style="margin-bottom: 8px;">
-                    <label>сабка</label>
+                    <label>сабка (дней или lifetime)</label>
                     <input type="text" id="admin-target-sub" placeholder="30d / 90d / lifetime / reset">
                   </div>
                   <div style="display: flex; gap: 8px;">
@@ -1270,7 +1294,7 @@
               <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">инвайты</label>
-                  <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать инвайт</button>
+                  <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать</button>
                 </div>
                 <div style="max-height: 160px; overflow-y: auto;">
                   <table class="admin-table">
@@ -1498,18 +1522,26 @@
     }
 
     // =======================================================
-    // НАСТОЯЩИЙ PROOF-OF-WORK КЛИЕНТСКИЙ РЕШАТЕЛЬ ЗАДАЧИ
+    // ИНТЕРАКТИВНЫЙ CLOUDFLARE TURNSTILE ВИДЖЕТ С ГАЛОЧКОЙ
     // =======================================================
-    async function solveRealPoWChallenge() {
-      const label = document.getElementById('cf-status-label');
+    let isVerifyingTurnstile = false;
+
+    async function handleTurnstileClick() {
+      if (isVerifyingTurnstile) return;
+      isVerifyingTurnstile = true;
+
+      const checkbox = document.getElementById('cf-checkbox');
+      const label = document.getElementById('cf-label');
+      const sublabel = document.getElementById('cf-sublabel');
+
+      checkbox.innerHTML = '<span class="cf-spinner"></span>';
+      label.innerText = 'Проверка браузера...';
+      sublabel.innerText = 'вычисление proof-of-work';
+
       try {
-        // 1. Получаем задачу от сервера
         const res = await fetch('/api/challenge');
         const { payload, sig, difficulty } = await res.json();
 
-        label.innerHTML = `<span class="cf-spinner"></span> вычисление криптографического PoW вызова...`;
-
-        // 2. Реальное вычисление SHA-256 через Web Crypto API браузера
         const encoder = new TextEncoder();
         const targetPrefix = '0'.repeat(difficulty);
         let nonce = 0;
@@ -1526,15 +1558,11 @@
             break;
           }
           nonce++;
-          // Уступаем поток каждые 800 итераций, чтобы UI плавно крутился
-          if (nonce % 800 === 0) {
+          if (nonce % 700 === 0) {
             await new Promise(r => setTimeout(r, 0));
           }
         }
 
-        label.innerHTML = `<span class="cf-spinner"></span> проверка решения сервером...`;
-
-        // 3. Отправляем найденный nonce серверу для проверки
         const verifyRes = await fetch('/api/challenge/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1543,26 +1571,41 @@
         const vData = await verifyRes.json();
 
         if (vData.status === 'verified') {
-          // Успешно пройдено! Плавное скрытие экрана
-          document.getElementById('cf-screen').classList.add('verified');
+          // Ставим зеленую галочку
+          checkbox.className = 'cf-checkbox-btn checked';
+          checkbox.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+          label.innerText = 'Проверка пройдена';
+          label.style.color = '#34d399';
+          sublabel.innerText = 'добро пожаловать на getjoy.vip';
+
+          setTimeout(() => {
+            document.getElementById('cf-screen').classList.add('verified');
+          }, 600);
         } else {
-          label.innerText = 'ошибка решения задачи, повтор...';
-          setTimeout(solveRealPoWChallenge, 1000);
+          throw new Error();
         }
       } catch (e) {
-        // Если ошибка связи - пробуем еще раз
-        setTimeout(solveRealPoWChallenge, 1000);
+        checkbox.innerHTML = '';
+        label.innerText = 'Ошибка, попробуйте еще раз';
+        sublabel.innerText = 'нажмите для повтора';
+        isVerifyingTurnstile = false;
       }
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-      // Запускаем реальный вызов защиты
-      solveRealPoWChallenge();
-
+      // Проверяем статус соединения
       try { 
         const res = await fetch('/api/verify-ip'); 
         const d = await res.json();
         updateGlobalStatusBadge(d.build_status);
+        // Если уже проверен IP — сразу скрываем экран
+        if (d.status === 'ok') {
+          document.getElementById('cf-screen').classList.add('verified');
+        }
       } catch (e) {}
 
       const token = localStorage.getItem('token');
@@ -1576,24 +1619,55 @@
       b.innerText = status || 'stable';
     }
 
+    // === АВТОРИЗАЦИЯ С 2FA PIN-КОДОМ ===
+    let pendingLoginCredentials = null;
+
     async function apiLogin(e) {
       e.preventDefault();
+
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
+      const pin = document.getElementById('login-pin').value.trim();
 
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            username, 
+            password, 
+            pin: pin || undefined 
+          })
         });
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
 
+        // Если сервер требует ввод 2FA PIN
+        if (d.require_pin) {
+          pendingLoginCredentials = { username, password };
+          document.getElementById('login-step-credentials').style.display = 'none';
+          document.getElementById('login-step-pin').style.display = 'block';
+          document.getElementById('login-submit-btn').innerText = 'подтвердить 2fa';
+          document.getElementById('login-pin').focus();
+          triggerToast('введите ваш персональный 2FA пин-код');
+          return;
+        }
+
         localStorage.setItem('token', d.token);
         updateGlobalStatusBadge(d.build_status);
+        resetLoginPinStep();
         renderUser(d.user);
-      } catch (err) { triggerToast(err.message); }
+      } catch (err) { 
+        triggerToast(err.message); 
+      }
+    }
+
+    function resetLoginPinStep() {
+      document.getElementById('login-step-credentials').style.display = 'block';
+      document.getElementById('login-step-pin').style.display = 'none';
+      document.getElementById('login-pin').value = '';
+      document.getElementById('login-submit-btn').innerText = 'войти';
+      pendingLoginCredentials = null;
     }
 
     async function apiRegister(e) {
@@ -1730,7 +1804,7 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // Верификация PIN овнера
+    // Разблокировка админки персональным PIN
     async function verifyAdminPin() {
       const pin = document.getElementById('admin-pin-input').value.trim();
       const token = localStorage.getItem('token');
@@ -1753,7 +1827,9 @@
         loadAdminPayments();
         loadAdminPromos();
         loadAdminInvites();
-      } catch (e) { triggerToast(e.message); }
+      } catch (e) {
+        triggerToast(e.message);
+      }
     }
 
     async function loadAdminPayments() {
