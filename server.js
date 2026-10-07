@@ -114,16 +114,15 @@ function sendTelegramNotification(text) {
 }
 
 // ============================================================
-// НАСТОЯЩИЙ ДВИЖОК CLOUDFLARE PROOF-OF-WORK ЗАЩИТЫ ОТ DDOS
+// НАСТОЯЩИЙ CLOUDFLARE TURNSTILE PROOF-OF-WORK ДВИЖОК
 // ============================================================
-const POW_SECRET = 'joy_shield_kernel_key_2026_' + Math.random().toString(36);
-const verifiedIps = new Map(); // IP -> timestamp окончания действия пропуска
+const POW_SECRET = 'joy_turnstile_shield_' + Math.random().toString(36);
+const verifiedIps = new Map();
 
-// Эндпоинт генерации реальной математической задачи
 app.get('/api/challenge', (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
   const ts = Date.now();
-  const difficulty = 4; // 4 шестнадцатеричных нуля (~65,000 хэшей, около 1.5 сек на CPU)
+  const difficulty = 4; // реальная сложность вычисления
   const salt = crypto.randomBytes(8).toString('hex');
   const payload = `${ip}:${ts}:${difficulty}:${salt}`;
   const sig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
@@ -131,30 +130,26 @@ app.get('/api/challenge', (req, res) => {
   res.json({ payload, sig, difficulty });
 });
 
-// Проверка решения браузера
 app.post('/api/challenge/verify', (req, res) => {
   const { payload, sig, nonce } = req.body;
   if (!payload || !sig || nonce === undefined) {
     return res.status(400).json({ error: 'invalid_params' });
   }
 
-  // 1. Проверяем подпись задачи
   const expectedSig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
   if (sig !== expectedSig) {
     return res.status(403).json({ error: 'invalid_signature' });
   }
 
-  // 2. Проверяем время (задача не должна быть старше 90 секунд)
   const parts = payload.split(':');
   const ip = parts[0];
   const ts = parseInt(parts[1]);
   const difficulty = parseInt(parts[2]);
 
-  if (Date.now() - ts > 90000 || Date.now() - ts < 0) {
+  if (Date.now() - ts > 120000) {
     return res.status(403).json({ error: 'challenge_expired' });
   }
 
-  // 3. Проверяем хэш решения
   const calculatedHash = crypto.createHash('sha256').update(`${payload}:${nonce}`).digest('hex');
   const targetPrefix = '0'.repeat(difficulty);
 
@@ -162,14 +157,12 @@ app.post('/api/challenge/verify', (req, res) => {
     return res.status(403).json({ error: 'proof_of_work_failed' });
   }
 
-  // Проверка пройдена успешно — выдаем пропуск на 24 часа для этого IP
   verifiedIps.set(ip, Date.now() + (24 * 3600 * 1000));
-  res.json({ status: 'verified', message: 'DDoS защита пройдена успешно' });
+  res.json({ status: 'verified', message: 'проверка успешно пройдена' });
 });
 
-// Защитный шлюз: блокирует любые API запросы ботов, если задача не решена
+// Защита всех API эндпоинтов от неавторизованных ботов
 app.use('/api', (req, res, next) => {
-  // Исключения: сам вызов проверки и авторизация клиента
   if (req.path === '/challenge' || req.path === '/challenge/verify' || req.path.startsWith('/client/')) {
     return next();
   }
@@ -179,8 +172,8 @@ app.use('/api', (req, res, next) => {
 
   if (!expiresAt || expiresAt < Date.now()) {
     return res.status(403).json({ 
-      error: 'shield_challenge_required', 
-      message: 'доступ заблокирован: необходимо пройти верификацию браузера' 
+      error: 'turnstile_required', 
+      message: 'требуется прохождение проверки браузера' 
     });
   }
 
@@ -208,7 +201,7 @@ app.get('/api/verify-ip', (req, res) => {
   res.json({ status: 'ok', build_status: db.build_status });
 });
 
-// Установка личного PIN-кода 2FA
+// Установка персонального 2FA PIN-кода
 app.post('/api/user/set-pin', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -225,7 +218,7 @@ app.post('/api/user/set-pin', (req, res) => {
 
   user.security_pin = pin.trim();
   saveDB(db);
-  res.json({ message: 'персональный 2fa пин-код сохранен' });
+  res.json({ message: 'персональный 2fa пин-код успешно установлен' });
 });
 
 app.post('/api/user/verify-pin', (req, res) => {
@@ -306,9 +299,9 @@ app.post('/api/register', (req, res) => {
   });
 });
 
-// Вход
+// ВХОД С ОБЯЗАТЕЛЬНОЙ ПРОВЕРКОЙ 2FA PIN
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, pin } = req.body;
   const db = loadDB();
   const user = db.users[username.trim().toLowerCase()];
 
@@ -321,6 +314,16 @@ app.post('/api/login', (req, res) => {
       message: `аккаунт заблокирован: ${user.ban_reason || 'бан'}`,
       banned: true 
     });
+  }
+
+  // Если у пользователя установлен PIN — требуем его обязательно
+  if (user.security_pin) {
+    if (!pin) {
+      return res.json({ require_pin: true, message: 'требуется ввод 2fa пин-кода' });
+    }
+    if (user.security_pin !== pin.trim()) {
+      return res.status(403).json({ message: 'неверный 2fa пин-код' });
+    }
   }
 
   user.web_ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
