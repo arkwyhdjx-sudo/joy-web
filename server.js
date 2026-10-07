@@ -4,7 +4,6 @@ const path = require('path');
 
 const app = express();
 
-// Лимит на загрузку видео/гифок аватарки
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(express.static(__dirname));
@@ -19,7 +18,8 @@ if (!fs.existsSync(BUILDS_DIR)) {
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = {
-      users: {},
+      next_uid: 1, // первый зарегистрировавшийся забирает честный UID 1
+      users: {},   // никаких фейковых аккаунтов dev:dev
       invites: {
         'JOY-DEV-KEY1': { used: false, used_by: null },
         'JOY-TEST-2026': { used: false, used_by: null },
@@ -29,7 +29,8 @@ function loadDB() {
         {
           id: 1,
           title: 'правила и статус закрытого билда',
-          author: 'dev',
+          author: 'system',
+          author_uid: 0,
           created_at: Date.now(),
           content: 'закрытый тест запущен. вопросы и найденные баги пишите сюда.',
           posts: []
@@ -42,11 +43,13 @@ function loadDB() {
   }
   try {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    if (!data.next_uid) data.next_uid = 1;
+    if (!data.users) data.users = {};
     if (!data.threads) data.threads = [];
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { users: {}, invites: {}, threads: [], tickets: [] };
+    return { next_uid: 1, users: {}, invites: {}, threads: [], tickets: [] };
   }
 }
 
@@ -54,11 +57,11 @@ function saveDB(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.error('Ошибка записи в базу:', e);
+    console.error('Ошибка базы:', e);
   }
 }
 
-// Защита от флуда по IP
+// Защита от спама по IP
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -77,7 +80,6 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// КД на действия аккаунтов (анти-спам)
 const actionCooldowns = new Map();
 function checkCooldown(username, action, cooldownSec) {
   const key = `${username}_${action}`;
@@ -93,7 +95,7 @@ function checkCooldown(username, action, cooldownSec) {
 
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 
-// Регистрация
+// Регистрация с присвоением UID
 app.post('/api/register', (req, res) => {
   const { invite_code, username, password } = req.body;
   if (!invite_code || !username || !password) {
@@ -113,17 +115,22 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'логин занят' });
   }
 
+  // Присваиваем следующий порядковый UID
+  const assignedUid = db.next_uid || 1;
+  db.next_uid = assignedUid + 1;
+
   db.invites[cleanInvite].used = true;
   db.invites[cleanInvite].used_by = username.trim();
 
   db.users[userKey] = {
+    uid: assignedUid,
     username: username.trim(),
     password: password,
     invite_code: cleanInvite,
     bio: '',
     avatar_color: '#8b5cf6',
-    avatar_media: null, // base64 файл (видео, гиф, фото)
-    avatar_type: null,  // 'video' | 'image'
+    avatar_media: null,
+    avatar_type: null,
     hwid: null,
     sub_until: 0,
     created_at: Date.now()
@@ -166,7 +173,7 @@ app.get('/api/profile', (req, res) => {
   res.json({ user });
 });
 
-// Обновление профиля (Био, Аватар файл, цвет)
+// Обновление профиля
 app.post('/api/profile/update', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'не авторизован' });
@@ -178,7 +185,7 @@ app.post('/api/profile/update', (req, res) => {
 
   const { bio, avatar_color, avatar_media, avatar_type, reset_media } = req.body;
 
-  if (typeof bio === 'string') user.bio = bio.slice(0, 300);
+  if (typeof bio === 'string') user.bio = bio.slice(0, 250);
   if (typeof avatar_color === 'string') user.avatar_color = avatar_color;
 
   if (reset_media) {
@@ -233,6 +240,7 @@ app.get('/api/forum/threads', (req, res) => {
     id: t.id,
     title: t.title,
     author: t.author,
+    author_uid: t.author_uid || 1,
     created_at: t.created_at,
     replies_count: t.posts ? t.posts.length : 0
   }));
@@ -266,6 +274,7 @@ app.post('/api/forum/threads', (req, res) => {
     title: title.trim(),
     content: content.trim(),
     author: user.username,
+    author_uid: user.uid,
     created_at: Date.now(),
     posts: []
   };
@@ -296,6 +305,7 @@ app.post('/api/forum/threads/:id/reply', (req, res) => {
   const post = {
     id: Date.now(),
     author: user.username,
+    author_uid: user.uid,
     text: text.trim(),
     created_at: Date.now()
   };
@@ -306,7 +316,6 @@ app.post('/api/forum/threads/:id/reply', (req, res) => {
   res.json({ post });
 });
 
-// Удаление своей темы
 app.delete('/api/forum/threads/:id', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
@@ -328,7 +337,6 @@ app.delete('/api/forum/threads/:id', (req, res) => {
   res.json({ message: 'тема удалена' });
 });
 
-// Удаление своего сообщения в треде
 app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
@@ -354,7 +362,7 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   res.json({ message: 'сообщение удалено' });
 });
 
-// ТИКЕТЫ (ПОДДЕРЖКА)
+// ТИКЕТЫ
 app.post('/api/support/ticket', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
@@ -374,6 +382,7 @@ app.post('/api/support/ticket', (req, res) => {
     id: 'TICK-' + Math.floor(1000 + Math.random() * 9000),
     userKey,
     username: user.username,
+    user_uid: user.uid,
     subject: subject.trim(),
     message: message.trim(),
     status: 'на рассмотрении',
@@ -384,7 +393,7 @@ app.post('/api/support/ticket', (req, res) => {
   db.tickets.unshift(ticket);
   saveDB(db);
 
-  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username}: ${ticket.subject}`);
+  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username} [UID: ${user.uid}]: ${ticket.subject}`);
   res.json({ message: 'обращение отправлено', ticket });
 });
 
@@ -398,7 +407,6 @@ app.get('/api/support/my-tickets', (req, res) => {
   res.json({ tickets: myTickets });
 });
 
-// Удаление своего тикета
 app.delete('/api/support/ticket/:id', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
