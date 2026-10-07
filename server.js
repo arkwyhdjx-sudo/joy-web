@@ -3,7 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-app.use(express.json());
+
+// Лимит на загрузку видео/гифок аватарки
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(express.static(__dirname));
 
 const DB_FILE = path.join(__dirname, 'joy_db.json');
@@ -25,10 +28,10 @@ function loadDB() {
       threads: [
         {
           id: 1,
-          title: 'Добро пожаловать в закрытый билд JOY.CC',
+          title: 'правила и статус закрытого билда',
           author: 'dev',
           created_at: Date.now(),
-          content: 'Тестирование начато. Баги и предложения пишите в этот тред.',
+          content: 'закрытый тест запущен. вопросы и найденные баги пишите сюда.',
           posts: []
         }
       ],
@@ -48,10 +51,14 @@ function loadDB() {
 }
 
 function saveDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error('Ошибка записи в базу:', e);
+  }
 }
 
-// Защита от флуда
+// Защита от флуда по IP
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -63,12 +70,26 @@ app.use('/api', (req, res, next) => {
     ipRequests.set(ip, record);
   } else {
     record.count++;
-    if (record.count > 30) {
-      return res.status(429).json({ message: 'Слишком много запросов. Подождите.' });
+    if (record.count > 35) {
+      return res.status(429).json({ message: 'лимит запросов превышен' });
     }
   }
   next();
 });
+
+// КД на действия аккаунтов (анти-спам)
+const actionCooldowns = new Map();
+function checkCooldown(username, action, cooldownSec) {
+  const key = `${username}_${action}`;
+  const now = Date.now();
+  const last = actionCooldowns.get(key) || 0;
+  if (now - last < cooldownSec * 1000) {
+    const wait = Math.ceil((cooldownSec * 1000 - (now - last)) / 1000);
+    return `подождите ${wait} сек.`;
+  }
+  actionCooldowns.set(key, now);
+  return null;
+}
 
 app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 
@@ -76,7 +97,7 @@ app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok' }));
 app.post('/api/register', (req, res) => {
   const { invite_code, username, password } = req.body;
   if (!invite_code || !username || !password) {
-    return res.status(400).json({ message: 'Заполните все поля' });
+    return res.status(400).json({ message: 'заполните все поля' });
   }
 
   const db = loadDB();
@@ -84,12 +105,12 @@ app.post('/api/register', (req, res) => {
   const inv = db.invites[cleanInvite];
 
   if (!inv || inv.used) {
-    return res.status(400).json({ message: 'Инвайт недействителен или уже использован' });
+    return res.status(400).json({ message: 'инвайт недействителен или использован' });
   }
 
   const userKey = username.trim().toLowerCase();
   if (db.users[userKey]) {
-    return res.status(400).json({ message: 'Логин уже занят' });
+    return res.status(400).json({ message: 'логин занят' });
   }
 
   db.invites[cleanInvite].used = true;
@@ -99,9 +120,10 @@ app.post('/api/register', (req, res) => {
     username: username.trim(),
     password: password,
     invite_code: cleanInvite,
-    bio: 'Участник закрытого тестирования.',
+    bio: '',
     avatar_color: '#8b5cf6',
-    avatar_url: '',
+    avatar_media: null, // base64 файл (видео, гиф, фото)
+    avatar_type: null,  // 'video' | 'image'
     hwid: null,
     sub_until: 0,
     created_at: Date.now()
@@ -122,7 +144,7 @@ app.post('/api/login', (req, res) => {
   const user = db.users[username.trim().toLowerCase()];
 
   if (!user || user.password !== password) {
-    return res.status(401).json({ message: 'Неверный логин или пароль' });
+    return res.status(401).json({ message: 'неверный логин или пароль' });
   }
 
   res.json({
@@ -134,39 +156,47 @@ app.post('/api/login', (req, res) => {
 // Профиль
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'Сессия истекла' });
+  if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'сессия истекла' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
 
-  if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
+  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
   res.json({ user });
 });
 
-// Обновление профиля
+// Обновление профиля (Био, Аватар файл, цвет)
 app.post('/api/profile/update', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'Не авторизован' });
+  if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'не авторизован' });
 
-  const { bio, avatar_color, avatar_url } = req.body;
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(404).json({ message: 'пользователь не найден' });
 
-  if (!db.users[userKey]) return res.status(404).json({ message: 'Пользователь не найден' });
+  const { bio, avatar_color, avatar_media, avatar_type, reset_media } = req.body;
 
-  if (typeof bio === 'string') db.users[userKey].bio = bio.slice(0, 200);
-  if (typeof avatar_color === 'string') db.users[userKey].avatar_color = avatar_color;
-  if (typeof avatar_url === 'string') db.users[userKey].avatar_url = avatar_url.trim();
+  if (typeof bio === 'string') user.bio = bio.slice(0, 300);
+  if (typeof avatar_color === 'string') user.avatar_color = avatar_color;
+
+  if (reset_media) {
+    user.avatar_media = null;
+    user.avatar_type = null;
+  } else if (avatar_media && avatar_type) {
+    user.avatar_media = avatar_media;
+    user.avatar_type = avatar_type;
+  }
 
   saveDB(db);
-  res.json({ message: 'Профиль обновлен', user: db.users[userKey] });
+  res.json({ message: 'профиль сохранен', user });
 });
 
 // Сброс HWID
 app.post('/api/hwid/reset', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Не авторизован' });
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
@@ -174,31 +204,29 @@ app.post('/api/hwid/reset', (req, res) => {
     db.users[userKey].hwid = null;
     saveDB(db);
   }
-  res.json({ message: 'HWID успешно сброшен' });
+  res.json({ message: 'hwid успешно сброшен' });
 });
 
-// Выдача реального бинарника
+// Выдача лоадера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) {
-    return res.status(401).send('Доступ запрещен: авторизуйтесь.');
+    return res.status(401).send('доступ запрещен');
   }
 
-  const realLoaderPath = path.join(BUILDS_DIR, 'JoyLoader.exe');
-  
-  if (fs.existsSync(realLoaderPath)) {
-    return res.download(realLoaderPath, 'JoyLoader.exe');
+  const realLoader = path.join(BUILDS_DIR, 'JoyLoader.exe');
+  if (fs.existsSync(realLoader)) {
+    return res.download(realLoader, 'JoyLoader.exe');
   }
 
-  // Если файл еще не залит в builds/
   const tempPath = path.join(__dirname, 'JoyLoader_stub.exe');
   if (!fs.existsSync(tempPath)) {
-    fs.writeFileSync(tempPath, 'JOY.CC CLIENT BINARY READY FOR REPLACE');
+    fs.writeFileSync(tempPath, 'JOY.CC CLIENT BUILD');
   }
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// Форум
+// ФОРУМ
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => ({
@@ -214,20 +242,24 @@ app.get('/api/forum/threads', (req, res) => {
 app.get('/api/forum/threads/:id', (req, res) => {
   const db = loadDB();
   const thread = db.threads.find(t => t.id === parseInt(req.params.id));
-  if (!thread) return res.status(404).json({ message: 'Тема не найдена' });
+  if (!thread) return res.status(404).json({ message: 'тема не найдена' });
   res.json({ thread });
 });
 
 app.post('/api/forum/threads', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+
+  const cdError = checkCooldown(user.username, 'new_thread', 30);
+  if (cdError) return res.status(429).json({ message: cdError });
 
   const { title, content } = req.body;
-  if (!title || !content) return res.status(400).json({ message: 'Заполните поля' });
-
-  const db = loadDB();
-  const userKey = token.replace('joy_session_', '');
-  const user = db.users[userKey];
+  if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
 
   const newThread = {
     id: Date.now(),
@@ -245,36 +277,98 @@ app.post('/api/forum/threads', (req, res) => {
 
 app.post('/api/forum/threads/:id/reply', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+
+  const cdError = checkCooldown(user.username, 'reply', 10);
+  if (cdError) return res.status(429).json({ message: cdError });
 
   const { text } = req.body;
-  if (!text || !text.trim()) return res.status(400).json({ message: 'Введите текст' });
-
-  const db = loadDB();
-  const userKey = token.replace('joy_session_', '');
-  const user = db.users[userKey];
+  if (!text || !text.trim()) return res.status(400).json({ message: 'введите текст' });
 
   const thread = db.threads.find(t => t.id === parseInt(req.params.id));
-  if (!thread) return res.status(404).json({ message: 'Тема не найдена' });
+  if (!thread) return res.status(404).json({ message: 'тема не найдена' });
 
-  const post = { author: user.username, text: text.trim(), created_at: Date.now() };
+  const post = {
+    id: Date.now(),
+    author: user.username,
+    text: text.trim(),
+    created_at: Date.now()
+  };
+
   if (!thread.posts) thread.posts = [];
   thread.posts.push(post);
   saveDB(db);
   res.json({ post });
 });
 
-// Тикеты
-app.post('/api/support/ticket', (req, res) => {
+// Удаление своей темы
+app.delete('/api/forum/threads/:id', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
-
-  const { subject, message } = req.body;
-  if (!subject || !message) return res.status(400).json({ message: 'Заполните поля' });
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const user = db.users[userKey];
+  const tId = parseInt(req.params.id);
+
+  const idx = db.threads.findIndex(t => t.id === tId);
+  if (idx === -1) return res.status(404).json({ message: 'тема не найдена' });
+
+  if (db.threads[idx].author !== user.username && user.username !== 'dev') {
+    return res.status(403).json({ message: 'нет прав на удаление' });
+  }
+
+  db.threads.splice(idx, 1);
+  saveDB(db);
+  res.json({ message: 'тема удалена' });
+});
+
+// Удаление своего сообщения в треде
+app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  const tId = parseInt(req.params.id);
+  const pId = parseInt(req.params.postId);
+
+  const thread = db.threads.find(t => t.id === tId);
+  if (!thread) return res.status(404).json({ message: 'тема не найдена' });
+
+  const pIdx = (thread.posts || []).findIndex(p => p.id === pId);
+  if (pIdx === -1) return res.status(404).json({ message: 'сообщение не найдено' });
+
+  if (thread.posts[pIdx].author !== user.username && user.username !== 'dev') {
+    return res.status(403).json({ message: 'нет прав на удаление' });
+  }
+
+  thread.posts.splice(pIdx, 1);
+  saveDB(db);
+  res.json({ message: 'сообщение удалено' });
+});
+
+// ТИКЕТЫ (ПОДДЕРЖКА)
+app.post('/api/support/ticket', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user) return res.status(401).json({ message: 'пользователь не найден' });
+
+  const cdError = checkCooldown(user.username, 'ticket', 30);
+  if (cdError) return res.status(429).json({ message: cdError });
+
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ message: 'заполните все поля' });
 
   const ticket = {
     id: 'TICK-' + Math.floor(1000 + Math.random() * 9000),
@@ -282,25 +376,43 @@ app.post('/api/support/ticket', (req, res) => {
     username: user.username,
     subject: subject.trim(),
     message: message.trim(),
-    status: 'На рассмотрении',
+    status: 'на рассмотрении',
     reply: null,
     created_at: Date.now()
   };
 
   db.tickets.unshift(ticket);
   saveDB(db);
-  console.log(`[FORWARD LOG] Тикет ${ticket.id} от ${user.username}`);
-  res.json({ message: 'Обращение создано', ticket });
+
+  console.log(`[FORWARD LOG] arkwyhdjx@gmail.com -> Тикет ${ticket.id} от ${user.username}: ${ticket.subject}`);
+  res.json({ message: 'обращение отправлено', ticket });
 });
 
 app.get('/api/support/my-tickets', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Авторизуйтесь' });
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
   const myTickets = (db.tickets || []).filter(t => t.userKey === userKey);
   res.json({ tickets: myTickets });
+});
+
+// Удаление своего тикета
+app.delete('/api/support/ticket/:id', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const tId = req.params.id;
+
+  const idx = (db.tickets || []).findIndex(t => t.id === tId && t.userKey === userKey);
+  if (idx === -1) return res.status(404).json({ message: 'тикет не найден' });
+
+  db.tickets.splice(idx, 1);
+  saveDB(db);
+  res.json({ message: 'обращение удалено' });
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
