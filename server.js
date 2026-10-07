@@ -4,8 +4,9 @@ const path = require('path');
 
 const app = express();
 
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ limit: '25mb', extended: true }));
+// Лимит на загрузку файлов лаунчера и медиа (до 100MB)
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(express.static(__dirname));
 
 const DB_FILE = path.join(__dirname, 'joy_db.json');
@@ -83,7 +84,7 @@ app.use('/api', (req, res, next) => {
     ipRequests.set(ip, record);
   } else {
     record.count++;
-    if (record.count > 35) {
+    if (record.count > 40) {
       return res.status(429).json({ message: 'лимит запросов превышен' });
     }
   }
@@ -169,7 +170,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Получение профиля текущего пользователя
+// Профиль текущего юзера
 app.get('/api/profile', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token || !token.startsWith('joy_session_')) return res.status(401).json({ message: 'сессия истекла' });
@@ -182,7 +183,7 @@ app.get('/api/profile', (req, res) => {
   res.json({ user });
 });
 
-// Публичный профиль для модалки по клику
+// Публичный профиль для модалки
 app.get('/api/user/:username', (req, res) => {
   const db = loadDB();
   const target = db.users[req.params.username.toLowerCase()];
@@ -242,7 +243,7 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
-// Загрузка лаунчера
+// Скачивание лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) {
@@ -259,6 +260,110 @@ app.get('/api/download-loader', (req, res) => {
     fs.writeFileSync(tempPath, 'JOY.CC CLIENT BUILD');
   }
   res.download(tempPath, 'JoyLoader.exe');
+});
+
+// === АДМИН-ПАНЕЛЬ (ТОЛЬКО ДЛЯ UID 1) ===
+
+// 1. Загрузка файла лаунчера через браузер
+app.post('/api/admin/upload-build', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ запрещен' });
+  }
+
+  const { file_base64 } = req.body;
+  if (!file_base64) return res.status(400).json({ message: 'файл не передан' });
+
+  try {
+    const base64Data = file_base64.replace(/^data:.*?;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    const targetPath = path.join(BUILDS_DIR, 'JoyLoader.exe');
+    fs.writeFileSync(targetPath, buffer);
+    res.json({ message: 'новый билд JoyLoader.exe успешно загружен на сервер' });
+  } catch (err) {
+    res.status(500).json({ message: 'ошибка сохранения файла' });
+  }
+});
+
+// 2. Создание инвайтов из админки
+app.post('/api/admin/create-invite', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ запрещен' });
+  }
+
+  const code = 'JOY-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+  db.invites[code] = { used: false, used_by: null };
+  saveDB(db);
+
+  res.json({ invite: code, invites: db.invites });
+});
+
+// === ОБНОВЛЕНИЯ ===
+app.get('/api/updates', (req, res) => {
+  const db = loadDB();
+  res.json({ updates: db.updates || [] });
+});
+
+app.post('/api/updates', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ только для разработчика' });
+  }
+
+  const { title, content } = req.body;
+  if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
+
+  const item = {
+    id: Date.now(),
+    title: title.trim(),
+    content: content.trim(),
+    author: user.username,
+    created_at: Date.now()
+  };
+
+  db.updates.unshift(item);
+  saveDB(db);
+  res.json({ update: item });
+});
+
+app.delete('/api/updates/:id', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+
+  if (!user || user.uid !== 1) {
+    return res.status(403).json({ message: 'доступ только для разработчика' });
+  }
+
+  const uId = parseInt(req.params.id);
+  const idx = (db.updates || []).findIndex(u => u.id === uId);
+  if (idx === -1) return res.status(404).json({ message: 'обновление не найдено' });
+
+  db.updates.splice(idx, 1);
+  saveDB(db);
+  res.json({ message: 'обновление удалено' });
 });
 
 // === ФОРУМ ===
@@ -414,63 +519,7 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   res.json({ message: 'сообщение удалено' });
 });
 
-// === АПДЕЙТЫ (CHANGELOG) ===
-app.get('/api/updates', (req, res) => {
-  const db = loadDB();
-  res.json({ updates: db.updates || [] });
-});
-
-app.post('/api/updates', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
-
-  const userKey = token.replace('joy_session_', '');
-  const db = loadDB();
-  const user = db.users[userKey];
-
-  // Постить апдейты разрешено только dev / UID 1
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ только для разработчика' });
-  }
-
-  const { title, content } = req.body;
-  if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
-
-  const item = {
-    id: Date.now(),
-    title: title.trim(),
-    content: content.trim(),
-    author: user.username,
-    created_at: Date.now()
-  };
-
-  db.updates.unshift(item);
-  saveDB(db);
-  res.json({ update: item });
-});
-
-app.delete('/api/updates/:id', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
-
-  const userKey = token.replace('joy_session_', '');
-  const db = loadDB();
-  const user = db.users[userKey];
-
-  if (!user || user.uid !== 1) {
-    return res.status(403).json({ message: 'доступ только для разработчика' });
-  }
-
-  const uId = parseInt(req.params.id);
-  const idx = (db.updates || []).findIndex(u => u.id === uId);
-  if (idx === -1) return res.status(404).json({ message: 'обновление не найдено' });
-
-  db.updates.splice(idx, 1);
-  saveDB(db);
-  res.json({ message: 'обновление удалено' });
-});
-
-// === ТИКЕТЫ (ПОДДЕРЖКА) ===
+// === ТИКЕТЫ ===
 app.post('/api/support/ticket', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
