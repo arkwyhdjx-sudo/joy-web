@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const https = require('https');
 
 const app = express();
@@ -16,18 +17,30 @@ if (!fs.existsSync(BUILDS_DIR)) {
   fs.mkdirSync(BUILDS_DIR, { recursive: true });
 }
 
+// Генератор инвайтов: JOY-<10 символов>-<15 символов>
+function generateInviteCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const genPart = (len) => {
+    let res = '';
+    const bytes = crypto.randomBytes(len);
+    for (let i = 0; i < len; i++) {
+      res += chars[bytes[i] % chars.length];
+    }
+    return res;
+  };
+  return `JOY-${genPart(10)}-${genPart(15)}`;
+}
+
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = {
       next_uid: 1,
-      build_status: 'undetected', // undetected | testing | updating
+      build_status: 'stable', // stable | testing | updating
       tg_bot_token: '',
       tg_chat_id: '',
       users: {},
       invites: {
-        'JOY-DEV-KEY1': { used: false, used_by: null, created_at: Date.now() },
-        'JOY-TEST-2026': { used: false, used_by: null, created_at: Date.now() },
-        'JOY-ALPHA-777': { used: false, used_by: null, created_at: Date.now() }
+        'JOY-999-DEV': { used: false, used_by: null, created_at: Date.now() }
       },
       promos: {},
       configs: [],
@@ -56,7 +69,7 @@ function loadDB() {
   try {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
     if (!data.next_uid) data.next_uid = 1;
-    if (!data.build_status) data.build_status = 'undetected';
+    if (!data.build_status || data.build_status === 'undetected') data.build_status = 'stable';
     if (!data.users) data.users = {};
     if (!data.invites) data.invites = {};
     if (!data.promos) data.promos = {};
@@ -67,7 +80,7 @@ function loadDB() {
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { next_uid: 1, users: {}, invites: {}, promos: {}, configs: [], scripts: [], threads: [], updates: [], tickets: [] };
+    return { next_uid: 1, build_status: 'stable', users: {}, invites: {}, promos: {}, configs: [], scripts: [], threads: [], updates: [], tickets: [] };
   }
 }
 
@@ -79,7 +92,6 @@ function saveDB(data) {
   }
 }
 
-// Telegram вебхук отправка
 function sendTelegramNotification(text) {
   const db = loadDB();
   if (!db.tg_bot_token || !db.tg_chat_id) return;
@@ -100,7 +112,6 @@ function sendTelegramNotification(text) {
   req.end();
 }
 
-// Защита от флуда
 const ipRequests = new Map();
 app.use('/api', (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -184,6 +195,7 @@ app.post('/api/register', (req, res) => {
     hwid: null,
     web_ip: ip,
     client_ip: null,
+    last_launch: null,
     sub_until: isOwner ? -1 : 0,
     created_at: Date.now()
   };
@@ -284,11 +296,83 @@ app.post('/api/profile/update', (req, res) => {
   res.json({ message: 'профиль сохранен', user });
 });
 
-// ==========================================
-// 1. API ДЛЯ ЛАУНЧЕРА И ИГРЫ (C++ CLIENT)
-// ==========================================
+// Активация промокода
+app.post('/api/promo/redeem', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
 
-// Авторизация лаунчера + HWID привязка
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
+
+  const promoKey = (req.body.code || '').trim().toUpperCase();
+  const promo = db.promos[promoKey];
+
+  if (!promo) return res.status(400).json({ message: 'промокод не существует' });
+  if (promo.used_count >= promo.max_uses) return res.status(400).json({ message: 'лимит активаций исчерпан' });
+  if (promo.users_activated && promo.users_activated.includes(user.username)) {
+    return res.status(400).json({ message: 'вы уже активировали этот промокод' });
+  }
+
+  const now = Date.now();
+  const daysMs = promo.days * 24 * 60 * 60 * 1000;
+  if (user.sub_until === -1) {
+    return res.status(400).json({ message: 'у вас уже активна бессрочная подписка' });
+  }
+
+  if (user.sub_until > now) {
+    user.sub_until += daysMs;
+  } else {
+    user.sub_until = now + daysMs;
+  }
+
+  promo.used_count++;
+  if (!promo.users_activated) promo.users_activated = [];
+  promo.users_activated.push(user.username);
+
+  saveDB(db);
+  res.json({ message: `активировано +${promo.days} дн. подписки`, user });
+});
+
+// Сброс HWID
+app.post('/api/hwid/reset', (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'не авторизован' });
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
+
+  user.hwid = null;
+  saveDB(db);
+  res.json({ message: 'hwid успешно сброшен' });
+});
+
+// Скачивание лаунчера
+app.get('/api/download-loader', (req, res) => {
+  const token = req.query.token;
+  if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
+
+  const userKey = token.replace('joy_session_', '');
+  const db = loadDB();
+  const user = db.users[userKey];
+  if (!user || user.banned) return res.status(403).send('аккаунт заблокирован');
+
+  const realLoader = path.join(BUILDS_DIR, 'JoyLoader.exe');
+  if (fs.existsSync(realLoader)) {
+    return res.download(realLoader, 'JoyLoader.exe');
+  }
+
+  const tempPath = path.join(__dirname, 'JoyLoader_stub.exe');
+  if (!fs.existsSync(tempPath)) {
+    fs.writeFileSync(tempPath, 'JOY.VIP CLIENT BUILD');
+  }
+  res.download(tempPath, 'JoyLoader.exe');
+});
+
+// API авторизации лаунчера
 app.post('/api/client/auth', (req, res) => {
   const { username, password, hwid } = req.body;
   if (!username || !password || !hwid) {
@@ -306,30 +390,26 @@ app.post('/api/client/auth', (req, res) => {
     return res.status(403).json({ status: 'error', message: `бан: ${user.ban_reason || 'доступ запрещен'}` });
   }
 
-  // Проверка статуса софта
   if (db.build_status === 'updating' && user.role !== 'owner') {
     return res.status(403).json({ status: 'error', message: 'билд на техническом обновлении' });
   }
 
-  // Проверка активной подписки
   const now = Date.now();
   const hasSub = user.sub_until === -1 || user.sub_until > now;
   if (!hasSub) {
     return res.status(403).json({ status: 'error', message: 'подписка истекла или отсутствует' });
   }
 
-  // Автопривязка HWID при первом коннекте
   if (!user.hwid) {
     user.hwid = hwid.trim();
   } else if (user.hwid !== hwid.trim() && user.role !== 'owner') {
     return res.status(403).json({ status: 'error', message: 'hwid не совпадает с привязанным' });
   }
 
-  // Запись IP лаунчера
   user.client_ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  user.last_launch = Date.now();
   saveDB(db);
 
-  // Возврат токена сессии для последующего получения payload
   res.json({
     status: 'success',
     username: user.username,
@@ -339,7 +419,6 @@ app.post('/api/client/auth', (req, res) => {
   });
 });
 
-// Отдача зашифрованной DLL / шеллкода прямо в память лоадера
 app.get('/api/client/payload', (req, res) => {
   const token = req.headers['x-loader-token'];
   const userKey = req.headers['x-loader-user'];
@@ -360,14 +439,10 @@ app.get('/api/client/payload', (req, res) => {
     return res.sendFile(dllPath);
   }
 
-  // Стаб, если DLL еще не залита
   res.send('JOY_ENCRYPTED_MEMORY_PAYLOAD_STUB');
 });
 
-// ==========================================
-// 2. ОБЛАЧНЫЕ КОНФИГИ (CLOUD CONFIGS)
-// ==========================================
-
+// Облачные конфиги
 app.get('/api/configs', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -393,7 +468,7 @@ app.post('/api/configs', (req, res) => {
   const newConfig = {
     id: 'CFG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
     name: name.trim().slice(0, 32),
-    data: data.slice(0, 100000), // до 100кб настроек
+    data: data.slice(0, 100000),
     author: user.username,
     is_public: !!is_public,
     updated_at: Date.now()
@@ -419,18 +494,7 @@ app.delete('/api/configs/:id', (req, res) => {
   res.json({ message: 'конфиг удален' });
 });
 
-// Эндпоинт для клиента игры, чтобы забрать конфиг по коду
-app.get('/api/client/config/:id', (req, res) => {
-  const db = loadDB();
-  const cfg = (db.configs || []).find(c => c.id === req.params.id);
-  if (!cfg) return res.status(404).json({ message: 'не найден' });
-  res.json({ name: cfg.name, data: cfg.data });
-});
-
-// ==========================================
-// 3. ОБЛАЧНЫЕ LUA-СКРИПТЫ
-// ==========================================
-
+// Облачные Lua-скрипты
 app.get('/api/scripts', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
@@ -495,10 +559,7 @@ app.delete('/api/scripts/:id', (req, res) => {
   res.json({ message: 'скрипт удален' });
 });
 
-// ==========================================
-// 4. ТИКЕТЫ + TELEGRAM ОПОВЕЩЕНИЯ
-// ==========================================
-
+// Тикеты
 app.post('/api/support/ticket', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'авторизуйтесь' });
@@ -526,7 +587,6 @@ app.post('/api/support/ticket', (req, res) => {
   db.tickets.unshift(ticket);
   saveDB(db);
 
-  // Мгновенный алерт в Telegram
   sendTelegramNotification(`🚨 <b>Новый тикет поддержки JOY</b>\n\n<b>От:</b> ${user.username} [UID: ${user.uid}]\n<b>Тема:</b> ${ticket.subject}\n<b>Сообщение:</b> ${ticket.message}`);
 
   res.json({ message: 'обращение отправлено', ticket });
@@ -556,10 +616,7 @@ app.delete('/api/support/ticket/:id', (req, res) => {
   res.json({ message: 'удалено' });
 });
 
-// ==========================================
-// 5. УЛУЧШЕННЫЙ ФОРУМ (PIN, LOCK, ТЕГИ)
-// ==========================================
-
+// Форум
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => {
@@ -580,7 +637,6 @@ app.get('/api/forum/threads', (req, res) => {
       replies_count: t.posts ? t.posts.length : 0
     };
   });
-  // Закрепленные темы всегда первыми
   list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at - a.created_at);
   res.json({ threads: list });
 });
@@ -677,7 +733,6 @@ app.post('/api/forum/threads/:id/reply', (req, res) => {
   res.json({ post });
 });
 
-// Закрепление и закрытие темы (для овнера)
 app.post('/api/forum/threads/:id/moderate', requireOwner, (req, res) => {
   const { pinned, locked } = req.body;
   const db = loadDB();
@@ -737,10 +792,7 @@ app.delete('/api/forum/threads/:id/post/:postId', (req, res) => {
   res.json({ message: 'сообщение удалено' });
 });
 
-// ==========================================
-// 6. АДМИНКА
-// ==========================================
-
+// Админка
 app.post('/api/admin/self-lifetime', requireOwner, (req, res) => {
   const db = loadDB();
   const user = req.adminUser;
@@ -762,6 +814,7 @@ app.get('/api/admin/users', requireOwner, (req, res) => {
     invite_code: u.invite_code,
     web_ip: u.web_ip || '—',
     client_ip: u.client_ip || '—',
+    last_launch: u.last_launch,
     ip_mismatch: !!(u.web_ip && u.client_ip && u.web_ip !== u.client_ip),
     hwid: !!u.hwid,
     created_at: u.created_at
@@ -803,11 +856,11 @@ app.post('/api/admin/user/update', requireOwner, (req, res) => {
   res.json({ message: `аккаунт ${target.username} обновлен`, target });
 });
 
-// Смена глобального статуса софта (undetected / testing / updating)
+// Статус софта (только stable, testing, updating)
 app.post('/api/admin/status', requireOwner, (req, res) => {
   const { status } = req.body;
   const db = loadDB();
-  if (['undetected', 'testing', 'updating'].includes(status)) {
+  if (['stable', 'testing', 'updating'].includes(status)) {
     db.build_status = status;
     saveDB(db);
     return res.json({ message: `статус изменен на ${status}`, build_status: status });
@@ -815,7 +868,6 @@ app.post('/api/admin/status', requireOwner, (req, res) => {
   res.status(400).json({ message: 'неверный статус' });
 });
 
-// Настройка Telegram
 app.post('/api/admin/telegram', requireOwner, (req, res) => {
   const { token, chat_id } = req.body;
   const db = loadDB();
@@ -825,7 +877,6 @@ app.post('/api/admin/telegram', requireOwner, (req, res) => {
   res.json({ message: 'настройки telegram сохранены' });
 });
 
-// Загрузка DLL чита (в builds/joy_internal.dll)
 app.post('/api/admin/upload-payload', requireOwner, (req, res) => {
   const { file_base64 } = req.body;
   if (!file_base64) return res.status(400).json({ message: 'файл не передан' });
@@ -833,13 +884,12 @@ app.post('/api/admin/upload-payload', requireOwner, (req, res) => {
     const base64Data = file_base64.replace(/^data:.*?;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
     fs.writeFileSync(path.join(BUILDS_DIR, 'joy_internal.dll'), buffer);
-    res.json({ message: 'dll чита сохранена на сервере (будет стримиться в память)' });
+    res.json({ message: 'dll чита сохранена на сервере' });
   } catch (err) {
     res.status(500).json({ message: 'ошибка сохранения dll' });
   }
 });
 
-// Загрузка exe лаунчера
 app.post('/api/admin/upload-build', requireOwner, (req, res) => {
   const { file_base64 } = req.body;
   if (!file_base64) return res.status(400).json({ message: 'файл не передан' });
@@ -865,9 +915,10 @@ app.get('/api/admin/invites', requireOwner, (req, res) => {
   res.json({ invites: list });
 });
 
+// Создание инвайтов: JOY-<10 букв/цифр>-<15 букв/цифр>
 app.post('/api/admin/create-invite', requireOwner, (req, res) => {
   const db = loadDB();
-  const code = 'JOY-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+  const code = generateInviteCode();
   db.invites[code] = { used: false, used_by: null, created_at: Date.now() };
   saveDB(db);
   res.json({ invite: code });
@@ -916,7 +967,6 @@ app.post('/api/admin/ticket/reply', requireOwner, (req, res) => {
   res.json({ message: 'ответ отправлен', ticket });
 });
 
-// Патчи
 app.get('/api/updates', (req, res) => {
   const db = loadDB();
   res.json({ updates: db.updates || [] });
@@ -936,7 +986,6 @@ app.post('/api/updates', requireOwner, (req, res) => {
   db.updates.unshift(item);
   saveDB(db);
 
-  // Оповещение в Telegram об обновлении
   sendTelegramNotification(`🚀 <b>Новое обновление JOY</b>\n\n<b>${item.title}</b>\n\n${item.content}`);
 
   res.json({ update: item });
