@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -154,21 +154,15 @@
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
     .btn-outline:active { transform: translateY(0); }
 
-    /* UID бейдж */
-    .uid-badge {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(139, 92, 246, 0.12);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      color: #c4b5fd;
-      padding: 1px 6px;
-      border-radius: 4px;
+    /* Чистый текстовый UID без рамки */
+    .uid-tag {
+      color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 11.5px;
+      font-weight: 500;
+      user-select: none;
     }
 
-    /* DDoS Screen */
     #ddos-screen {
       position: fixed;
       inset: 0;
@@ -191,7 +185,6 @@
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* Авторизация */
     #auth-screen {
       position: relative;
       z-index: 10;
@@ -248,7 +241,6 @@
     .auth-form { display: none; }
     .auth-form.active { display: block; animation: fadeIn 0.25s var(--ease); }
 
-    /* Панель */
     #dashboard-screen {
       position: relative;
       z-index: 10;
@@ -332,7 +324,6 @@
     .section { display: none; }
     .section.active { display: block; animation: tabFade 0.3s var(--ease); }
 
-    /* ПРОФИЛЬ */
     .profile-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -408,6 +399,15 @@
     .sub-view { display: none; }
     .sub-view.active { display: block; animation: tabFade 0.25s var(--ease); }
 
+    /* Описание профиля с принудительным переносом длинных строк */
+    #prof-bio-text {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      max-width: 100%;
+      line-height: 1.55;
+    }
+
     .custom-file-upload {
       display: inline-flex;
       align-items: center;
@@ -444,7 +444,6 @@
     .color-opt:hover { transform: scale(1.15); }
     .color-opt.active { border-color: #fff; transform: scale(1.1); }
 
-    /* ПОДПИСКИ */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -485,7 +484,6 @@
       margin-bottom: 20px;
     }
 
-    /* ФОРУМ И ТИКЕТЫ */
     .forum-item {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -563,7 +561,7 @@
 
   <div id="ddos-screen"><div class="loader"></div></div>
 
-  <!-- ШЛЮЗ АВТОРИЗАЦИИ -->
+  <!-- ВХОД / РЕГИСТРАЦИЯ -->
   <div id="auth-screen">
     <div class="auth-box">
       <div class="brand-title">JOY.CC</div>
@@ -606,7 +604,7 @@
     </div>
   </div>
 
-  <!-- ДЭШБОРД -->
+  <!-- ОСНОВНАЯ ПАНЕЛЬ -->
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
@@ -642,9 +640,9 @@
               <div class="profile-avatar-letter" id="prof-avatar-fallback">U</div>
             </div>
             <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
                 <h2 id="prof-username" style="font-size: 17px; font-weight: 700;">user</h2>
-                <span class="uid-badge" id="prof-uid">UID 1</span>
+                <span class="uid-tag" id="prof-uid">uid 1</span>
               </div>
               <div id="prof-invite" class="mono text-muted" style="font-size: 11px; margin-top: 2px;">JOY-XXXX-XXXX</div>
             </div>
@@ -665,7 +663,7 @@
             <button class="btn-violet" onclick="downloadClient()" data-i18n="btn_download_client">скачать лаунчер (joyloader.exe)</button>
           </div>
 
-          <!-- Настройки с кастомным загрузчиком и Live Preview -->
+          <!-- Настройки -->
           <div id="sub-settings" class="sub-view">
             <div class="form-group">
               <label data-i18n="lbl_avatar_file">аватарка (gif / mp4 / png / jpg)</label>
@@ -700,7 +698,7 @@
             <button class="btn-violet" onclick="apiSaveProfile()" data-i18n="btn_save_profile">сохранить изменения</button>
           </div>
 
-          <!-- HWID (Скрывает всю шапку, включая ник и UID) -->
+          <!-- HWID -->
           <div id="sub-security" class="sub-view">
             <p class="text-muted" style="margin-bottom: 8px;" data-i18n="lbl_hwid_desc">привязка оборудования лаунчера:</p>
             <div id="prof-hwid" class="mono text-muted" style="background: #09080e; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); margin-bottom: 14px;">
@@ -1066,7 +1064,7 @@
       document.getElementById('dashboard-screen').style.display = 'flex';
 
       document.getElementById('prof-username').innerText = u.username;
-      document.getElementById('prof-uid').innerText = `UID ${u.uid || 1}`;
+      document.getElementById('prof-uid').innerText = `uid ${u.uid || 1}`;
       document.getElementById('prof-invite').innerText = u.invite_code;
       document.getElementById('prof-bio-text').innerText = u.bio || '—';
       document.getElementById('edit-bio').value = u.bio || '';
@@ -1162,7 +1160,6 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // ФОРУМ
     async function loadThreads() {
       const res = await fetch('/api/forum/threads');
       const d = await res.json();
@@ -1178,7 +1175,7 @@
             <div style="font-weight: 600; font-size: 14px;">${t.title}</div>
             <div class="text-muted" style="font-size: 11.5px; margin-top: 2px;">
               <span>${t.author}</span>
-              <span class="uid-badge" style="font-size: 9.5px; padding: 0 4px; margin: 0 4px;">UID ${t.author_uid}</span>
+              <span class="uid-tag" style="margin: 0 4px;">uid ${t.author_uid || 1}</span>
               • ${new Date(t.created_at).toLocaleDateString()}
             </div>
           </div>
@@ -1225,7 +1222,7 @@
 
       const actBox = document.getElementById('thread-actions');
       actBox.innerHTML = '';
-      if (currentUser && (currentUser.username === d.thread.author || currentUser.username === 'dev')) {
+      if (currentUser && (currentUser.username === d.thread.author || currentUser.uid === 1)) {
         actBox.innerHTML = `<button class="del-btn" onclick="apiDeleteThread(${d.thread.id})">[удалить тему]</button>`;
       }
 
@@ -1234,7 +1231,7 @@
         <div class="profile-card">
           <div class="text-muted" style="font-size: 11.5px; margin-bottom: 6px;">
             ${d.thread.author} 
-            <span class="uid-badge" style="font-size: 9.5px; padding: 0 4px; margin-left: 4px;">UID #${d.thread.author_uid || 1}</span>
+            <span class="uid-tag" style="margin-left: 4px;">uid ${d.thread.author_uid || 1}</span>
             (автор)
           </div>
           <div>${d.thread.content}</div>
@@ -1244,12 +1241,12 @@
       (d.thread.posts || []).forEach(p => {
         const postDiv = document.createElement('div');
         postDiv.className = 'profile-card';
-        const canDel = currentUser && (currentUser.username === p.author || currentUser.username === 'dev');
+        const canDel = currentUser && (currentUser.username === p.author || currentUser.uid === 1);
         postDiv.innerHTML = `
           <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
             <span class="text-muted" style="font-size: 11.5px;">
               ${p.author}
-              <span class="uid-badge" style="font-size: 9.5px; padding: 0 4px; margin-left: 4px;">UID #${p.author_uid || 1}</span>
+              <span class="uid-tag" style="margin-left: 4px;">uid ${p.author_uid || 1}</span>
             </span>
             ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
           </div>
@@ -1303,7 +1300,6 @@
       if (res.ok) openThread(tId);
     }
 
-    // ТИКЕТЫ
     async function apiSendTicket() {
       const token = localStorage.getItem('token');
       const subject = document.getElementById('ticket-subj').value.trim();
@@ -1348,7 +1344,7 @@
           <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
             <div>
               <span class="mono" style="font-weight: 600; font-size: 13px;">${t.subject}</span>
-              <span class="uid-badge" style="font-size: 9.5px; padding: 0 4px; margin-left: 4px;">UID #${t.user_uid || 1}</span>
+              <span class="uid-tag" style="margin-left: 4px;">uid ${t.user_uid || 1}</span>
             </div>
             <div>
               <span class="ticket-badge">${t.status}</span>
