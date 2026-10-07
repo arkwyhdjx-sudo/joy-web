@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JOY.CC</title>
+  <title>JOY</title>
 
   <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -131,13 +131,6 @@
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
 
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #f87171;
-    }
-    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); border-color: #f87171; }
-
     .uid-tag {
       color: var(--text-muted);
       font-family: var(--font-mono);
@@ -204,16 +197,29 @@
       animation: popIn 0.35s var(--ease);
     }
 
+    /* Новый строгий стиль заголовка JOY на SF Pro Display */
     .brand-title {
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 24px;
-      letter-spacing: 0.08em;
+      font-family: var(--font-main);
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: -0.04em;
       text-align: center;
       margin-bottom: 18px;
-      background: linear-gradient(180deg, #fff 40%, #c4b5fd 100%);
+      background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      user-select: none;
+    }
+
+    .brand-title-nav {
+      font-family: var(--font-main);
+      font-weight: 800;
+      font-size: 19px;
+      letter-spacing: -0.04em;
+      background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      user-select: none;
     }
 
     .auth-tabs {
@@ -503,7 +509,6 @@
 
     .modal-close-btn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
 
-    /* Таблицы админки */
     .admin-table {
       width: 100%;
       border-collapse: collapse;
@@ -576,7 +581,7 @@
   <!-- АВТОРИЗАЦИЯ -->
   <div id="auth-screen">
     <div class="auth-box">
-      <div class="brand-title">JOY.CC</div>
+      <div class="brand-title">JOY</div>
       <div class="auth-tabs">
         <button class="auth-tab active" data-i18n="tab_login" onclick="switchAuthTab('login')">вход</button>
         <button class="auth-tab" data-i18n="tab_reg" onclick="switchAuthTab('register')">регистрация</button>
@@ -620,7 +625,7 @@
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
-        <div class="brand-title" style="margin: 0; font-size: 16px;">JOY.CC</div>
+        <div class="brand-title-nav">JOY</div>
         <nav class="nav-links">
           <button class="nav-link active" data-i18n="nav_profile" onclick="switchNav('profile')">профиль</button>
           <button class="nav-link" data-i18n="nav_updates" onclick="switchNav('updates')">обновления</button>
@@ -671,7 +676,7 @@
           <div id="sub-overview" class="sub-view active">
             <div class="form-group">
               <label>статус подписки</label>
-              <p id="prof-sub-status" style="font-weight: 600; color: var(--text-muted); margin-bottom: 14px;">не активна</p>
+              <p id="prof-sub-status" style="font-weight: 600; color: var(--text-muted); margin-bottom: 14px;">нет активной подписки</p>
             </div>
             <div class="form-group">
               <label data-i18n="lbl_bio">о себе</label>
@@ -730,14 +735,13 @@
         <div id="updates-list"></div>
       </section>
 
-      <!-- ПОЛНОЦЕННАЯ АДМИН-ПАНЕЛЬ (ТОЛЬКО ДЛЯ OWNER) -->
+      <!-- АДМИН-ПАНЕЛЬ -->
       <section id="sec-admin" class="section">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
           <h2 style="font-size: 17px; color: #f87171; margin: 0;">панель управления проектом (owner)</h2>
           <button class="btn-violet" style="padding: 6px 12px; font-size: 12px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
         </div>
 
-        <!-- 1. ТАБЛИЦА ЮЗЕРОВ С ПОИСКОМ И СТАТУСАМИ БАНА -->
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <label style="color: #f87171; margin: 0;">пользователи</label>
@@ -767,7 +771,6 @@
           </div>
         </div>
 
-        <!-- 2. РЕДАКТИРОВАНИЕ АККАУНТА (С БАНОМ) -->
         <div class="profile-card">
           <label style="color: #f87171; margin-bottom: 8px;">управление аккаунтом</label>
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -806,12 +809,11 @@
                 <option value="none">без изменений</option>
                 <option value="30d">+30 дней</option>
                 <option value="90d">+90 дней</option>
-                <option value="lifetime">lifetime (навсегда)</option>
+                <option value="lifetime">lifetime</option>
                 <option value="reset">снять подписку (обнулить)</option>
               </select>
             </div>
 
-            <!-- БЛОКИРОВКА -->
             <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
               <label style="color: #f87171;">блокировка аккаунта</label>
               <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 6px;">
@@ -830,18 +832,14 @@
           </div>
         </div>
 
-        <!-- 3. ОТВЕТЫ НА ТИКЕТЫ САППОРТА -->
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <label style="color: #f87171; margin: 0;">все тикеты поддержки</label>
             <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadAdminTickets()">обновить</button>
           </div>
-          <div id="admin-tickets-container" style="max-height: 260px; overflow-y: auto;">
-            <!-- Список тикетов -->
-          </div>
+          <div id="admin-tickets-container" style="max-height: 260px; overflow-y: auto;"></div>
         </div>
 
-        <!-- 4. УПРАВЛЕНИЕ ИНВАЙТАМИ -->
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <label style="color: #f87171; margin: 0;">управление инвайтами</label>
@@ -862,7 +860,6 @@
           </div>
         </div>
 
-        <!-- 5. ПРОМОКОДЫ -->
         <div class="profile-card">
           <label style="color: #f87171; margin-bottom: 8px;">создание промокодов</label>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
@@ -873,7 +870,6 @@
           <button class="btn-violet" onclick="adminCreatePromo()">создать промокод</button>
         </div>
 
-        <!-- 6. ЗАЛИВКА БИЛДА И ПАТЧНОУТ -->
         <div class="profile-card">
           <label style="color: #f87171; margin-bottom: 8px;">залить билд лаунчера (.exe)</label>
           <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
@@ -1219,15 +1215,17 @@
       rEl.className = `role-badge role-${u.role || 'user'}`;
       rEl.innerText = u.role || 'user';
 
+      // ЛАКОНИЧНЫЙ СТАТУС ПОДПИСКИ
       const subEl = document.getElementById('prof-sub-status');
       if (u.sub_until === -1) {
-        subEl.innerText = 'активна (lifetime навсегда)';
+        subEl.innerText = 'lifetime';
         subEl.style.color = '#34d399';
       } else if (u.sub_until > Date.now()) {
-        subEl.innerText = `активна (до ${new Date(u.sub_until).toLocaleDateString()})`;
+        const diffDays = Math.ceil((u.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
+        subEl.innerText = `${diffDays} дней`;
         subEl.style.color = '#34d399';
       } else {
-        subEl.innerText = 'не активна';
+        subEl.innerText = 'нет активной подписки';
         subEl.style.color = 'var(--text-muted)';
       }
 
@@ -1323,9 +1321,7 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // === ФУНКЦИОНАЛ АДМИН-ПАНЕЛИ ===
-
-    // Выдача себе lifetime
+    // === АДМИНКА ===
     async function adminGrantSelfLifetime() {
       const token = localStorage.getItem('token');
       try {
@@ -1341,7 +1337,6 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // Таблица пользователей
     async function loadAdminUsers() {
       const token = localStorage.getItem('token');
       try {
@@ -1365,7 +1360,13 @@
       }
 
       list.forEach(u => {
-        const subStr = u.sub_until === -1 ? 'lifetime' : (u.sub_until > Date.now() ? `${new Date(u.sub_until).toLocaleDateString()}` : 'нет');
+        let subStr = 'нет';
+        if (u.sub_until === -1) subStr = 'lifetime';
+        else if (u.sub_until > Date.now()) {
+          const dLeft = Math.ceil((u.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
+          subStr = `${dLeft} дн.`;
+        }
+
         const statusHtml = u.banned 
           ? `<span class="role-badge role-banned">бан</span>` 
           : `<span style="color:#34d399;">активен</span>`;
@@ -1399,7 +1400,6 @@
       adminFindUser();
     }
 
-    // Редактор выбранного юзера
     let loadedAdminTarget = null;
     async function adminFindUser() {
       const uName = document.getElementById('admin-search-user').value.trim();
@@ -1424,7 +1424,12 @@
         document.getElementById('admin-target-banned').value = d.target.banned ? 'true' : 'false';
         document.getElementById('admin-target-banreason').value = d.target.ban_reason || '';
 
-        const subText = d.target.sub_until === -1 ? 'lifetime' : (d.target.sub_until > Date.now() ? `до ${new Date(d.target.sub_until).toLocaleDateString()}` : 'нет сабки');
+        let subText = 'нет';
+        if (d.target.sub_until === -1) subText = 'lifetime';
+        else if (d.target.sub_until > Date.now()) {
+          const dLeft = Math.ceil((d.target.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
+          subText = `${dLeft} дн.`;
+        }
         document.getElementById('admin-target-status').innerText = `сабка: ${subText} | hwid: ${d.target.hwid ? 'занят' : 'чист'}`;
       } catch (e) { triggerToast(e.message); }
     }
@@ -1476,7 +1481,6 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // Все тикеты в админке
     async function loadAdminTickets() {
       const token = localStorage.getItem('token');
       try {
@@ -1536,7 +1540,6 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    // Инвайты
     async function loadAdminInvites() {
       const token = localStorage.getItem('token');
       try {
