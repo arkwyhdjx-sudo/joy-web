@@ -129,13 +129,6 @@
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
 
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #f87171;
-    }
-    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); border-color: #f87171; }
-
     .uid-tag {
       color: var(--text-muted);
       font-family: var(--font-mono);
@@ -144,7 +137,6 @@
       user-select: none;
     }
 
-    /* Статусы билда */
     .status-badge {
       font-size: 10.5px;
       font-weight: 600;
@@ -285,13 +277,13 @@
       backdrop-filter: blur(8px);
     }
 
-    .nav-left { display: flex; align-items: center; gap: 14px; }
-    .nav-links { display: flex; gap: 14px; }
+    .nav-left { display: flex; align-items: center; gap: 18px; }
+    .nav-links { display: flex; gap: 18px; }
 
     .nav-link {
       background: none;
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 13.5px;
       padding: 6px 0;
       position: relative;
       transition: color 0.2s var(--ease);
@@ -309,12 +301,9 @@
       animation: tabSlide 0.25s var(--ease);
     }
 
-    .admin-nav-link { color: #f87171 !important; font-weight: 600; }
-    .admin-nav-link.active::after { background: #f87171 !important; box-shadow: 0 0 10px #f87171 !important; }
-
     .main-content {
       flex-grow: 1;
-      max-width: 860px;
+      max-width: 840px;
       width: 100%;
       margin: 0 auto;
       padding: 28px 16px;
@@ -406,6 +395,60 @@
     .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .color-opt.active { border-color: #fff; }
 
+    /* Карточки подписки */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.25s var(--ease);
+    }
+    .pricing-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -10px var(--accent-glow);
+    }
+    .pricing-card.featured { border-color: var(--accent); }
+
+    .discount-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .plan-period { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .plan-price { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+
+    .quiet-logout-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 6px 0;
+      transition: color 0.2s;
+    }
+    .quiet-logout-btn:hover { color: #f87171; text-decoration: underline; }
+
+    /* Форум */
     .forum-item {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -441,13 +484,7 @@
     .tag-предложение { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
     .tag-медиа { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .tag-обсуждение { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
-
-    .pin-badge {
-      color: #fcd34d;
-      font-size: 11px;
-      font-weight: 700;
-      margin-right: 6px;
-    }
+    .pin-badge { color: #fcd34d; font-size: 11px; font-weight: 700; margin-right: 6px; }
 
     .del-btn { color: #f87171; font-size: 11px; background: none; border: none; cursor: pointer; margin-left: 8px; }
     .del-btn:hover { text-decoration: underline; }
@@ -474,11 +511,7 @@
       font-size: 12px;
       margin-top: 10px;
     }
-    .admin-table th, .admin-table td {
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
+    .admin-table th, .admin-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
     .admin-table th { color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; font-weight: 600; }
     .admin-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
@@ -493,7 +526,7 @@
     }
     .copy-chip:hover { border-color: var(--accent); color: #fff; }
 
-    #user-modal {
+    .modal-overlay {
       position: fixed;
       inset: 0;
       z-index: 1001;
@@ -504,7 +537,7 @@
       justify-content: center;
       padding: 20px;
     }
-    #user-modal.active { display: flex; animation: fadeIn 0.2s var(--ease); }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s var(--ease); }
 
     .modal-card {
       width: 100%;
@@ -538,6 +571,12 @@
     @keyframes tabFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     @keyframes tabSlide { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      header.top-nav { padding: 0 14px; }
+      .nav-links { gap: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -600,41 +639,44 @@
         <span id="nav-build-status" class="status-badge status-stable" style="margin-left: 4px;">stable</span>
         <nav class="nav-links">
           <button class="nav-link active" onclick="switchNav('launcher')">лаунчер</button>
-          <button class="nav-link" onclick="switchNav('cloud')">облако</button>
           <button class="nav-link" onclick="switchNav('forum')">форум</button>
-          <button class="nav-link" onclick="switchNav('updates')">обновления</button>
-          <button class="nav-link" onclick="switchNav('support')">поддержка</button>
-          <button class="nav-link" onclick="switchNav('sub')">подписка</button>
           <button class="nav-link" onclick="switchNav('profile')">профиль</button>
-          <button class="nav-link admin-nav-link" id="nav-btn-admin" style="display: none;" onclick="switchNav('admin')">админ</button>
         </nav>
       </div>
     </header>
 
     <main class="main-content">
-      <!-- 1. НОВЫЙ РАЗДЕЛ: ЛАУНЧЕР (СКАЧИВАНИЕ, ДНИ, HWID, ЛАСТ ЗАПУСК) -->
+      <!-- 1. ЛАУНЧЕР -->
       <section id="sec-launcher" class="section active">
         <div class="profile-card">
-          <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">клиент joy</h2>
-          <p class="text-muted" style="margin-bottom: 20px;">управление клиентом, синхронизация сессии и загрузка бинарника.</p>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
-              <label>подписка</label>
-              <div id="launcher-sub-days" style="font-size: 18px; font-weight: 700; color: #34d399;">нет активной подписки</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+              <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 2px;">клиент joy</h2>
+              <p class="text-muted" style="font-size: 12px;">авторизация в игре, привязка оборудования и загрузка.</p>
             </div>
-            <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="switchNav('updates')">патчи</button>
+              <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="switchNav('support')">поддержка</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <label>подписка</label>
+              <div id="launcher-sub-days" style="font-size: 16px; font-weight: 700; color: #34d399;">нет активной подписки</div>
+            </div>
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
               <label>последний запуск</label>
-              <div id="launcher-last-launch" class="mono" style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">не запускался</div>
+              <div id="launcher-last-launch" class="mono" style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">не запускался</div>
             </div>
           </div>
 
           <div class="form-group">
-            <label>привязанное оборудование (hwid)</label>
-            <div id="launcher-hwid-val" class="mono" style="background: #09080e; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px; color: var(--text-muted);">
-              ожидает первого запуска клиента
+            <label>привязка оборудования (hwid)</label>
+            <div id="launcher-hwid-val" class="mono" style="background: #09080e; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); margin-bottom: 12px; color: var(--text-muted); font-size: 12px;">
+              ожидает первого входа
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 8px;">
               <button class="btn-violet" onclick="downloadClient()">скачать лаунчер (joyloader.exe)</button>
               <button class="btn-outline" onclick="apiResetHWID()">сбросить hwid</button>
             </div>
@@ -642,48 +684,96 @@
         </div>
       </section>
 
-      <!-- 2. ОБЛАКО (КОНФИГИ + LUA СКРИПТЫ В ОДНОМ РАЗДЕЛЕ) -->
-      <section id="sec-cloud" class="section">
+      <!-- 2. ФОРУМ (С ВКЛАДКАМИ: ТЕМЫ И ОБЛАКО МАРКЕТПЛЕЙС КАК В NL) -->
+      <section id="sec-forum" class="section">
         <div class="profile-card">
           <div class="profile-sub-tabs">
-            <button class="profile-sub-tab active" onclick="switchCloudSub('configs')">конфигурации</button>
-            <button class="profile-sub-tab" onclick="switchCloudSub('scripts')">lua скрипты</button>
+            <button class="profile-sub-tab active" onclick="switchForumSub('threads')">обсуждения</button>
+            <button class="profile-sub-tab" onclick="switchForumSub('cloud')">облако (конфиги и lua)</button>
           </div>
 
-          <!-- Конфиги -->
-          <div id="cloud-sub-configs" class="sub-view active">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="text-muted">сохраненные пресеты в облаке</span>
-              <button class="btn-violet" style="padding: 6px 12px; font-size: 12px;" onclick="toggleNewConfigForm()">+ создать конфиг</button>
+          <!-- Вкладка: Темы -->
+          <div id="forum-sub-threads" class="sub-view active">
+            <div id="forum-index">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span class="text-muted" style="font-size: 12px;">дискуссии закрытого сообщества</span>
+                <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="toggleNewThread()">новая тема</button>
+              </div>
+
+              <div id="new-thread-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+                <div class="form-group">
+                  <label>тег темы</label>
+                  <select id="t-tag-select">
+                    <option value="обсуждение">обсуждение</option>
+                    <option value="баг">баг</option>
+                    <option value="предложение">предложение</option>
+                    <option value="медиа">медиа</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>заголовок</label>
+                  <input type="text" id="t-title" maxlength="90">
+                </div>
+                <div class="form-group">
+                  <label>сообщение</label>
+                  <textarea id="t-content" maxlength="800"></textarea>
+                </div>
+                <button class="btn-violet" onclick="apiCreateThread()">опубликовать</button>
+              </div>
+
+              <div id="forum-threads-list"></div>
             </div>
 
-            <div id="new-config-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+            <div id="forum-view" style="display: none;">
+              <button class="btn-outline" style="margin-bottom: 12px; padding: 4px 8px; font-size: 11px;" onclick="backToThreads()">← назад к темам</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <span id="view-t-tag" class="tag-badge"></span>
+                  <span id="view-t-pinned" class="pin-badge" style="display: none;">📌 закреплено</span>
+                  <h2 id="view-t-title" style="font-size: 16px; display: inline;"></h2>
+                </div>
+                <div id="thread-actions"></div>
+              </div>
+              <div id="view-t-posts"></div>
+              <div class="profile-card" id="reply-box-container" style="margin-top: 14px;">
+                <label>ответить</label>
+                <textarea id="reply-text" maxlength="500" style="margin-bottom: 8px;"></textarea>
+                <button class="btn-violet" onclick="apiReplyThread()">отправить</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Вкладка: Облако (Маркетплейс конфигов и скриптов внутри форума) -->
+          <div id="forum-sub-cloud" class="sub-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="profile-sub-tabs" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+                <button class="profile-sub-tab active" id="cloud-toggle-btn-cfg" onclick="toggleCloudTab('configs')">конфиги</button>
+                <button class="profile-sub-tab" id="cloud-toggle-btn-lua" onclick="toggleCloudTab('scripts')">lua скрипты</button>
+              </div>
+              <div>
+                <button class="btn-violet" id="btn-add-cloud-item" style="padding: 4px 10px; font-size: 11px;" onclick="toggleCloudAddForm()">+ добавить</button>
+              </div>
+            </div>
+
+            <!-- Форма конфига -->
+            <div id="new-config-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px;">
               <div class="form-group">
                 <label>название конфига</label>
                 <input type="text" id="cfg-name-input" placeholder="legit prime / rage">
               </div>
               <div class="form-group">
-                <label>данные настроек (json)</label>
+                <label>данные (json)</label>
                 <textarea id="cfg-data-input" placeholder='{"aimbot": true, "fov": 3.0}'></textarea>
               </div>
-              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                <input type="checkbox" id="cfg-public-input" style="width: 16px; height: 16px;">
-                <label for="cfg-public-input" style="margin: 0; cursor: pointer; text-transform: none;">публичный доступ по коду</label>
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <input type="checkbox" id="cfg-public-input" style="width: 14px; height: 14px;">
+                <label for="cfg-public-input" style="margin: 0; cursor: pointer; text-transform: none;">сделать публичным для всех</label>
               </div>
-              <button class="btn-violet" onclick="apiSaveNewConfig()">сохранить в облако</button>
+              <button class="btn-violet" onclick="apiSaveNewConfig()">сохранить</button>
             </div>
 
-            <div id="configs-list"></div>
-          </div>
-
-          <!-- Скрипты -->
-          <div id="cloud-sub-scripts" class="sub-view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="text-muted">пользовательские .lua скрипты</span>
-              <button class="btn-violet" style="padding: 6px 12px; font-size: 12px;" onclick="toggleNewScriptForm()">+ добавить скрипт</button>
-            </div>
-
-            <div id="new-script-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+            <!-- Форма скрипта -->
+            <div id="new-script-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 12px;">
               <div class="form-group">
                 <label>название (.lua)</label>
                 <input type="text" id="lua-title-input" placeholder="watermark.lua">
@@ -692,15 +782,20 @@
                 <label>исходный код</label>
                 <textarea id="lua-code-input" class="mono" placeholder="-- lua code..."></textarea>
               </div>
-              <button class="btn-violet" onclick="apiSaveNewScript()">загрузить скрипт</button>
+              <button class="btn-violet" onclick="apiSaveNewScript()">сохранить</button>
             </div>
 
-            <div id="scripts-list"></div>
+            <div id="cloud-configs-container">
+              <div id="configs-list"></div>
+            </div>
+            <div id="cloud-scripts-container" style="display: none;">
+              <div id="scripts-list"></div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- 3. ПРОФИЛЬ (БЕЗ ЛАУНЧЕРА, С КНОПКОЙ ВЫХОДА ВНУТРИ) -->
+      <!-- 3. ПРОФИЛЬ (ВНУТРИ: ОБЗОР, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА) -->
       <section id="sec-profile" class="section">
         <div class="profile-card">
           <div id="profile-main-header" class="profile-header-banner">
@@ -719,20 +814,55 @@
 
           <div class="profile-sub-tabs">
             <button class="profile-sub-tab active" onclick="switchProfileSub('overview')">обзор</button>
+            <button class="profile-sub-tab" onclick="switchProfileSub('subscription')">подписка</button>
             <button class="profile-sub-tab" onclick="switchProfileSub('settings')">настройки</button>
+            <!-- Скрытая вкладка админки внутри профиля (только owner) -->
+            <button class="profile-sub-tab" id="prof-subtab-admin" style="display: none; color: #f87171;" onclick="switchProfileSub('admin')">админ-панель</button>
           </div>
 
-          <div id="sub-overview" class="sub-view active">
+          <!-- Обзор профиля -->
+          <div id="prof-sub-overview" class="sub-view active">
             <div class="form-group">
               <label>о себе</label>
-              <p id="prof-bio-text" class="text-muted" style="margin-bottom: 24px; font-size: 13px;">—</p>
-            </div>
-            <div style="border-top: 1px solid var(--border); padding-top: 16px;">
-              <button class="btn-danger" onclick="apiLogout()">выйти из аккаунта</button>
+              <p id="prof-bio-text" class="text-muted" style="margin-bottom: 20px; font-size: 13px;">—</p>
             </div>
           </div>
 
-          <div id="sub-settings" class="sub-view">
+          <!-- Подписка внутри профиля (как в NL) -->
+          <div id="prof-sub-subscription" class="sub-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px;">
+              <div>
+                <label style="margin-bottom: 2px;">текущий статус</label>
+                <div id="prof-sub-detail-status" style="font-size: 16px; font-weight: 700; color: #34d399;">нет активной подписки</div>
+              </div>
+            </div>
+
+            <label style="margin-bottom: 8px;">продлить / приобрести доступ</label>
+            <div class="pricing-grid" style="margin-top: 0;">
+              <div class="pricing-card">
+                <div class="plan-period">30 дней</div>
+                <div class="plan-price">900 ₽</div>
+                <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(30, 900)">оформить</button>
+              </div>
+
+              <div class="pricing-card featured">
+                <span class="discount-badge">-15%</span>
+                <div class="plan-period" style="color: var(--accent-bright);">90 дней</div>
+                <div class="plan-price">2 300 ₽</div>
+                <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(90, 2300)">оформить</button>
+              </div>
+
+              <div class="pricing-card">
+                <span class="discount-badge">-26%</span>
+                <div class="plan-period">360 дней</div>
+                <div class="plan-price">8 000 ₽</div>
+                <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(360, 8000)">оформить</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Настройки профиля -->
+          <div id="prof-sub-settings" class="sub-view">
             <div class="form-group">
               <label>аватарка (gif / mp4 / png / jpg)</label>
               <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
@@ -740,7 +870,7 @@
                   <span id="upload-status-text">загрузить файл</span>
                   <input type="file" id="edit-avatar-file" accept="image/gif, image/png, image/jpeg, video/mp4" onchange="previewAvatarLive(this)">
                 </label>
-                <button type="button" class="btn-outline" style="font-size: 11px; padding: 7px 10px;" onclick="resetAvatarToLetter()">сбросить до буквы</button>
+                <button type="button" class="btn-outline" style="font-size: 11px; padding: 7px 10px;" onclick="resetAvatarToLetter()">сбросить</button>
               </div>
             </div>
 
@@ -760,75 +890,172 @@
               <textarea id="edit-bio" maxlength="250" placeholder="о себе..."></textarea>
             </div>
 
-            <button class="btn-violet" onclick="apiSaveProfile()">сохранить изменения</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px;">
+              <button class="btn-violet" onclick="apiSaveProfile()">сохранить</button>
+              <button type="button" class="quiet-logout-btn" onclick="apiLogout()">выйти из аккаунта</button>
+            </div>
+          </div>
+
+          <!-- Админка внутри профиля (только owner) -->
+          <div id="prof-sub-admin" class="sub-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <span style="font-weight: 700; color: #f87171;">панель создателя</span>
+              <button class="btn-violet" style="padding: 5px 10px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
+            </div>
+
+            <!-- Статус билда -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <label style="color: #f87171;">статус билда</label>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <select id="admin-build-status-select" style="max-width: 200px;">
+                  <option value="stable">stable (в сети)</option>
+                  <option value="testing">testing (тестирование)</option>
+                  <option value="updating">updating (на обновлении)</option>
+                </select>
+                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminChangeBuildStatus()">применить</button>
+              </div>
+            </div>
+
+            <!-- Загрузка файлов -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <label style="color: #f87171; margin-bottom: 6px;">заливка бинарников</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <label class="custom-file-upload">
+                  <span id="admin-payload-status">выбрать .dll</span>
+                  <input type="file" id="admin-file-payload" accept=".dll" onchange="document.getElementById('admin-payload-status').innerText = this.files[0].name">
+                </label>
+                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadPayload()">залить dll в память</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <label class="custom-file-upload">
+                  <span id="admin-build-status">выбрать joyloader.exe</span>
+                  <input type="file" id="admin-file-build" accept=".exe" onchange="document.getElementById('admin-build-status').innerText = this.files[0].name">
+                </label>
+                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminUploadBuild()">залить лаунчер</button>
+              </div>
+            </div>
+
+            <!-- Пользователи -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="color: #f87171; margin: 0;">пользователи</label>
+                <span class="mono text-muted" id="admin-users-count" style="font-size: 11px;">всего: 0</span>
+              </div>
+              <input type="text" id="admin-users-search" placeholder="поиск..." oninput="filterAdminUsersList()" style="margin-bottom: 8px;">
+              <div style="max-height: 200px; overflow-y: auto;">
+                <table class="admin-table">
+                  <thead>
+                    <tr><th>uid</th><th>логин</th><th>роль</th><th>статус</th><th>ip слив</th><th>действие</th></tr>
+                  </thead>
+                  <tbody id="admin-users-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Редактор юзера -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <label style="color: #f87171; margin-bottom: 6px;">управление аккаунтом</label>
+              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <input type="text" id="admin-search-user" placeholder="логин...">
+                <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminFindUser()">найти</button>
+              </div>
+
+              <div id="admin-user-editor" style="display: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span id="admin-target-name" style="font-weight: 700;">user</span>
+                  <span id="admin-target-status" class="mono text-muted" style="font-size: 11px;"></span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                  <div>
+                    <label>роль</label>
+                    <select id="admin-target-role">
+                      <option value="owner">owner</option>
+                      <option value="admin">admin</option>
+                      <option value="tester">tester</option>
+                      <option value="user">user</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>uid</label>
+                    <input type="number" id="admin-target-uid">
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 8px;">
+                  <label>сабка</label>
+                  <select id="admin-target-sub">
+                    <option value="none">без изменений</option>
+                    <option value="30d">+30 дней</option>
+                    <option value="90d">+90 дней</option>
+                    <option value="lifetime">lifetime</option>
+                    <option value="reset">обнулить</option>
+                  </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 6px; margin-bottom: 10px;">
+                  <select id="admin-target-banned">
+                    <option value="false">активен</option>
+                    <option value="true">бан</option>
+                  </select>
+                  <input type="text" id="admin-target-banreason" placeholder="причина...">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminSaveUser()">сохранить</button>
+                  <button class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="adminResetUserHWID()">сбросить hwid</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Инвайты (JOY-XXXXXXXXXX-XXXXXXXXXXXXXXX) -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="color: #f87171; margin: 0;">инвайты</label>
+                <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать</button>
+              </div>
+              <div style="max-height: 160px; overflow-y: auto;">
+                <table class="admin-table">
+                  <thead><tr><th>код</th><th>статус</th><th>юзер</th><th>действие</th></tr></thead>
+                  <tbody id="admin-invites-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Промокоды -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px;">
+              <label style="color: #f87171; margin-bottom: 6px;">создать промокод</label>
+              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                <input type="text" id="promo-code-input" placeholder="промокод">
+                <input type="number" id="promo-days-input" placeholder="дней">
+                <input type="number" id="promo-uses-input" placeholder="активаций">
+              </div>
+              <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminCreatePromo()">создать</button>
+            </div>
+
+            <!-- Патчноут -->
+            <div style="background: rgba(7, 6, 11, 0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <label style="color: #f87171; margin-bottom: 6px;">опубликовать патч</label>
+              <input type="text" id="admin-upd-title" placeholder="заголовок..." style="margin-bottom: 6px;">
+              <textarea id="admin-upd-content" placeholder="список изменений..."></textarea>
+              <button class="btn-violet" style="margin-top: 8px; padding: 4px 10px; font-size: 11px;" onclick="adminPostUpdate()">опубликовать</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- 4. ФОРУМ -->
-      <section id="sec-forum" class="section">
-        <div id="forum-index">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <h2 style="font-size: 17px;">форум</h2>
-            <button class="btn-violet" onclick="toggleNewThread()">новая тема</button>
-          </div>
-
-          <div id="new-thread-form" style="display: none; background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); margin-bottom: 14px;">
-            <div class="form-group">
-              <label>тег темы</label>
-              <select id="t-tag-select">
-                <option value="обсуждение">обсуждение</option>
-                <option value="баг">баг</option>
-                <option value="предложение">предложение</option>
-                <option value="медиа">медиа</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>заголовок</label>
-              <input type="text" id="t-title" maxlength="90">
-            </div>
-            <div class="form-group">
-              <label>сообщение</label>
-              <textarea id="t-content" maxlength="800"></textarea>
-            </div>
-            <button class="btn-violet" onclick="apiCreateThread()">опубликовать</button>
-          </div>
-
-          <div id="forum-threads-list"></div>
-        </div>
-
-        <div id="forum-view" style="display: none;">
-          <button class="btn-outline" style="margin-bottom: 12px;" onclick="backToThreads()">← к темам</button>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div>
-              <span id="view-t-tag" class="tag-badge"></span>
-              <span id="view-t-pinned" class="pin-badge" style="display: none;">📌 закреплено</span>
-              <h2 id="view-t-title" style="font-size: 17px; display: inline;"></h2>
-            </div>
-            <div id="thread-actions"></div>
-          </div>
-          <div id="view-t-posts"></div>
-          <div class="profile-card" id="reply-box-container" style="margin-top: 14px;">
-            <label>ответить</label>
-            <textarea id="reply-text" maxlength="500" style="margin-bottom: 8px;"></textarea>
-            <button class="btn-violet" onclick="apiReplyThread()">отправить</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 5. ОБНОВЛЕНИЯ -->
+      <!-- 4. ОБНОВЛЕНИЯ (ДОСТУП ИЗ ЛАУНЧЕРА) -->
       <section id="sec-updates" class="section">
-        <h2 style="font-size: 17px; margin-bottom: 14px;">обновления</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2 style="font-size: 17px;">обновления</h2>
+          <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="switchNav('launcher')">← к лаунчеру</button>
+        </div>
         <div id="updates-list"></div>
       </section>
 
-      <!-- 6. ПОДДЕРЖКА -->
+      <!-- 5. ПОДДЕРЖКА (ДОСТУП ИЗ ЛАУНЧЕРА) -->
       <section id="sec-support" class="section">
         <div class="profile-card">
-          <h2 style="font-size: 16px; margin-bottom: 6px;">анонимная поддержка</h2>
-          <p class="text-muted" style="margin-bottom: 14px; font-size: 12.5px;">
-            задайте вопрос разработчикам. тикет доступен только вам.
-          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 style="font-size: 16px;">поддержка</h2>
+            <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="switchNav('launcher')">← к лаунчеру</button>
+          </div>
           <div class="form-group">
             <label>тема</label>
             <input type="text" id="ticket-subj" maxlength="80">
@@ -845,204 +1072,36 @@
           <div id="tickets-list"></div>
         </div>
       </section>
-
-      <!-- 7. ПОДПИСКИ -->
-      <section id="sec-sub" class="section">
-        <h2 style="font-size: 17px; margin-bottom: 14px;">подписка</h2>
-        <div class="profile-card" style="margin-bottom: 14px;">
-          <label>активация промокода</label>
-          <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <input type="text" id="promo-input-code" placeholder="введите промокод...">
-            <button class="btn-violet" onclick="apiRedeemPromo()">активировать</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 8. АДМИНКА -->
-      <section id="sec-admin" class="section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <h2 style="font-size: 17px; color: #f87171; margin: 0;">панель управления (owner)</h2>
-          <button class="btn-violet" style="padding: 6px 12px; font-size: 12px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
-        </div>
-
-        <!-- Статус билда (только stable, testing, updating) -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">статус билда</label>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <select id="admin-build-status-select" style="max-width: 220px;">
-              <option value="stable">stable (в сети)</option>
-              <option value="testing">testing (тестирование)</option>
-              <option value="updating">updating (на обновлении)</option>
-            </select>
-            <button class="btn-violet" onclick="adminChangeBuildStatus()">применить</button>
-          </div>
-        </div>
-
-        <!-- Загрузка билдов -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">загрузка dll чита в память</label>
-          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 14px;">
-            <label class="custom-file-upload">
-              <span id="admin-payload-status">выбрать .dll</span>
-              <input type="file" id="admin-file-payload" accept=".dll" onchange="document.getElementById('admin-payload-status').innerText = this.files[0].name">
-            </label>
-            <button class="btn-violet" onclick="adminUploadPayload()">залить dll на сервер</button>
-          </div>
-
-          <label style="color: #f87171; margin-bottom: 8px;">билд лаунчера (.exe)</label>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <label class="custom-file-upload">
-              <span id="admin-build-status">выбрать joyloader.exe</span>
-              <input type="file" id="admin-file-build" accept=".exe" onchange="document.getElementById('admin-build-status').innerText = this.files[0].name">
-            </label>
-            <button class="btn-violet" onclick="adminUploadBuild()">залить лаунчер</button>
-          </div>
-        </div>
-
-        <!-- Telegram Webhook -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">telegram webhook (тикеты и патчи)</label>
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 10px;">
-            <input type="text" id="admin-tg-token" placeholder="bot token">
-            <input type="text" id="admin-tg-chat" placeholder="chat id">
-          </div>
-          <button class="btn-violet" onclick="adminSaveTelegram()">сохранить telegram</button>
-        </div>
-
-        <!-- Пользователи -->
-        <div class="profile-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <label style="color: #f87171; margin: 0;">пользователи</label>
-            <span class="mono text-muted" id="admin-users-count" style="font-size: 11px;">всего: 0</span>
-          </div>
-          <input type="text" id="admin-users-search" placeholder="поиск по нику или uid..." oninput="filterAdminUsersList()" style="margin-bottom: 10px;">
-          <div style="max-height: 260px; overflow-y: auto;">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>uid</th>
-                  <th>логин</th>
-                  <th>роль</th>
-                  <th>статус</th>
-                  <th>web ip</th>
-                  <th>client ip</th>
-                  <th>hwid</th>
-                  <th>действие</th>
-                </tr>
-              </thead>
-              <tbody id="admin-users-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Редактор аккаунта -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">управление аккаунтом</label>
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <input type="text" id="admin-search-user" placeholder="логин...">
-            <button class="btn-violet" onclick="adminFindUser()">найти</button>
-          </div>
-
-          <div id="admin-user-editor" style="display: none; background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
-              <div>
-                <span id="admin-target-name" style="font-weight: 700; font-size: 16px;">user</span>
-                <span id="admin-target-role-badge" class="role-badge role-user" style="margin-left: 6px;">user</span>
-              </div>
-              <span id="admin-target-status" class="mono text-muted" style="font-size: 11px;"></span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-              <div>
-                <label>роль</label>
-                <select id="admin-target-role">
-                  <option value="owner">owner</option>
-                  <option value="admin">admin</option>
-                  <option value="tester">tester</option>
-                  <option value="user">user</option>
-                </select>
-              </div>
-              <div>
-                <label>uid</label>
-                <input type="number" id="admin-target-uid">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>подписка</label>
-              <select id="admin-target-sub">
-                <option value="none">без изменений</option>
-                <option value="30d">+30 дней</option>
-                <option value="90d">+90 дней</option>
-                <option value="lifetime">lifetime</option>
-                <option value="reset">обнулить</option>
-              </select>
-            </div>
-
-            <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
-              <label style="color: #f87171;">бан</label>
-              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 6px;">
-                <select id="admin-target-banned">
-                  <option value="false">активен</option>
-                  <option value="true">забанен</option>
-                </select>
-                <input type="text" id="admin-target-banreason" placeholder="причина...">
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 10px; align-items: center; margin-top: 16px;">
-              <button class="btn-violet" onclick="adminSaveUser()">сохранить</button>
-              <button class="btn-outline" onclick="adminResetUserHWID()">сбросить hwid</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Тикеты -->
-        <div class="profile-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label style="color: #f87171; margin: 0;">тикеты поддержки</label>
-            <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadAdminTickets()">обновить</button>
-          </div>
-          <div id="admin-tickets-container" style="max-height: 260px; overflow-y: auto;"></div>
-        </div>
-
-        <!-- Инвайты (JOY-<10 символов>-<15 символов>) -->
-        <div class="profile-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label style="color: #f87171; margin: 0;">инвайты</label>
-            <button class="btn-violet" style="padding: 5px 10px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать инвайт</button>
-          </div>
-          <div style="max-height: 180px; overflow-y: auto;">
-            <table class="admin-table">
-              <thead><tr><th>код</th><th>статус</th><th>юзер</th><th>действие</th></tr></thead>
-              <tbody id="admin-invites-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Промокоды -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">создать промокод</label>
-          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-            <input type="text" id="promo-code-input" placeholder="промокод">
-            <input type="number" id="promo-days-input" placeholder="дней">
-            <input type="number" id="promo-uses-input" placeholder="активаций">
-          </div>
-          <button class="btn-violet" onclick="adminCreatePromo()">создать промокод</button>
-        </div>
-
-        <!-- Патчноут -->
-        <div class="profile-card">
-          <label style="color: #f87171; margin-bottom: 8px;">опубликовать патч</label>
-          <input type="text" id="admin-upd-title" placeholder="заголовок..." style="margin-bottom: 8px;">
-          <textarea id="admin-upd-content" placeholder="список изменений..."></textarea>
-          <button class="btn-violet" style="margin-top: 10px;" onclick="adminPostUpdate()">опубликовать</button>
-        </div>
-      </section>
     </main>
   </div>
 
-  <div id="user-modal" onclick="closeUserModal(event)">
+  <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ ПОКУПКИ (С ПРОМОКОДОМ ВНУТРИ) -->
+  <div id="checkout-modal" class="modal-overlay" onclick="closeCheckoutModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeCheckoutModal()">✕</button>
+      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">оформление подписки</h3>
+      <div id="checkout-plan-info" style="color: var(--accent-bright); font-size: 13.5px; font-weight: 600; margin-bottom: 16px;"></div>
+
+      <div class="form-group">
+        <label>промокод на скидку или дни</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="checkout-promo-input" placeholder="введите промокод...">
+          <button class="btn-outline" style="padding: 8px 12px; font-size: 11px;" onclick="applyCheckoutPromo()">применить</button>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 16px;">
+          <span>итого к оплате:</span>
+          <span id="checkout-total-price">0 ₽</span>
+        </div>
+        <button class="btn-violet" style="width: 100%;" onclick="proceedPayment()">перейти к оплате</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА ПРОФИЛЯ ЮЗЕРА ПО КЛИКУ -->
+  <div id="user-modal" class="modal-overlay" onclick="closeUserModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close-btn" onclick="closeUserModal()">✕</button>
       <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
@@ -1071,6 +1130,8 @@
     let stagedMediaType = null;
     let allAdminUsers = [];
 
+    let activeCloudTab = 'configs';
+
     function triggerToast(m) {
       const t = document.getElementById('toast');
       t.innerText = m;
@@ -1091,30 +1152,57 @@
     }
 
     function switchNav(sec) {
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      event.target.classList.add('active');
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById('sec-' + sec).classList.add('active');
+      document.querySelectorAll('.top-nav .nav-link').forEach(l => l.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.top-nav .nav-link')).find(b => b.getAttribute('onclick')?.includes(`'${sec}'`));
+      if (activeBtn) activeBtn.classList.add('active');
 
-      if (sec === 'cloud') { loadConfigs(); loadScripts(); }
+      document.querySelectorAll('.main-content > .section').forEach(s => s.classList.remove('active'));
+      const targetSec = document.getElementById('sec-' + sec);
+      if (targetSec) targetSec.classList.add('active');
+
+      if (sec === 'forum') { loadThreads(); loadConfigs(); loadScripts(); }
       if (sec === 'updates') loadUpdates();
-      if (sec === 'forum') loadThreads();
       if (sec === 'support') loadTickets();
-      if (sec === 'admin') { loadAdminUsers(); loadAdminInvites(); loadAdminTickets(); }
-    }
-
-    function switchCloudSub(sub) {
-      document.querySelectorAll('#sec-cloud .profile-sub-tab').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      document.querySelectorAll('#sec-cloud .sub-view').forEach(v => v.classList.remove('active'));
-      document.getElementById('cloud-sub-' + sub).classList.add('active');
+      if (sec === 'profile') { switchProfileSub('overview'); }
     }
 
     function switchProfileSub(sub) {
-      document.querySelectorAll('#sec-profile .profile-sub-tab').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      document.querySelectorAll('#sec-profile .profile-sub-tabs .profile-sub-tab').forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('#sec-profile .profile-sub-tabs .profile-sub-tab')).find(b => b.getAttribute('onclick')?.includes(`'${sub}'`));
+      if (activeBtn) activeBtn.classList.add('active');
+
       document.querySelectorAll('#sec-profile .sub-view').forEach(v => v.classList.remove('active'));
-      document.getElementById('sub-' + sub).classList.add('active');
+      const targetSub = document.getElementById('prof-sub-' + sub);
+      if (targetSub) targetSub.classList.add('active');
+
+      if (sub === 'admin') { loadAdminUsers(); loadAdminInvites(); }
+    }
+
+    function switchForumSub(sub) {
+      document.querySelectorAll('#sec-forum .profile-sub-tabs .profile-sub-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('#sec-forum .sub-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('forum-sub-' + sub).classList.add('active');
+    }
+
+    function toggleCloudTab(tab) {
+      activeCloudTab = tab;
+      document.getElementById('cloud-toggle-btn-cfg').classList.toggle('active', tab === 'configs');
+      document.getElementById('cloud-toggle-btn-lua').classList.toggle('active', tab === 'scripts');
+
+      document.getElementById('cloud-configs-container').style.display = (tab === 'configs') ? 'block' : 'none';
+      document.getElementById('cloud-scripts-container').style.display = (tab === 'scripts') ? 'block' : 'none';
+    }
+
+    function toggleCloudAddForm() {
+      if (activeCloudTab === 'configs') {
+        const el = document.getElementById('new-config-form');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      } else {
+        const el = document.getElementById('new-script-form');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
     }
 
     function selectColor(color, el) {
@@ -1241,27 +1329,32 @@
       rEl.className = `role-badge role-${u.role || 'user'}`;
       rEl.innerText = u.role || 'user';
 
-      // Статус подписки на экране лаунчера
-      const launcherSub = document.getElementById('launcher-sub-days');
+      // Формат подписки
+      let subStr = 'нет активной подписки';
+      let subColor = 'var(--text-muted)';
       if (u.sub_until === -1) {
-        launcherSub.innerText = 'lifetime';
-        launcherSub.style.color = '#34d399';
+        subStr = 'lifetime';
+        subColor = '#34d399';
       } else if (u.sub_until > Date.now()) {
         const diffDays = Math.ceil((u.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
-        launcherSub.innerText = `${diffDays} дней`;
-        launcherSub.style.color = '#34d399';
-      } else {
-        launcherSub.innerText = 'нет активной подписки';
-        launcherSub.style.color = 'var(--text-muted)';
+        subStr = `${diffDays} дней`;
+        subColor = '#34d399';
       }
 
-      // Последний запуск и HWID на экране лаунчера
+      const launcherSub = document.getElementById('launcher-sub-days');
+      launcherSub.innerText = subStr;
+      launcherSub.style.color = subColor;
+
+      const detailSub = document.getElementById('prof-sub-detail-status');
+      detailSub.innerText = subStr;
+      detailSub.style.color = subColor;
+
       document.getElementById('launcher-last-launch').innerText = u.last_launch ? new Date(u.last_launch).toLocaleString() : 'не запускался';
       document.getElementById('launcher-hwid-val').innerText = u.hwid || 'не привязан (ожидает первого входа)';
 
-      // Открытие вкладки админа
-      const navAdmin = document.getElementById('nav-btn-admin');
-      if (navAdmin) navAdmin.style.display = (u.username === 'dev' || u.uid === 1 || u.role === 'owner') ? 'inline-block' : 'none';
+      // Админ вкладка внутри профиля для owner
+      const isOwner = (u.username === 'dev' || u.uid === 1 || u.role === 'owner');
+      document.getElementById('prof-subtab-admin').style.display = isOwner ? 'inline-block' : 'none';
 
       const box = document.getElementById('prof-avatar-box');
       box.innerHTML = '';
@@ -1302,10 +1395,22 @@
       } catch (err) { triggerToast(err.message); }
     }
 
-    async function apiRedeemPromo() {
-      const code = document.getElementById('promo-input-code').value.trim();
+    // Покупка и промокод в модалке
+    function openCheckoutModal(days, price) {
+      document.getElementById('checkout-plan-info').innerText = `${days} дней доступа • JOY Client`;
+      document.getElementById('checkout-total-price').innerText = `${price} ₽`;
+      document.getElementById('checkout-promo-input').value = '';
+      document.getElementById('checkout-modal').classList.add('active');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.remove('active');
+    }
+
+    async function applyCheckoutPromo() {
+      const code = document.getElementById('checkout-promo-input').value.trim();
       const token = localStorage.getItem('token');
-      if (!code) return triggerToast('введите код');
+      if (!code) return triggerToast('введите промокод');
 
       try {
         const res = await fetch('/api/promo/redeem', {
@@ -1317,9 +1422,13 @@
         if (!res.ok) throw new Error(d.message);
 
         triggerToast(d.message);
-        document.getElementById('promo-input-code').value = '';
+        closeCheckoutModal();
         renderUser(d.user);
       } catch (err) { triggerToast(err.message); }
+    }
+
+    function proceedPayment() {
+      triggerToast('платежный шлюз временно в тестовом режиме');
     }
 
     function toBase64(file) {
@@ -1351,11 +1460,6 @@
     }
 
     // === КОНФИГИ ===
-    function toggleNewConfigForm() {
-      const el = document.getElementById('new-config-form');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
     async function loadConfigs() {
       const token = localStorage.getItem('token');
       try {
@@ -1375,15 +1479,16 @@
           div.style.display = 'flex';
           div.style.justifyContent = 'space-between';
           div.style.alignItems = 'center';
+          div.style.padding = '12px 14px';
           div.innerHTML = `
             <div>
-              <div style="font-weight: 700; font-size: 14px;">${cfg.name} ${cfg.is_public ? '<span class="ticket-badge">публичный</span>' : ''}</div>
+              <div style="font-weight: 700; font-size: 13.5px;">${cfg.name} ${cfg.is_public ? '<span class="ticket-badge">публичный</span>' : ''}</div>
               <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
                 код: <span class="copy-chip" onclick="navigator.clipboard.writeText('${cfg.id}'); triggerToast('код скопирован')">${cfg.id}</span> • автор: ${cfg.author}
               </div>
             </div>
             <div>
-              <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="copyConfigData('${cfg.data}')">скопировать</button>
+              <button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="copyConfigData('${cfg.data}')">скопировать</button>
               ${cfg.author === currentUser.username ? `<button class="del-btn" onclick="apiDeleteConfig('${cfg.id}')">[удалить]</button>` : ''}
             </div>
           `;
@@ -1417,7 +1522,7 @@
         triggerToast(d.message);
         document.getElementById('cfg-name-input').value = '';
         document.getElementById('cfg-data-input').value = '';
-        toggleNewConfigForm();
+        document.getElementById('new-config-form').style.display = 'none';
         loadConfigs();
       } catch (e) { triggerToast(e.message); }
     }
@@ -1430,11 +1535,6 @@
     }
 
     // === LUA СКРИПТЫ ===
-    function toggleNewScriptForm() {
-      const el = document.getElementById('new-script-form');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
     async function loadScripts() {
       const token = localStorage.getItem('token');
       try {
@@ -1454,13 +1554,14 @@
           div.style.display = 'flex';
           div.style.justifyContent = 'space-between';
           div.style.alignItems = 'center';
+          div.style.padding = '12px 14px';
           div.innerHTML = `
             <div>
-              <div style="font-weight: 700; font-size: 14px;" class="mono">${s.title}</div>
+              <div style="font-weight: 700; font-size: 13.5px;" class="mono">${s.title}</div>
               <div class="text-muted" style="font-size: 11px;">статус: <span style="color: ${s.enabled ? '#34d399' : '#f87171'}">${s.enabled ? 'активен' : 'выключен'}</span></div>
             </div>
             <div>
-              <button class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="apiToggleScript(${s.id})">${s.enabled ? 'выключить' : 'включить'}</button>
+              <button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="apiToggleScript(${s.id})">${s.enabled ? 'выключить' : 'включить'}</button>
               <button class="del-btn" onclick="apiDeleteScript(${s.id})">[удалить]</button>
             </div>
           `;
@@ -1488,7 +1589,7 @@
         triggerToast(d.message);
         document.getElementById('lua-title-input').value = '';
         document.getElementById('lua-code-input').value = '';
-        toggleNewScriptForm();
+        document.getElementById('new-script-form').style.display = 'none';
         loadScripts();
       } catch (e) { triggerToast(e.message); }
     }
@@ -1554,22 +1655,6 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    async function adminSaveTelegram() {
-      const token = localStorage.getItem('token');
-      const tgToken = document.getElementById('admin-tg-token').value.trim();
-      const tgChat = document.getElementById('admin-tg-chat').value.trim();
-
-      try {
-        const res = await fetch('/api/admin/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ token: tgToken, chat_id: tgChat })
-        });
-        const d = await res.json();
-        triggerToast(d.message);
-      } catch (e) { triggerToast(e.message); }
-    }
-
     async function loadAdminUsers() {
       const token = localStorage.getItem('token');
       try {
@@ -1580,7 +1665,7 @@
         allAdminUsers = d.users;
         document.getElementById('admin-users-count').innerText = `всего: ${allAdminUsers.length}`;
         renderAdminUsersTable(allAdminUsers);
-      } catch (e) { triggerToast('не удалось загрузить пользователей'); }
+      } catch (e) {}
     }
 
     function renderAdminUsersTable(list) {
@@ -1588,7 +1673,7 @@
       tbody.innerHTML = '';
 
       if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align: center;">никого не найдено</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align: center;">пусто</td></tr>';
         return;
       }
 
@@ -1598,8 +1683,8 @@
           : `<span style="color:#34d399;">активен</span>`;
 
         const ipWarning = u.ip_mismatch 
-          ? `<span style="color:#f87171;" title="web IP и client IP не совпадают">⚠️ ${u.client_ip}</span>` 
-          : u.client_ip;
+          ? `<span style="color:#f87171;">⚠️ слив</span>` 
+          : `<span style="color:#34d399;">ок</span>`;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1607,10 +1692,8 @@
           <td style="font-weight: 600;">${u.username}</td>
           <td><span class="role-badge role-${u.role}">${u.role}</span></td>
           <td>${statusHtml}</td>
-          <td class="mono" style="font-size: 11px;">${u.web_ip}</td>
-          <td class="mono" style="font-size: 11px;">${ipWarning}</td>
-          <td>${u.hwid ? '<span style="color:#f87171;">занят</span>' : '<span style="color:#34d399;">чист</span>'}</td>
-          <td><button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="selectAdminUserToEdit('${u.username}')">выбрать</button></td>
+          <td>${ipWarning}</td>
+          <td><button class="btn-outline" style="padding: 2px 6px; font-size: 10px;" onclick="selectAdminUserToEdit('${u.username}')">выбрать</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -1646,11 +1729,8 @@
         loadedAdminTarget = d.target;
         document.getElementById('admin-user-editor').style.display = 'block';
         document.getElementById('admin-target-name').innerText = d.target.username;
-        document.getElementById('admin-target-role-badge').className = `role-badge role-${d.target.role || 'user'}`;
-        document.getElementById('admin-target-role-badge').innerText = d.target.role || 'user';
         document.getElementById('admin-target-role').value = d.target.role || 'user';
         document.getElementById('admin-target-uid').value = d.target.uid;
-
         document.getElementById('admin-target-banned').value = d.target.banned ? 'true' : 'false';
         document.getElementById('admin-target-banreason').value = d.target.ban_reason || '';
 
@@ -1660,7 +1740,7 @@
           const dLeft = Math.ceil((d.target.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
           subText = `${dLeft} дн.`;
         }
-        document.getElementById('admin-target-status').innerText = `сабка: ${subText} | hwid: ${d.target.hwid ? 'занят' : 'чист'}`;
+        document.getElementById('admin-target-status').innerText = `сабка: ${subText}`;
       } catch (e) { triggerToast(e.message); }
     }
 
@@ -1708,65 +1788,6 @@
         triggerToast('hwid сброшен');
         adminFindUser();
         loadAdminUsers();
-      } catch (e) { triggerToast(e.message); }
-    }
-
-    async function loadAdminTickets() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/admin/tickets', { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await res.json();
-        const c = document.getElementById('admin-tickets-container');
-        c.innerHTML = '';
-
-        if (!d.tickets || d.tickets.length === 0) {
-          c.innerHTML = '<p class="text-muted" style="font-size:12px;">обращений пока нет</p>';
-          return;
-        }
-
-        d.tickets.forEach(t => {
-          const div = document.createElement('div');
-          div.style.background = 'rgba(7, 6, 11, 0.5)';
-          div.style.padding = '12px';
-          div.style.borderRadius = 'var(--radius)';
-          div.style.border = '1px solid var(--border)';
-          div.style.marginBottom = '10px';
-          div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <div>
-                <span style="font-weight:700;">${t.subject}</span>
-                <span class="text-muted" style="font-size:11px; margin-left: 6px;">от ${t.username} (uid ${t.user_uid})</span>
-              </div>
-              <span class="ticket-badge">${t.status}</span>
-            </div>
-            <div style="font-size:12.5px; margin-bottom: 8px;">${t.message}</div>
-            ${t.reply ? `<div style="color:var(--accent-bright); font-size:12px; margin-bottom:8px;">текущий ответ: ${t.reply}</div>` : ''}
-            <div style="display:flex; gap:6px;">
-              <input type="text" id="admin-reply-input-${t.id}" placeholder="ответ...">
-              <button class="btn-violet" style="padding:4px 10px; font-size:11px;" onclick="adminReplyToTicket('${t.id}')">ответить</button>
-            </div>
-          `;
-          c.appendChild(div);
-        });
-      } catch (e) {}
-    }
-
-    async function adminReplyToTicket(tId) {
-      const replyText = document.getElementById(`admin-reply-input-${tId}`).value.trim();
-      const token = localStorage.getItem('token');
-      if (!replyText) return triggerToast('введите текст ответа');
-
-      try {
-        const res = await fetch('/api/admin/ticket/reply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ ticket_id: tId, reply_text: replyText })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        triggerToast(d.message);
-        loadAdminTickets();
       } catch (e) { triggerToast(e.message); }
     }
 
@@ -2067,7 +2088,7 @@
       if (res.ok) openThread(tId);
     }
 
-    // Тикеты
+    // === ТИКЕТЫ ===
     async function apiSendTicket() {
       const token = localStorage.getItem('token');
       const subject = document.getElementById('ticket-subj').value.trim();
@@ -2091,36 +2112,38 @@
 
     async function loadTickets() {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/support/my-tickets', { headers: { 'Authorization': `Bearer ${token}` } });
-      const d = await res.json();
-      const c = document.getElementById('tickets-list');
-      c.innerHTML = '';
+      try {
+        const res = await fetch('/api/support/my-tickets', { headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        const c = document.getElementById('tickets-list');
+        c.innerHTML = '';
 
-      if (d.tickets.length === 0) {
-        c.innerHTML = '<p class="text-muted" style="font-size: 12px;">обращений нет</p>';
-        return;
-      }
+        if (!d.tickets || d.tickets.length === 0) {
+          c.innerHTML = '<p class="text-muted" style="font-size: 12px;">обращений нет</p>';
+          return;
+        }
 
-      d.tickets.forEach(t => {
-        const item = document.createElement('div');
-        item.style.padding = '8px 0';
-        item.style.borderBottom = '1px solid var(--border)';
-        item.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-            <div>
-              <span class="mono" style="font-weight: 600; font-size: 13px;">${t.subject}</span>
-              <span class="uid-tag" style="margin-left: 4px;">uid ${t.user_uid || 1}</span>
+        d.tickets.forEach(t => {
+          const item = document.createElement('div');
+          item.style.padding = '8px 0';
+          item.style.borderBottom = '1px solid var(--border)';
+          item.innerHTML = `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+              <div>
+                <span class="mono" style="font-weight: 600; font-size: 13px;">${t.subject}</span>
+                <span class="uid-tag" style="margin-left: 4px;">uid ${t.user_uid || 1}</span>
+              </div>
+              <div>
+                <span class="ticket-badge">${t.status}</span>
+                <button class="del-btn" onclick="apiDeleteTicket('${t.id}')">[удалить]</button>
+              </div>
             </div>
-            <div>
-              <span class="ticket-badge">${t.status}</span>
-              <button class="del-btn" onclick="apiDeleteTicket('${t.id}')">[удалить]</button>
-            </div>
-          </div>
-          <div class="text-muted" style="font-size: 12px;">${t.message}</div>
-          ${t.reply ? `<div style="margin-top: 5px; color: var(--accent-bright); font-size: 12px;">ответ: ${t.reply}</div>` : ''}
-        `;
-        c.appendChild(item);
-      });
+            <div class="text-muted" style="font-size: 12px;">${t.message}</div>
+            ${t.reply ? `<div style="margin-top: 5px; color: var(--accent-bright); font-size: 12px;">ответ: ${t.reply}</div>` : ''}
+          `;
+          c.appendChild(item);
+        });
+      } catch (e) {}
     }
 
     async function apiDeleteTicket(id) {
@@ -2129,7 +2152,7 @@
       if (res.ok) loadTickets();
     }
 
-    // Патчи
+    // === ПАТЧИ ===
     async function loadUpdates() {
       const res = await fetch('/api/updates');
       const d = await res.json();
@@ -2168,7 +2191,7 @@
       if (res.ok) loadUpdates();
     }
 
-    // Модалка
+    // Модалка юзера
     async function openUserProfileModal(username) {
       try {
         const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
