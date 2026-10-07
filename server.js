@@ -7,7 +7,7 @@ const app = express();
 const db = new Database('joy.db');
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // 1. ИНИЦИАЛИЗАЦИЯ ТАБЛИЦ БАЗЫ ДАННЫХ
 db.exec(`
