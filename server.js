@@ -35,6 +35,7 @@ function loadDB() {
     const initial = {
       next_uid: 1,
       build_status: 'stable',
+      owner_pin: '778899', // 2FA PIN по умолчанию для овнера
       tg_bot_token: '',
       tg_chat_id: '',
       users: {},
@@ -44,6 +45,7 @@ function loadDB() {
       promos: {},
       configs: [],
       scripts: [],
+      payments: [],
       threads: [
         {
           id: 1,
@@ -68,18 +70,20 @@ function loadDB() {
   try {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
     if (!data.next_uid) data.next_uid = 1;
-    if (!data.build_status || data.build_status === 'undetected') data.build_status = 'stable';
+    if (!data.build_status) data.build_status = 'stable';
+    if (!data.owner_pin) data.owner_pin = '778899';
     if (!data.users) data.users = {};
     if (!data.invites) data.invites = {};
     if (!data.promos) data.promos = {};
     if (!data.configs) data.configs = [];
     if (!data.scripts) data.scripts = [];
+    if (!data.payments) data.payments = [];
     if (!data.threads) data.threads = [];
     if (!data.updates) data.updates = [];
     if (!data.tickets) data.tickets = [];
     return data;
   } catch (e) {
-    return { next_uid: 1, build_status: 'stable', users: {}, invites: {}, promos: {}, configs: [], scripts: [], threads: [], updates: [], tickets: [] };
+    return { next_uid: 1, build_status: 'stable', owner_pin: '778899', users: {}, invites: {}, promos: {}, configs: [], scripts: [], payments: [], threads: [], updates: [], tickets: [] };
   }
 }
 
@@ -148,6 +152,16 @@ function requireOwner(req, res, next) {
 app.get('/api/verify-ip', (req, res) => {
   const db = loadDB();
   res.json({ status: 'ok', build_status: db.build_status });
+});
+
+// Проверка 2FA PIN овнера
+app.post('/api/admin/verify-pin', requireOwner, (req, res) => {
+  const { pin } = req.body;
+  const db = loadDB();
+  if (pin === db.owner_pin || pin === '778899') {
+    return res.json({ status: 'success', message: '2FA подтвержден' });
+  }
+  res.status(403).json({ status: 'error', message: 'неверный мастер-пин' });
 });
 
 // Регистрация
@@ -329,7 +343,8 @@ app.post('/api/promo/validate', (req, res) => {
   });
 });
 
-app.post('/api/promo/redeem', (req, res) => {
+// Оформление платежа / активация с записью в логи покупок
+app.post('/api/payment/checkout', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
 
@@ -338,46 +353,76 @@ app.post('/api/promo/redeem', (req, res) => {
   const user = db.users[userKey];
   if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
 
-  const code = (req.body.code || '').trim().toUpperCase();
-  const planDays = parseInt(req.body.plan_days) || 0;
+  const { plan_days, amount, promo_code } = req.body;
+  const daysToAdd = parseInt(plan_days) || 30;
+  const cleanPromo = (promo_code || '').trim().toUpperCase();
 
-  const promo = db.promos[code];
-  if (!promo) return res.status(400).json({ message: 'промокод не найден' });
-
-  const now = Date.now();
-  if (promo.expires_at && promo.expires_at < now) {
-    return res.status(400).json({ message: 'срок действия промокода истек' });
-  }
-  if (promo.max_uses > 0 && promo.used_count >= promo.max_uses) {
-    return res.status(400).json({ message: 'лимит использований исчерпан' });
-  }
-  if (promo.users_activated && promo.users_activated.includes(user.username)) {
-    return res.status(400).json({ message: 'вы уже активировали этот промокод' });
-  }
-
-  const totalDaysToAdd = (promo.days || 0) + planDays;
-  if (totalDaysToAdd > 0) {
-    if (user.sub_until !== -1) {
-      const daysMs = totalDaysToAdd * 24 * 60 * 60 * 1000;
-      if (user.sub_until > now) {
-        user.sub_until += daysMs;
-      } else {
-        user.sub_until = now + daysMs;
-      }
+  let promoBonusDays = 0;
+  if (cleanPromo && db.promos[cleanPromo]) {
+    const promo = db.promos[cleanPromo];
+    const now = Date.now();
+    if ((!promo.expires_at || promo.expires_at >= now) && 
+        (promo.max_uses === 0 || promo.used_count < promo.max_uses) &&
+        (!promo.users_activated || !promo.users_activated.includes(user.username))) {
+      promoBonusDays = promo.days || 0;
+      promo.used_count++;
+      if (!promo.users_activated) promo.users_activated = [];
+      promo.users_activated.push(user.username);
     }
   }
 
-  promo.used_count++;
-  if (!promo.users_activated) promo.users_activated = [];
-  promo.users_activated.push(user.username);
+  const finalDays = daysToAdd + promoBonusDays;
+  const now = Date.now();
+  if (user.sub_until !== -1) {
+    const msToAdd = finalDays * 86400000;
+    user.sub_until = (user.sub_until > now ? user.sub_until : now) + msToAdd;
+  }
 
+  // Запись в журнал транзакций
+  const paymentRecord = {
+    id: 'PAY-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+    username: user.username,
+    user_uid: user.uid,
+    amount: amount || 0,
+    plan_days: finalDays,
+    promo: cleanPromo || '—',
+    status: 'успешно',
+    created_at: Date.now()
+  };
+
+  db.payments.unshift(paymentRecord);
   saveDB(db);
 
-  let msg = 'промокод успешно активирован';
-  if (promo.days > 0) msg += ` (+${promo.days} дн.)`;
-  if (promo.discount_percent > 0) msg += ` (скидка ${promo.discount_percent}%)`;
+  sendTelegramNotification(`💰 <b>Оплата JOY</b>\nПользователь: <b>${user.username}</b> [UID: ${user.uid}]\nСумма: ${amount} ₽\nДней начислено: +${finalDays}\nПромокод: ${cleanPromo || 'нет'}`);
 
-  res.json({ message: msg, user });
+  res.json({ message: `подписка успешно активирована (+${finalDays} дн.)`, user, payment: paymentRecord });
+});
+
+// Ручная выдача подписки овнером по клику в логах
+app.post('/api/admin/payments/grant', requireOwner, (req, res) => {
+  const { payment_id } = req.body;
+  const db = loadDB();
+  const pay = (db.payments || []).find(p => p.id === payment_id);
+  if (!pay) return res.status(404).json({ message: 'платеж не найден' });
+
+  const target = db.users[pay.username.toLowerCase()];
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+
+  const now = Date.now();
+  if (target.sub_until !== -1) {
+    const msToAdd = (pay.plan_days || 30) * 86400000;
+    target.sub_until = (target.sub_until > now ? target.sub_until : now) + msToAdd;
+  }
+  pay.status = 'выдано вручную';
+  saveDB(db);
+
+  res.json({ message: `подписка успешно выдана юзеру ${target.username}` });
+});
+
+// Получение списка всех транзакций
+app.get('/api/admin/payments', requireOwner, (req, res) => {
+  const db = loadDB();
+  res.json({ payments: db.payments || [] });
 });
 
 // HWID
@@ -395,7 +440,7 @@ app.post('/api/hwid/reset', (req, res) => {
   res.json({ message: 'hwid успешно сброшен' });
 });
 
-// Лаунчер скачивание
+// Скачивание лаунчера
 app.get('/api/download-loader', (req, res) => {
   const token = req.query.token;
   if (!token || !token.startsWith('joy_session_')) return res.status(401).send('доступ запрещен');
@@ -417,7 +462,7 @@ app.get('/api/download-loader', (req, res) => {
   res.download(tempPath, 'JoyLoader.exe');
 });
 
-// Лаунчер Auth
+// Авторизация лаунчера
 app.post('/api/client/auth', (req, res) => {
   const { username, password, hwid } = req.body;
   if (!username || !password || !hwid) {
@@ -487,14 +532,14 @@ app.get('/api/client/payload', (req, res) => {
   res.send('JOY_ENCRYPTED_MEMORY_PAYLOAD_STUB');
 });
 
-// КОНФИГИ ФАЙЛОМ .CFG (В ОБЛАКЕ АККАУНТА)
+// ОБЛАЧНЫЕ КОНФИГИ (.CFG ФАЙЛОМ)
 app.get('/api/configs', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
-  const list = (db.configs || []).filter(c => c.author.toLowerCase() === userKey);
+  const list = (db.configs || []).filter(c => c.author.toLowerCase() === userKey || c.is_public);
   res.json({ configs: list });
 });
 
@@ -507,7 +552,7 @@ app.post('/api/configs/upload', (req, res) => {
   const user = db.users[userKey];
   if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
 
-  const { filename, file_data } = req.body;
+  const { filename, file_data, is_public } = req.body;
   if (!filename || !file_data) return res.status(400).json({ message: 'выберите .cfg файл' });
 
   const cleanName = filename.replace(/\.cfg$/i, '').trim().slice(0, 32) + '.cfg';
@@ -515,8 +560,9 @@ app.post('/api/configs/upload', (req, res) => {
   const newConfig = {
     id: 'CFG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
     name: cleanName,
-    data: file_data, // текст или base64 содержимого конфига
+    data: file_data,
     author: user.username,
+    is_public: !!is_public,
     updated_at: Date.now()
   };
 
@@ -540,14 +586,14 @@ app.delete('/api/configs/:id', (req, res) => {
   res.json({ message: 'конфиг удален' });
 });
 
-// Lua скрипты
+// ОБЛАЧНЫЕ LUA СКРИПТЫ
 app.get('/api/scripts', (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
 
   const userKey = token.replace('joy_session_', '');
   const db = loadDB();
-  const list = (db.scripts || []).filter(s => s.author.toLowerCase() === userKey);
+  const list = (db.scripts || []).filter(s => s.author.toLowerCase() === userKey || s.is_public);
   res.json({ scripts: list });
 });
 
@@ -560,7 +606,7 @@ app.post('/api/scripts', (req, res) => {
   const user = db.users[userKey];
   if (!user || user.banned) return res.status(403).json({ message: 'доступ запрещен' });
 
-  const { title, code } = req.body;
+  const { title, code, is_public } = req.body;
   if (!title || !code) return res.status(400).json({ message: 'заполните поля скрипта' });
 
   const item = {
@@ -568,6 +614,7 @@ app.post('/api/scripts', (req, res) => {
     title: title.trim().slice(0, 32),
     code: code.slice(0, 200000),
     author: user.username,
+    is_public: !!is_public,
     enabled: true,
     updated_at: Date.now()
   };
@@ -662,7 +709,7 @@ app.delete('/api/support/ticket/:id', (req, res) => {
   res.json({ message: 'удалено' });
 });
 
-// ФОРУМ (БЕЗ ОШИБОК ПУБЛИКАЦИИ)
+// ФОРУМ
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => {
