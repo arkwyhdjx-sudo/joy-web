@@ -12,16 +12,16 @@
   <style>
     :root {
       --bg-dark: #07060b;
-      --surface: #0e0d16;
-      --surface-elevated: #151322;
-      --border: #1e192e;
-      --border-light: #2c2542;
+      --surface-glass: rgba(14, 13, 22, 0.45);
+      --surface-elevated: rgba(21, 19, 34, 0.6);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(139, 92, 246, 0.35);
       --accent: #8b5cf6;
       --accent-bright: #a855f7;
       --accent-glow: rgba(139, 92, 246, 0.25);
       --text-main: #eeeaf8;
-      --text-muted: #6d6785;
-      --radius: 8px;
+      --text-muted: #756f8f;
+      --radius: 10px;
       --font-main: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -54,15 +54,15 @@
       position: absolute;
       border-radius: 50%;
       filter: blur(140px);
-      opacity: 0.35;
-      animation: floatPulse 12s ease-in-out infinite alternate;
+      opacity: 0.32;
+      animation: floatPulse 14s ease-in-out infinite alternate;
     }
-    .glow-1 { top: -10%; left: 25%; width: 450px; height: 450px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
-    .glow-2 { bottom: 5%; right: 15%; width: 500px; height: 500px; background: radial-gradient(circle, #5b21b6 0%, transparent 70%); animation-duration: 16s; }
+    .glow-1 { top: -10%; left: 25%; width: 500px; height: 500px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
+    .glow-2 { bottom: 5%; right: 15%; width: 520px; height: 520px; background: radial-gradient(circle, #5b21b6 0%, transparent 70%); animation-duration: 18s; }
 
     @keyframes floatPulse {
       0% { transform: scale(1) translateY(0); }
-      100% { transform: scale(1.08) translateY(20px); }
+      100% { transform: scale(1.08) translateY(24px); }
     }
 
     .mono { font-family: var(--font-mono); }
@@ -80,10 +80,11 @@
       text-transform: uppercase;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
-      background: rgba(14, 13, 22, 0.8);
-      border: 1px solid var(--border);
+      background: rgba(14, 13, 22, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
       color: var(--text-main);
       padding: 10px 12px;
       border-radius: var(--radius);
@@ -94,10 +95,10 @@
     }
 
     textarea { resize: none !important; min-height: 80px; overflow-y: auto; }
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent-bright);
-      background: var(--surface-elevated);
-      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
+    input:focus, textarea:focus {
+      border-color: var(--border-accent);
+      background: rgba(21, 19, 34, 0.65);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.15);
     }
 
     button {
@@ -123,8 +124,9 @@
     .btn-violet:hover { transform: translateY(-1.5px); box-shadow: 0 6px 22px rgba(168, 85, 247, 0.4); }
 
     .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
       color: var(--text-main);
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
@@ -137,24 +139,24 @@
       user-select: none;
     }
 
-    /* Исправленное идеальное центрирование в бейджах */
+    /* ИДЕАЛЬНОЕ ЦЕНТРИРОВАНИЕ БЕЙДЖЕЙ */
     .status-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 600;
       font-family: var(--font-mono);
       padding: 0 7px;
       height: 20px;
-      line-height: 1;
+      line-height: 20px;
       border-radius: 4px;
       text-transform: lowercase;
       letter-spacing: 0.02em;
     }
-    .status-stable { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-testing { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .status-updating { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-stable { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .status-testing { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
+    .status-updating { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
 
     .role-badge {
       display: inline-flex;
@@ -165,7 +167,7 @@
       font-family: var(--font-mono);
       padding: 0 6px;
       height: 18px;
-      line-height: 1;
+      line-height: 18px;
       border-radius: 4px;
       text-transform: uppercase;
     }
@@ -175,7 +177,69 @@
     .role-user { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
     .role-banned { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #f87171; }
 
-    /* ЭКРАН CLOUDFLARE DDOS ЗАЩИТЫ */
+    /* КАСТОМНЫЕ ВЫПАДАЮЩИЕ СПИСКИ (БЕЗ ДЕФОЛТНЫХ СИНИХ МЕНЮ) */
+    .c-select-wrapper {
+      position: relative;
+      user-select: none;
+    }
+    .c-select-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(14, 13, 22, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 12.5px;
+      transition: all 0.2s var(--ease);
+    }
+    .c-select-trigger:hover, .c-select-wrapper.open .c-select-trigger {
+      border-color: var(--border-accent);
+      background: var(--surface-elevated);
+    }
+    .c-select-arrow {
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .c-select-wrapper.open .c-select-arrow {
+      transform: rotate(180deg);
+    }
+    .c-select-options {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: rgba(14, 13, 22, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 4px;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      animation: popIn 0.2s var(--ease);
+    }
+    .c-select-wrapper.open .c-select-options {
+      display: block;
+    }
+    .c-option {
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .c-option:hover, .c-option.selected {
+      background: rgba(139, 92, 246, 0.15);
+      color: #fff;
+    }
+
+    /* ЭКРАН CLOUDFLARE DDOS */
     #cf-screen {
       position: fixed;
       inset: 0;
@@ -193,9 +257,10 @@
     .cf-box {
       max-width: 440px;
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: rgba(14, 13, 22, 0.7);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
       padding: 32px 28px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.9);
       text-align: center;
@@ -241,8 +306,9 @@
     .auth-box {
       width: 100%;
       max-width: 360px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 28px 24px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.8);
@@ -262,7 +328,7 @@
       user-select: none;
     }
 
-    /* Логотип: hover превращает joy в getjoy.vip */
+    /* АНИМАЦИЯ ПЕЧАТИ joy -> getjoy.vip */
     .brand-title-nav {
       font-family: var(--font-main);
       font-weight: 800;
@@ -274,16 +340,16 @@
       user-select: none;
       cursor: pointer;
       display: inline-block;
-      transition: all 0.25s var(--ease);
+      min-width: 34px;
     }
 
     .auth-tabs {
       display: flex;
-      background: rgba(7, 6, 11, 0.6);
+      background: rgba(7, 6, 11, 0.4);
       padding: 3px;
       border-radius: var(--radius);
       margin-bottom: 18px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-subtle);
     }
 
     .auth-tab {
@@ -310,8 +376,9 @@
     }
 
     header.top-nav {
-      background: rgba(14, 13, 22, 0.95);
-      border-bottom: 1px solid var(--border);
+      background: rgba(14, 13, 22, 0.5);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
       height: 52px;
       display: flex;
       align-items: center;
@@ -320,14 +387,12 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      backdrop-filter: blur(8px);
     }
 
-    /* Логотип и статус вплотную друг к другу */
     .brand-group {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .nav-left { display: flex; align-items: center; gap: 24px; }
@@ -363,7 +428,6 @@
       transition: max-width 0.25s var(--ease);
     }
 
-    /* Админка на весь экран для максимального контроля */
     body.admin-wide-mode .main-content {
       max-width: 1340px !important;
       padding: 24px 20px;
@@ -372,13 +436,19 @@
     .section { display: none; }
     .section.active { display: block; animation: tabFade 0.3s var(--ease); }
 
+    /* ПРОЗРАЧНЫЕ СТЕКЛЯННЫЕ КАРТОЧКИ (БЕЗ ВОНЮЧИХ ГЛУХИХ ФОНОВ) */
     .profile-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 14px;
       transition: border-color 0.25s var(--ease);
+    }
+    .profile-card:hover {
+      border-color: rgba(255, 255, 255, 0.09);
     }
 
     .profile-header-banner {
@@ -396,9 +466,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-subtle);
       flex-shrink: 0;
-      background: #09080e;
+      background: rgba(9, 8, 14, 0.5);
     }
 
     .profile-avatar-wrapper img, .profile-avatar-wrapper video { width: 100%; height: 100%; object-fit: cover; }
@@ -417,7 +487,7 @@
     .profile-sub-tabs {
       display: flex;
       gap: 6px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-subtle);
       margin-bottom: 18px;
       padding-bottom: 8px;
     }
@@ -440,8 +510,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--surface-elevated);
-      border: 1px dashed var(--border-light);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--border-subtle);
       color: var(--text-main);
       padding: 7px 12px;
       border-radius: var(--radius);
@@ -455,7 +525,6 @@
     .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .color-opt.active { border-color: #fff; }
 
-    /* Лаунчер карточка без лишних дыр */
     .launcher-info-box {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -464,8 +533,8 @@
     }
 
     .info-cell {
-      background: rgba(7, 6, 11, 0.45);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 10px 12px;
     }
@@ -486,8 +555,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(7, 6, 11, 0.45);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 10px 12px;
       margin-bottom: 14px;
@@ -503,8 +572,9 @@
     }
 
     .pricing-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 18px 16px;
       display: flex;
@@ -523,8 +593,8 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       color: #34d399;
       font-size: 10.5px;
       font-family: var(--font-mono);
@@ -549,8 +619,9 @@
 
     /* Форум */
     .forum-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 12px 16px;
       display: flex;
@@ -579,7 +650,7 @@
       font-weight: 600;
       padding: 0 6px;
       height: 18px;
-      line-height: 1;
+      line-height: 18px;
       border-radius: 4px;
       margin-right: 6px;
       text-transform: lowercase;
@@ -603,8 +674,8 @@
       justify-content: center;
       flex-shrink: 0;
       cursor: pointer;
-      border: 1px solid var(--border-light);
-      background: #09080e;
+      border: 1px solid var(--border-subtle);
+      background: rgba(9, 8, 14, 0.5);
     }
     .mini-avatar img, .mini-avatar video { width: 100%; height: 100%; object-fit: cover; }
     .mini-avatar-letter { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: #fff; }
@@ -615,7 +686,7 @@
       font-size: 12px;
       margin-top: 10px;
     }
-    .admin-table th, .admin-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    .admin-table th, .admin-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border-subtle); }
     .admin-table th { color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; font-weight: 600; }
     .admin-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
@@ -623,8 +694,8 @@
       cursor: pointer;
       padding: 2px 6px;
       border-radius: 4px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
       font-family: var(--font-mono);
       font-size: 11px;
     }
@@ -634,8 +705,8 @@
       position: fixed;
       inset: 0;
       z-index: 1001;
-      background: rgba(7, 6, 11, 0.75);
-      backdrop-filter: blur(5px);
+      background: rgba(7, 6, 11, 0.7);
+      backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -646,8 +717,9 @@
     .modal-card {
       width: 100%;
       max-width: 360px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(14, 13, 22, 0.75);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
       padding: 24px;
       position: relative;
@@ -658,8 +730,9 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--accent);
+      background: rgba(21, 19, 34, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-accent);
       color: var(--text-main);
       padding: 8px 14px;
       border-radius: var(--radius);
@@ -691,7 +764,7 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <!-- CLOUDFLARE DDOS ЗАЩИТА (АНАЛОГ CLOUDFLARE RAY SHIELD) -->
+  <!-- CLOUDFLARE SHIELD -->
   <div id="cf-screen">
     <div class="cf-box">
       <div class="cf-shield-icon">
@@ -756,9 +829,9 @@
   <div id="dashboard-screen">
     <header class="top-nav">
       <div class="nav-left">
-        <!-- Логотип: при hover меняется на getjoy.vip, без дырок до статуса -->
         <div class="brand-group">
-          <span class="brand-title-nav" id="brand-logo" onmouseenter="this.innerText='getjoy.vip'" onmouseleave="this.innerText='joy'">joy</span>
+          <!-- Typewriter эффект: плавно печатается getjoy.vip при наведении -->
+          <span class="brand-title-nav" id="brand-logo" onmouseenter="startTypewriter(true)" onmouseleave="startTypewriter(false)">joy</span>
           <span id="nav-build-status" class="status-badge status-stable">stable</span>
         </div>
         <nav class="nav-links">
@@ -770,7 +843,7 @@
     </header>
 
     <main class="main-content">
-      <!-- 1. ЛАУНЧЕР (АККУРАТНЫЙ И КОМПАКТНЫЙ) -->
+      <!-- 1. ЛАУНЧЕР -->
       <section id="sec-launcher" class="section active">
         <div class="profile-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -804,7 +877,7 @@
         </div>
       </section>
 
-      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО ВНУТРИ С ФИЛЬТРОМ ВСЕ / СВОЕ И ПРИВАТНОСТЬЮ) -->
+      <!-- 2. ФОРУМ (ОБСУЖДЕНИЯ + ОБЛАКО МАРКЕТПЛЕЙС) -->
       <section id="sec-forum" class="section">
         <div class="profile-card">
           <div class="profile-sub-tabs">
@@ -812,7 +885,7 @@
             <button class="profile-sub-tab" onclick="switchForumSub('cloud')">облако (маркетплейс)</button>
           </div>
 
-          <!-- Вкладка тем -->
+          <!-- Темы -->
           <div id="forum-sub-threads" class="sub-view active">
             <div id="forum-index">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -820,16 +893,22 @@
                 <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="toggleNewThread()">новая тема</button>
               </div>
 
-              <!-- Форма создания темы -->
-              <div id="new-thread-form" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+              <!-- Форма создания темы с кастомным селектором -->
+              <div id="new-thread-form" style="display: none; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
                 <div class="form-group">
                   <label>тег темы</label>
-                  <select id="t-tag-select">
-                    <option value="обсуждение">обсуждение</option>
-                    <option value="баг">баг</option>
-                    <option value="предложение">предложение</option>
-                    <option value="медиа">медиа</option>
-                  </select>
+                  <div class="c-select-wrapper" id="c-thread-tag-select">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-thread-tag-select')">
+                      <span class="c-select-val">обсуждение</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" onclick="selectCustomOption('c-thread-tag-select', 'обсуждение')">обсуждение</div>
+                      <div class="c-option" onclick="selectCustomOption('c-thread-tag-select', 'баг')">баг</div>
+                      <div class="c-option" onclick="selectCustomOption('c-thread-tag-select', 'предложение')">предложение</div>
+                      <div class="c-option" onclick="selectCustomOption('c-thread-tag-select', 'медиа')">медиа</div>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label>заголовок</label>
@@ -864,24 +943,32 @@
             </div>
           </div>
 
-          <!-- Вкладка облака: фильтры все / только свое + приватный/публичный статус -->
+          <!-- Облако (маркетплейс) с кастомными селекторами -->
           <div id="forum-sub-cloud" class="sub-view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: gap;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <div style="display: flex; gap: 8px; align-items: center;">
                 <div class="profile-sub-tabs" style="margin-bottom: 0; padding-bottom: 0; border: none;">
                   <button class="profile-sub-tab active" id="cloud-tab-btn-cfg" onclick="switchCloudType('configs')">конфиги (.cfg)</button>
                   <button class="profile-sub-tab" id="cloud-tab-btn-lua" onclick="switchCloudType('scripts')">lua скрипты</button>
                 </div>
-                <select id="cloud-filter-author" style="width: auto; padding: 4px 8px; font-size: 11.5px; height: 28px;" onchange="renderCloudItems()">
-                  <option value="all">все авторы</option>
-                  <option value="my">только мои</option>
-                </select>
+                
+                <!-- Кастомный фильтр "все / только мои" -->
+                <div class="c-select-wrapper" id="c-cloud-author-filter" style="width: 140px;">
+                  <div class="c-select-trigger" onclick="toggleCustomDropdown('c-cloud-author-filter')">
+                    <span class="c-select-val">все авторы</span>
+                    <span class="c-select-arrow">▼</span>
+                  </div>
+                  <div class="c-select-options">
+                    <div class="c-option selected" data-value="all" onclick="selectCustomOption('c-cloud-author-filter', 'все авторы', 'all'); renderCloudItems();">все авторы</div>
+                    <div class="c-option" data-value="my" onclick="selectCustomOption('c-cloud-author-filter', 'только мои', 'my'); renderCloudItems();">только мои</div>
+                  </div>
+                </div>
               </div>
               <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="toggleCloudUploadBox()">+ загрузить</button>
             </div>
 
-            <!-- Форма загрузки в облако с выбором приватности -->
-            <div id="cloud-upload-box" style="display: none; background: rgba(7, 6, 11, 0.5); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
+            <!-- Загрузка в облако с кастомным дропдауном приватности -->
+            <div id="cloud-upload-box" style="display: none; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
               <div id="cloud-cfg-upload-section">
                 <label style="margin-bottom: 6px;">загрузить .cfg файл</label>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
@@ -889,10 +976,16 @@
                     <span id="cloud-cfg-file-status">выбрать .cfg</span>
                     <input type="file" id="cloud-cfg-file-input" accept=".cfg" onchange="previewCloudCfg(this)">
                   </label>
-                  <select id="cloud-cfg-visibility" style="width: auto; padding: 6px 10px; font-size: 11.5px;">
-                    <option value="private">приватный (только мне)</option>
-                    <option value="public">публичный (в общий доступ)</option>
-                  </select>
+                  <div class="c-select-wrapper" id="c-cfg-vis-select" style="width: 180px;">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-cfg-vis-select')">
+                      <span class="c-select-val">приватный</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" data-value="private" onclick="selectCustomOption('c-cfg-vis-select', 'приватный', 'private')">приватный</div>
+                      <div class="c-option" data-value="public" onclick="selectCustomOption('c-cfg-vis-select', 'публичный', 'public')">публичный</div>
+                    </div>
+                  </div>
                 </div>
                 <button class="btn-violet" onclick="apiUploadCloudCfg()">сохранить в облако</button>
               </div>
@@ -904,13 +997,19 @@
                 </div>
                 <div class="form-group">
                   <label>код скрипта</label>
-                  <textarea id="cloud-lua-code" class="mono" placeholder="-- lua api"></textarea>
+                  <textarea id="cloud-lua-code" class="mono" placeholder="-- lua code..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                  <select id="cloud-lua-visibility" style="width: auto; padding: 6px 10px; font-size: 11.5px;">
-                    <option value="private">приватный (только мне)</option>
-                    <option value="public">публичный (в общий доступ)</option>
-                  </select>
+                  <div class="c-select-wrapper" id="c-lua-vis-select" style="width: 180px;">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-lua-vis-select')">
+                      <span class="c-select-val">приватный</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" data-value="private" onclick="selectCustomOption('c-lua-vis-select', 'приватный', 'private')">приватный</div>
+                      <div class="c-option" data-value="public" onclick="selectCustomOption('c-lua-vis-select', 'публичный', 'public')">публичный</div>
+                    </div>
+                  </div>
                 </div>
                 <button class="btn-violet" onclick="apiUploadCloudLua()">сохранить скрипт</button>
               </div>
@@ -921,7 +1020,7 @@
         </div>
       </section>
 
-      <!-- 3. АККАУНТ (ОБЗОР, ПОДПИСКА, НАСТРОЙКИ, АДМИНКА НА ВЕСЬ ЭКРАН) -->
+      <!-- 3. АККАУНТ (ОБЗОР, ПОДПИСКА, НАСТРОЙКИ С 2FA ПИНОМ, АДМИНКА) -->
       <section id="sec-profile" class="section">
         <div class="profile-card">
           <div id="profile-main-header" class="profile-header-banner">
@@ -955,7 +1054,7 @@
 
           <!-- Подписка -->
           <div id="prof-sub-subscription" class="sub-view">
-            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(7, 6, 11, 0.45); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
               <div>
                 <div class="text-muted" style="font-size: 10.5px; text-transform: uppercase;">статус</div>
                 <div id="prof-sub-detail-status" style="font-size: 15px; font-weight: 700; color: #34d399;">нет активной подписки</div>
@@ -986,7 +1085,7 @@
             </div>
           </div>
 
-          <!-- Настройки -->
+          <!-- Настройки + Установка личного 2FA PIN -->
           <div id="prof-sub-settings" class="sub-view">
             <div class="form-group">
               <label>аватарка (gif / mp4 / png / jpg)</label>
@@ -1015,31 +1114,40 @@
               <textarea id="edit-bio" maxlength="250" placeholder="о себе..."></textarea>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px;">
-              <button class="btn-violet" onclick="apiSaveProfile()">сохранить</button>
+            <!-- БЛОК ПЕРСОНАЛЬНОГО 2FA PIN-КОДА -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
+              <label style="margin-bottom: 4px;">персональный 2fa пин-код</label>
+              <p class="text-muted" style="font-size: 11.5px; margin-bottom: 8px;">установите 4–8 значный защитный пин для защиты важных действий и входа в админку.</p>
+              <div style="display: flex; gap: 8px; max-width: 320px;">
+                <input type="password" id="user-pin-input" maxlength="8" class="mono" placeholder="введите новый пин...">
+                <button class="btn-outline" style="font-size: 11px; padding: 7px 12px;" onclick="apiSaveUserPin()">сохранить пин</button>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+              <button class="btn-violet" onclick="apiSaveProfile()">сохранить профиль</button>
               <button type="button" class="quiet-logout-btn" onclick="apiLogout()">выйти из аккаунта</button>
             </div>
           </div>
 
-          <!-- АДМИНКА ОВНЕРА (НА ВЕСЬ ЭКРАН + ЛОГИ ПОКУПОК + 2FA PIN) -->
+          <!-- Админка овнера (на весь экран, разблокируется персональным пином) -->
           <div id="prof-sub-admin" class="sub-view">
-            <!-- Экран ввода 2FA PIN для овнера -->
-            <div id="admin-pin-screen" style="background: rgba(7, 6, 11, 0.6); border: 1px solid var(--accent); padding: 24px; border-radius: var(--radius); text-align: center; max-width: 360px; margin: 20px auto;">
-              <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">2fa мастер-доступ</h3>
-              <p class="text-muted" style="font-size: 12px; margin-bottom: 14px;">введите 6-значный пин-код для разблокировки панели овнера</p>
-              <input type="password" id="admin-pin-input" maxlength="6" class="mono" placeholder="••••••" style="text-align: center; font-size: 18px; letter-spacing: 6px; margin-bottom: 12px;">
+            <!-- Экран проверки персонального PIN -->
+            <div id="admin-pin-screen" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-accent); padding: 24px; border-radius: var(--radius); text-align: center; max-width: 360px; margin: 20px auto;">
+              <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">2fa подтверждение</h3>
+              <p class="text-muted" style="font-size: 12px; margin-bottom: 14px;">введите ваш персональный пин-код для входа в панель</p>
+              <input type="password" id="admin-pin-input" maxlength="8" class="mono" placeholder="••••" style="text-align: center; font-size: 18px; letter-spacing: 6px; margin-bottom: 12px;">
               <button class="btn-violet" style="width: 100%;" onclick="verifyAdminPin()">разблокировать</button>
             </div>
 
-            <!-- Разблокированная панель на весь экран -->
             <div id="admin-full-content" style="display: none;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <span style="font-weight: 700; color: #f87171; font-size: 15px;">панель управления овнера (полный доступ)</span>
                 <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
               </div>
 
-              <!-- 1. ЛОГИ ПОКУПОК И ПЛАТЕЖЕЙ С ВЫДАЧЕЙ САБКИ В 1 КЛИК -->
-              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+              <!-- Логи покупок -->
+              <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">логи покупок и платежей</label>
                   <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPayments()">обновить журнал</button>
@@ -1054,8 +1162,8 @@
                 </div>
               </div>
 
-              <!-- 2. МОНИТОРИНГ ПОЛЬЗОВАТЕЛЕЙ -->
-              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+              <!-- Пользователи (твой IP защищен и скрыт) -->
+              <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">пользователи</label>
                   <span class="mono text-muted" id="admin-users-count" style="font-size: 11px;">всего: 0</span>
@@ -1071,8 +1179,8 @@
                 </div>
               </div>
 
-              <!-- 3. РЕДАКТОР АККАУНТА -->
-              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+              <!-- Редактор аккаунта -->
+              <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <label style="color: #f87171; margin-bottom: 6px;">управление аккаунтом</label>
                 <div style="display: flex; gap: 6px; margin-bottom: 10px;">
                   <input type="text" id="admin-search-user" placeholder="логин...">
@@ -1087,12 +1195,7 @@
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                     <div>
                       <label>роль</label>
-                      <select id="admin-target-role">
-                        <option value="owner">owner</option>
-                        <option value="admin">admin</option>
-                        <option value="tester">tester</option>
-                        <option value="user">user</option>
-                      </select>
+                      <input type="text" id="admin-target-role" placeholder="owner / admin / tester / user">
                     </div>
                     <div>
                       <label>uid</label>
@@ -1100,21 +1203,8 @@
                     </div>
                   </div>
                   <div class="form-group" style="margin-bottom: 8px;">
-                    <label>сабка</label>
-                    <select id="admin-target-sub">
-                      <option value="none">без изменений</option>
-                      <option value="30d">+30 дней</option>
-                      <option value="90d">+90 дней</option>
-                      <option value="lifetime">lifetime</option>
-                      <option value="reset">обнулить</option>
-                    </select>
-                  </div>
-                  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 6px; margin-bottom: 10px;">
-                    <select id="admin-target-banned">
-                      <option value="false">активен</option>
-                      <option value="true">бан</option>
-                    </select>
-                    <input type="text" id="admin-target-banreason" placeholder="причина...">
+                    <label>сабка (дней или lifetime)</label>
+                    <input type="text" id="admin-target-sub" placeholder="30d / 90d / lifetime / reset">
                   </div>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="adminSaveUser()">сохранить</button>
@@ -1123,19 +1213,25 @@
                 </div>
               </div>
 
-              <!-- 4. СТАТУС БИЛДА И БИНАРНИКИ -->
+              <!-- Статус и бинарники -->
               <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 14px;">
-                <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+                <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle);">
                   <label style="color: #f87171;">статус билда</label>
-                  <select id="admin-build-status-select" style="margin: 6px 0 10px 0;">
-                    <option value="stable">stable (в сети)</option>
-                    <option value="testing">testing (тестирование)</option>
-                    <option value="updating">updating (на обновлении)</option>
-                  </select>
-                  <button class="btn-violet" style="width: 100%; font-size: 11px; padding: 5px;" onclick="adminChangeBuildStatus()">применить</button>
+                  <div class="c-select-wrapper" id="c-admin-status-select" style="margin: 6px 0 10px 0;">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-admin-status-select')">
+                      <span class="c-select-val">stable</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" data-value="stable" onclick="selectCustomOption('c-admin-status-select', 'stable', 'stable')">stable</div>
+                      <div class="c-option" data-value="testing" onclick="selectCustomOption('c-admin-status-select', 'testing', 'testing')">testing</div>
+                      <div class="c-option" data-value="updating" onclick="selectCustomOption('c-admin-status-select', 'updating', 'updating')">updating</div>
+                    </div>
+                  </div>
+                  <button class="btn-violet" style="width: 100%; font-size: 11px; padding: 6px;" onclick="adminChangeBuildStatus()">применить</button>
                 </div>
 
-                <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+                <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle);">
                   <label style="color: #f87171; margin-bottom: 6px;">заливка бинарников</label>
                   <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                     <label class="custom-file-upload">
@@ -1154,10 +1250,10 @@
                 </div>
               </div>
 
-              <!-- 5. ПРОМОКОДЫ И ИНВАЙТЫ -->
-              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px;">
+              <!-- Промокоды -->
+              <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <label style="color: #f87171; margin: 0;">промокоды (дни / скидка % / бесконечные)</label>
+                  <label style="color: #f87171; margin: 0;">промокоды</label>
                   <button class="btn-outline" style="padding: 3px 8px; font-size: 10px;" onclick="loadAdminPromos()">обновить</button>
                 </div>
                 <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; margin-bottom: 6px;">
@@ -1178,8 +1274,8 @@
                 </div>
               </div>
 
-              <!-- 6. ИНВАЙТЫ -->
-              <div style="background: rgba(7, 6, 11, 0.5); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <!-- Инвайты -->
+              <div style="background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <label style="color: #f87171; margin: 0;">инвайты</label>
                   <button class="btn-violet" style="padding: 4px 8px; font-size: 11px;" onclick="adminGenerateInvite()">+ создать инвайт</button>
@@ -1247,7 +1343,7 @@
         <div id="checkout-promo-badge" style="display: none; font-size: 11.5px; color: #34d399; margin-top: 6px;"></div>
       </div>
 
-      <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px;">
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 16px;">
           <span>итого к оплате:</span>
           <span id="checkout-total-price">0 ₽</span>
@@ -1257,7 +1353,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛКА ПРОФИЛЯ ЮЗЕРА ПО КЛИКУ -->
+  <!-- МОДАЛКА ПРОФИЛЯ -->
   <div id="user-modal" class="modal-overlay" onclick="closeUserModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close-btn" onclick="closeUserModal()">✕</button>
@@ -1287,18 +1383,72 @@
     let stagedMediaType = null;
     let allAdminUsers = [];
 
-    let cloudType = 'configs'; // 'configs' | 'scripts'
+    let cloudType = 'configs';
     let allCloudConfigs = [];
     let allCloudScripts = [];
     let stagedCloudCfg = null;
 
     let activeCheckoutPlan = { days: 30, basePrice: 900, finalPrice: 900, promoCode: null, extraDays: 0 };
 
+    // Анимация плавной печати логотипа joy <-> getjoy.vip
+    let typewriterTimer = null;
+    function startTypewriter(toFull) {
+      clearInterval(typewriterTimer);
+      const el = document.getElementById('brand-logo');
+      const target = toFull ? 'getjoy.vip' : 'joy';
+      typewriterTimer = setInterval(() => {
+        let current = el.innerText;
+        if (toFull) {
+          if (current.length < target.length) {
+            el.innerText = target.slice(0, current.length + 1);
+          } else {
+            clearInterval(typewriterTimer);
+          }
+        } else {
+          if (current.length > target.length) {
+            el.innerText = current.slice(0, -1);
+          } else {
+            el.innerText = target;
+            clearInterval(typewriterTimer);
+          }
+        }
+      }, 35);
+    }
+
     function triggerToast(m) {
       const t = document.getElementById('toast');
       t.innerText = m;
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // Обработка клика вне кастомных селекторов
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.c-select-wrapper')) {
+        document.querySelectorAll('.c-select-wrapper').forEach(w => w.classList.remove('open'));
+      }
+    });
+
+    function toggleCustomDropdown(id) {
+      const el = document.getElementById(id);
+      const isOpen = el.classList.contains('open');
+      document.querySelectorAll('.c-select-wrapper').forEach(w => w.classList.remove('open'));
+      if (!isOpen) el.classList.add('open');
+    }
+
+    function selectCustomOption(wrapperId, label, val = null) {
+      const wrapper = document.getElementById(wrapperId);
+      wrapper.querySelector('.c-select-val').innerText = label;
+      wrapper.querySelectorAll('.c-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.innerText.trim() === label.trim());
+      });
+      wrapper.dataset.value = val !== null ? val : label;
+      wrapper.classList.remove('open');
+    }
+
+    function getCustomValue(wrapperId) {
+      const wrapper = document.getElementById(wrapperId);
+      return wrapper.dataset.value || wrapper.querySelector('.c-select-val').innerText.trim();
     }
 
     function switchAuthTab(tab) {
@@ -1355,164 +1505,103 @@
       if (sub === 'cloud') { loadCloudData(); }
     }
 
-    // Проверка Cloudflare (задержка 1.8с для реалистичной проверки соединения)
-    window.addEventListener('DOMContentLoaded', async () => {
-      setTimeout(() => {
-        document.getElementById('cf-screen').classList.add('verified');
-      }, 1800);
-
-      try { 
-        const res = await fetch('/api/verify-ip'); 
-        const d = await res.json();
-        updateGlobalStatusBadge(d.build_status);
-      } catch (e) {}
-
+    // Сохранение личного 2FA PIN пользователем
+    async function apiSaveUserPin() {
+      const pin = document.getElementById('user-pin-input').value.trim();
       const token = localStorage.getItem('token');
-      if (token) loadUserProfile();
-    });
-
-    function updateGlobalStatusBadge(status) {
-      const b = document.getElementById('nav-build-status');
-      if (!b) return;
-      b.className = `status-badge status-${status || 'stable'}`;
-      b.innerText = status || 'stable';
-    }
-
-    async function apiLogin(e) {
-      e.preventDefault();
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
+      if (!pin || pin.length < 4) return triggerToast('пин должен быть от 4 до 8 цифр');
 
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        localStorage.setItem('token', d.token);
-        updateGlobalStatusBadge(d.build_status);
-        renderUser(d.user);
-      } catch (err) { triggerToast(err.message); }
-    }
-
-    async function apiRegister(e) {
-      e.preventDefault();
-      const invite_code = document.getElementById('reg-invite').value.trim();
-      const username = document.getElementById('reg-username').value.trim();
-      const p1 = document.getElementById('reg-p1').value;
-      const p2 = document.getElementById('reg-p2').value;
-
-      if (p1 !== p2) return triggerToast('пароли не совпадают');
-
-      try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ invite_code, username, password: p1 })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        localStorage.setItem('token', d.token);
-        renderUser(d.user);
-      } catch (err) { triggerToast(err.message); }
-    }
-
-    async function loadUserProfile() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/profile', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) {
-          const d = await res.json();
-          if (d.banned) triggerToast(d.message);
-          throw new Error();
-        }
-        const d = await res.json();
-        updateGlobalStatusBadge(d.build_status);
-        renderUser(d.user);
-      } catch (e) { apiLogout(); }
-    }
-
-    function renderUser(u) {
-      currentUser = u;
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('dashboard-screen').style.display = 'flex';
-
-      document.getElementById('prof-username').innerText = u.username;
-      document.getElementById('prof-uid').innerText = `uid ${u.uid || 1}`;
-      document.getElementById('prof-invite').innerText = u.invite_code;
-      document.getElementById('prof-bio-text').innerText = u.bio || '—';
-      document.getElementById('edit-bio').value = u.bio || '';
-
-      const rEl = document.getElementById('prof-role');
-      rEl.className = `role-badge role-${u.role || 'user'}`;
-      rEl.innerText = u.role || 'user';
-
-      let subStr = 'нет активной подписки';
-      let subColor = 'var(--text-muted)';
-      if (u.sub_until === -1) {
-        subStr = 'lifetime';
-        subColor = '#34d399';
-      } else if (u.sub_until > Date.now()) {
-        const diffDays = Math.ceil((u.sub_until - Date.now()) / (1000 * 60 * 60 * 24));
-        subStr = `${diffDays} дней`;
-        subColor = '#34d399';
-      }
-
-      document.getElementById('launcher-sub-days').innerText = subStr;
-      document.getElementById('launcher-sub-days').style.color = subColor;
-      document.getElementById('prof-sub-detail-status').innerText = subStr;
-      document.getElementById('prof-sub-detail-status').style.color = subColor;
-
-      document.getElementById('launcher-last-launch').innerText = u.last_launch ? new Date(u.last_launch).toLocaleString() : 'не запускался';
-      document.getElementById('launcher-hwid-val').innerText = u.hwid || 'не привязан';
-
-      const isOwner = (u.username === 'dev' || u.uid === 1 || u.role === 'owner');
-      document.getElementById('prof-subtab-admin').style.display = isOwner ? 'inline-block' : 'none';
-
-      const box = document.getElementById('prof-avatar-box');
-      box.innerHTML = '';
-      if (u.avatar_media && u.avatar_type === 'video') {
-        box.innerHTML = `<video src="${u.avatar_media}" autoplay loop muted playsinline></video>`;
-      } else if (u.avatar_media && u.avatar_type === 'image') {
-        box.innerHTML = `<img src="${u.avatar_media}">`;
-      } else {
-        box.innerHTML = `<div class="profile-avatar-letter" id="prof-avatar-fallback" style="background:${u.avatar_color || '#8b5cf6'}">${u.username.charAt(0).toUpperCase()}</div>`;
-      }
-    }
-
-    async function apiSaveProfile() {
-      const token = localStorage.getItem('token');
-      const bio = document.getElementById('edit-bio').value;
-
-      let payload = { bio: bio, avatar_color: selectedColor, reset_media: shouldResetMedia };
-      if (stagedMedia && !shouldResetMedia) {
-        payload.avatar_media = stagedMedia;
-        payload.avatar_type = stagedMediaType;
-      }
-
-      try {
-        const res = await fetch('/api/profile/update', {
+        const res = await fetch('/api/user/set-pin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ pin })
         });
         const d = await res.json();
         if (!res.ok) throw new Error(d.message);
 
-        shouldResetMedia = false;
-        stagedMedia = null;
-        stagedMediaType = null;
-        document.getElementById('upload-status-text').innerText = 'загрузить файл';
-        renderUser(d.user);
-        triggerToast('профиль сохранен');
-      } catch (err) { triggerToast(err.message); }
+        triggerToast(d.message);
+        document.getElementById('user-pin-input').value = '';
+      } catch (e) {
+        triggerToast(e.message);
+      }
     }
 
-    // === ОБЛАКО ВНУТРИ ФОРУМА (МАРКЕТПЛЕЙС) ===
+    // Верификация персонального PIN овнера
+    async function verifyAdminPin() {
+      const pin = document.getElementById('admin-pin-input').value.trim();
+      const token = localStorage.getItem('token');
+      if (!pin) return triggerToast('введите пин-код');
+
+      try {
+        const res = await fetch('/api/user/verify-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pin })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        document.getElementById('admin-pin-screen').style.display = 'none';
+        document.getElementById('admin-full-content').style.display = 'block';
+        triggerToast('2FA успешно подтвержден');
+
+        loadAdminUsers();
+        loadAdminPayments();
+        loadAdminPromos();
+        loadAdminInvites();
+      } catch (e) {
+        triggerToast(e.message);
+      }
+    }
+
+    async function loadAdminPayments() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/payments', { headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        const tbody = document.getElementById('admin-payments-table-body');
+        tbody.innerHTML = '';
+
+        if (!d.payments || d.payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align: center;">платежей нет</td></tr>';
+          return;
+        }
+
+        d.payments.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="mono" style="font-size:11px;">${p.id}</td>
+            <td><b>${p.username}</b> <span class="uid-tag">uid ${p.user_uid}</span></td>
+            <td>${p.amount} ₽</td>
+            <td style="color:#34d399;">+${p.plan_days} дн.</td>
+            <td class="mono" style="font-size:11px;">${p.promo}</td>
+            <td><span class="role-badge role-${p.status === 'успешно' ? 'tester' : 'admin'}">${p.status}</span></td>
+            <td><button class="btn-outline" style="padding: 2px 7px; font-size: 10px;" onclick="adminGrantPaymentSub('${p.id}')">выдать сабку</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {}
+    }
+
+    async function adminGrantPaymentSub(paymentId) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('/api/admin/payments/grant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ payment_id: paymentId })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        loadAdminPayments();
+        loadAdminUsers();
+      } catch (e) { triggerToast(e.message); }
+    }
+
+    // Облако
     function switchCloudType(type) {
       cloudType = type;
       document.getElementById('cloud-tab-btn-cfg').classList.toggle('active', type === 'configs');
@@ -1548,7 +1637,7 @@
     function renderCloudItems() {
       const c = document.getElementById('cloud-rendered-list');
       c.innerHTML = '';
-      const filter = document.getElementById('cloud-filter-author').value;
+      const filter = getCustomValue('c-cloud-author-filter');
 
       if (cloudType === 'configs') {
         let list = allCloudConfigs;
@@ -1637,7 +1726,7 @@
     async function apiUploadCloudCfg() {
       if (!stagedCloudCfg) return triggerToast('выберите .cfg файл');
       const token = localStorage.getItem('token');
-      const is_public = document.getElementById('cloud-cfg-visibility').value === 'public';
+      const is_public = getCustomValue('c-cfg-vis-select') === 'public';
 
       try {
         const res = await fetch('/api/configs/upload', {
@@ -1665,7 +1754,7 @@
       const token = localStorage.getItem('token');
       const title = document.getElementById('cloud-lua-title').value.trim();
       const code = document.getElementById('cloud-lua-code').value.trim();
-      const is_public = document.getElementById('cloud-lua-visibility').value === 'public';
+      const is_public = getCustomValue('c-lua-vis-select') === 'public';
 
       if (!title || !code) return triggerToast('заполните поля скрипта');
 
@@ -1715,82 +1804,7 @@
       if (res.ok) loadCloudData();
     }
 
-    // === 2FA ВЕРИФИКАЦИЯ ОВНЕРА ДЛЯ АДМИНКИ ===
-    async function verifyAdminPin() {
-      const pin = document.getElementById('admin-pin-input').value.trim();
-      const token = localStorage.getItem('token');
-      if (!pin) return triggerToast('введите пин-код');
-
-      try {
-        const res = await fetch('/api/admin/verify-pin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ pin })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        document.getElementById('admin-pin-screen').style.display = 'none';
-        document.getElementById('admin-full-content').style.display = 'block';
-        triggerToast('2FA успешно подтвержден');
-
-        loadAdminUsers();
-        loadAdminPayments();
-        loadAdminPromos();
-        loadAdminInvites();
-      } catch (e) {
-        triggerToast(e.message);
-      }
-    }
-
-    // === ЛОГИ ПОКУПОК И ВЫДАЧА САБКИ В 1 КЛИК ===
-    async function loadAdminPayments() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/admin/payments', { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await res.json();
-        const tbody = document.getElementById('admin-payments-table-body');
-        tbody.innerHTML = '';
-
-        if (!d.payments || d.payments.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align: center;">платежей нет</td></tr>';
-          return;
-        }
-
-        d.payments.forEach(p => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="mono" style="font-size:11px;">${p.id}</td>
-            <td><b>${p.username}</b> <span class="uid-tag">uid ${p.user_uid}</span></td>
-            <td>${p.amount} ₽</td>
-            <td style="color:#34d399;">+${p.plan_days} дн.</td>
-            <td class="mono" style="font-size:11px;">${p.promo}</td>
-            <td><span class="role-badge role-${p.status === 'успешно' ? 'tester' : 'admin'}">${p.status}</span></td>
-            <td><button class="btn-outline" style="padding: 2px 7px; font-size: 10px;" onclick="adminGrantPaymentSub('${p.id}')">выдать сабку</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (e) {}
-    }
-
-    async function adminGrantPaymentSub(paymentId) {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('/api/admin/payments/grant', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ payment_id: paymentId })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        triggerToast(d.message);
-        loadAdminPayments();
-        loadAdminUsers();
-      } catch (e) { triggerToast(e.message); }
-    }
-
-    // === ЧЕКАУТ ПОДПИСКИ ===
+    // Чекаут
     function openCheckoutModal(days, price) {
       activeCheckoutPlan = { 
         days: days, 
@@ -1931,7 +1945,7 @@
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // === АДМИНКА ===
+    // Админка
     async function adminGrantSelfLifetime() {
       const token = localStorage.getItem('token');
       try {
@@ -1944,7 +1958,7 @@
     }
 
     async function adminChangeBuildStatus() {
-      const status = document.getElementById('admin-build-status-select').value;
+      const status = getCustomValue('c-admin-status-select');
       const token = localStorage.getItem('token');
       try {
         const res = await fetch('/api/admin/status', {
@@ -2057,8 +2071,6 @@
         document.getElementById('admin-target-name').innerText = d.target.username;
         document.getElementById('admin-target-role').value = d.target.role || 'user';
         document.getElementById('admin-target-uid').value = d.target.uid;
-        document.getElementById('admin-target-banned').value = d.target.banned ? 'true' : 'false';
-        document.getElementById('admin-target-banreason').value = d.target.ban_reason || '';
 
         let subText = 'нет';
         if (d.target.sub_until === -1) subText = 'lifetime';
@@ -2076,8 +2088,6 @@
       const role = document.getElementById('admin-target-role').value;
       const uid = document.getElementById('admin-target-uid').value;
       const sub_mode = document.getElementById('admin-target-sub').value;
-      const banned = document.getElementById('admin-target-banned').value === 'true';
-      const ban_reason = document.getElementById('admin-target-banreason').value.trim();
 
       try {
         const res = await fetch('/api/admin/user/update', {
@@ -2087,9 +2097,7 @@
             username: loadedAdminTarget.username, 
             role, 
             uid, 
-            sub_mode, 
-            banned, 
-            ban_reason 
+            sub_mode 
           })
         });
         const d = await res.json();
@@ -2270,27 +2278,7 @@
       } catch (e) { triggerToast(e.message); }
     }
 
-    async function adminPostUpdate() {
-      const token = localStorage.getItem('token');
-      const title = document.getElementById('admin-upd-title').value.trim();
-      const content = document.getElementById('admin-upd-content').value.trim();
-
-      try {
-        const res = await fetch('/api/updates', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ title, content })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-
-        document.getElementById('admin-upd-title').value = '';
-        document.getElementById('admin-upd-content').value = '';
-        triggerToast('обновление опубликовано');
-      } catch (e) { triggerToast(e.message); }
-    }
-
-    // ФОРУМ
+    // Форум
     async function loadThreads() {
       const res = await fetch('/api/forum/threads');
       const d = await res.json();
@@ -2333,7 +2321,7 @@
       const token = localStorage.getItem('token');
       const title = document.getElementById('t-title').value.trim();
       const content = document.getElementById('t-content').value.trim();
-      const tag = document.getElementById('t-tag-select').value;
+      const tag = getCustomValue('c-thread-tag-select');
 
       if (!title || !content) {
         return triggerToast('заполните заголовок и текст темы');
@@ -2352,7 +2340,7 @@
         document.getElementById('t-content').value = '';
         toggleNewThread();
         loadThreads();
-        triggerToast('тема успешно опубликована');
+        triggerToast('тема опубликована');
       } catch (e) { triggerToast(e.message); }
     }
 
@@ -2421,7 +2409,7 @@
                 <span class="uid-tag">uid ${p.author_uid || 1}</span>
               </div>
             </div>
-            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id}, ${p.id})">[удалить]</button>` : ''}
+            ${canDel ? `<button class="del-btn" onclick="apiDeletePost(${d.thread.id},${p.id})">[удалить]</button>` : ''}
           </div>
           <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${p.text}</div>
         `;
@@ -2519,7 +2507,7 @@
         d.tickets.forEach(t => {
           const item = document.createElement('div');
           item.style.padding = '8px 0';
-          item.style.borderBottom = '1px solid var(--border)';
+          item.style.borderBottom = '1px solid var(--border-subtle)';
           item.innerHTML = `
             <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
               <div>
@@ -2560,28 +2548,17 @@
       d.updates.forEach(u => {
         const div = document.createElement('div');
         div.className = 'profile-card';
-        const isOwner = currentUser && (currentUser.uid === 1 || currentUser.role === 'owner');
         div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <div>
-              <div style="font-weight: 700; font-size: 15px; color: var(--accent-bright);">${u.title}</div>
-              <div class="text-muted" style="font-size: 11px;">
-                <span class="author-clickable" onclick="openUserProfileModal('${u.author}')">${u.author}</span> • ${new Date(u.created_at).toLocaleDateString()}
-              </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 700; font-size: 15px; color: var(--accent-bright);">${u.title}</div>
+            <div class="text-muted" style="font-size: 11px;">
+              ${u.author} • ${new Date(u.created_at).toLocaleDateString()}
             </div>
-            ${isOwner ? `<button class="del-btn" onclick="apiDeleteUpdate(${u.id})">[удалить]</button>` : ''}
           </div>
           <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.6;">${u.content}</div>
         `;
         c.appendChild(div);
       });
-    }
-
-    async function apiDeleteUpdate(id) {
-      if (!confirm('удалить патч?')) return;
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/updates/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) loadUpdates();
     }
 
     // Модалка юзера
