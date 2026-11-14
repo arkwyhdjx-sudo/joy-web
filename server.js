@@ -14,9 +14,7 @@ if (!fs.existsSync(BUILDS_DIR)) {
   fs.mkdirSync(BUILDS_DIR, { recursive: true });
 }
 
-// ============================================================
-// ЗАЩИТА ОТ DDOS / ПЕРЕПОЛНЕНИЯ ПАМЯТИ И RATE LIMITER
-// ============================================================
+// In-Memory Rate Limiter
 const rateLimits = new Map();
 const bannedIps = new Map();
 
@@ -39,8 +37,7 @@ app.use((req, res, next) => {
   record.count++;
   rateLimits.set(ip, record);
 
-  // Лимит: максимум 40 запросов за 5 секунд на один IP
-  if (record.count > 40) {
+  if (record.count > 45) {
     bannedIps.set(ip, now + 60000);
     return res.status(429).json({ error: 'rate_limited', message: 'Слишком много запросов. Подождите 1 минуту.' });
   }
@@ -48,14 +45,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Безопасный лимит тела запроса: 15mb вместо 100mb
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use(express.static(__dirname));
 
-// ============================================================
-// БАЗА ДАННЫХ И МИГРАЦИЯ СТРУКТУРЫ
-// ============================================================
 function loadDB() {
   const defaultDB = {
     next_uid: 1,
@@ -67,11 +60,17 @@ function loadDB() {
     invites: {
       'JOY-999-DEV': { used: false, used_by: null, created_at: Date.now() }
     },
+    resellers: [
+      { id: 'res_1', name: 'Official Telegram Store', link: 'https://t.me/joy_support', region: 'CIS / Global' },
+      { id: 'res_2', name: 'EU Crypto Reseller', link: 'https://t.me/joy_support', region: 'Global / Crypto' }
+    ],
+    feature_suggestions: [
+      { id: 1, title: 'Grenade Prediction Helper', author: 'dev', votes: ['dev'], created_at: Date.now() }
+    ],
     promos: {},
-    promo_history: {},
     configs: [],
     scripts: [],
-    item_subscriptions: {}, // key: `${itemId}_${username}` => expires_at
+    item_subscriptions: {},
     payments: [],
     threads: [
       {
@@ -102,7 +101,6 @@ function loadDB() {
     const data = JSON.parse(raw);
     return { ...defaultDB, ...data };
   } catch (e) {
-    console.error('Ошибка чтения БД, восстановление дефолта:', e);
     return defaultDB;
   }
 }
@@ -115,42 +113,23 @@ function saveDB(data) {
   }
 }
 
-function generateInviteCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const genPart = (len) => {
-    let res = '';
-    const bytes = crypto.randomBytes(len);
-    for (let i = 0; i < len; i++) {
-      res += chars[bytes[i] % chars.length];
-    }
-    return res;
-  };
-  return `JOY-${genPart(10)}-${genPart(15)}`;
-}
-
 function sendTelegramNotification(text) {
   const db = loadDB();
   if (!db.tg_bot_token || !db.tg_chat_id) return;
   const postData = JSON.stringify({ chat_id: db.tg_chat_id, text, parse_mode: 'HTML' });
-  const options = {
+  const req = https.request({
     hostname: 'api.telegram.org',
     port: 443,
     path: `/bot${db.tg_bot_token}/sendMessage`,
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(postData)
-    }
-  };
-  const req = https.request(options);
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) }
+  });
   req.on('error', () => {});
   req.write(postData);
   req.end();
 }
 
-// ============================================================
-// CLOUDFLARE TURNSTILE PROOF-OF-WORK ДВИЖОК
-// ============================================================
+// PoW Shield
 const POW_SECRET = crypto.randomBytes(32).toString('hex');
 const verifiedIps = new Map();
 
@@ -161,148 +140,103 @@ app.get('/api/challenge', (req, res) => {
   const salt = crypto.randomBytes(8).toString('hex');
   const payload = `${ip}:${ts}:${difficulty}:${salt}`;
   const sig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
-
   res.json({ payload, sig, difficulty });
 });
 
 app.post('/api/challenge/verify', (req, res) => {
   const { payload, sig, nonce } = req.body;
-  if (!payload || !sig || nonce === undefined) {
-    return res.status(400).json({ error: 'invalid_params' });
-  }
+  if (!payload || !sig || nonce === undefined) return res.status(400).json({ error: 'invalid_params' });
 
   const expectedSig = crypto.createHmac('sha256', POW_SECRET).update(payload).digest('hex');
-  if (sig !== expectedSig) {
-    return res.status(403).json({ error: 'invalid_signature' });
-  }
+  if (sig !== expectedSig) return res.status(403).json({ error: 'invalid_signature' });
 
-  const parts = payload.split(':');
-  const ip = parts[0];
-  const ts = parseInt(parts[1], 10);
-  const difficulty = parseInt(parts[2], 10);
+  const [ip, ts, diff] = payload.split(':');
+  if (Date.now() - parseInt(ts, 10) > 120000) return res.status(403).json({ error: 'challenge_expired' });
 
-  if (Date.now() - ts > 120000) {
-    return res.status(403).json({ error: 'challenge_expired' });
-  }
+  const hash = crypto.createHash('sha256').update(`${payload}:${nonce}`).digest('hex');
+  if (!hash.startsWith('0'.repeat(parseInt(diff, 10)))) return res.status(403).json({ error: 'proof_of_work_failed' });
 
-  const calculatedHash = crypto.createHash('sha256').update(`${payload}:${nonce}`).digest('hex');
-  const targetPrefix = '0'.repeat(difficulty);
-
-  if (!calculatedHash.startsWith(targetPrefix)) {
-    return res.status(403).json({ error: 'proof_of_work_failed' });
-  }
-
-  verifiedIps.set(ip, Date.now() + (24 * 3600 * 1000));
-  res.json({ status: 'verified', message: 'проверка успешно пройдена' });
+  verifiedIps.set(ip, Date.now() + 86400000);
+  res.json({ status: 'verified' });
 });
 
 app.use('/api', (req, res, next) => {
-  if (req.path === '/challenge' || req.path === '/challenge/verify' || req.path.startsWith('/client/')) {
-    return next();
-  }
-
+  if (req.path === '/challenge' || req.path === '/challenge/verify' || req.path.startsWith('/client/')) return next();
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1';
   const expiresAt = verifiedIps.get(ip);
-
   if (!expiresAt || expiresAt < Date.now()) {
-    return res.status(403).json({
-      error: 'turnstile_required',
-      message: 'требуется прохождение проверки браузера'
-    });
+    return res.status(403).json({ error: 'turnstile_required' });
   }
-
   next();
 });
 
-// ============================================================
-// АВТОРИЗАЦИЯ И ПРОВЕРКА СЕССИЙ (БЕЗОПАСНЫЕ ТОКЕНЫ)
-// ============================================================
 function authUser(req, res, next) {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'не авторизован' });
 
   const db = loadDB();
   const session = (db.sessions || {})[token];
-
-  if (!session || session.expires_at < Date.now()) {
-    return res.status(401).json({ message: 'сессия истекла' });
-  }
+  if (!session || session.expires_at < Date.now()) return res.status(401).json({ message: 'сессия истекла' });
 
   const user = db.users[session.username.toLowerCase()];
   if (!user) return res.status(401).json({ message: 'пользователь не найден' });
-
-  if (user.banned) {
-    return res.status(403).json({ message: `аккаунт заблокирован: ${user.ban_reason || 'бан'}`, banned: true });
-  }
+  if (user.banned) return res.status(403).json({ message: `аккаунт заблокирован: ${user.ban_reason}`, banned: true });
 
   req.user = user;
-  req.sessionToken = token;
   next();
 }
 
 function requireOwner(req, res, next) {
   authUser(req, res, () => {
-    const user = req.user;
-    if (!user || (user.uid !== 1 && user.role !== 'owner' && user.username.toLowerCase() !== 'dev')) {
+    if (req.user.role !== 'owner' && req.user.uid !== 1 && req.user.username.toLowerCase() !== 'dev') {
       return res.status(403).json({ message: 'доступ запрещен' });
     }
-    req.adminUser = user;
+    req.adminUser = req.user;
     next();
   });
 }
 
-function safeUserObject(user) {
-  const copy = { ...user };
+function safeUser(u) {
+  const copy = { ...u };
   delete copy.password;
   delete copy.password_hash;
   return copy;
 }
 
-// ============================================================
-// МАРШРУТЫ АККАУНТОВ И АВТОРИЗАЦИИ
-// ============================================================
-app.get('/api/verify-ip', (req, res) => {
-  const db = loadDB();
-  res.json({ status: 'ok', build_status: db.build_status });
-});
-
+// Регистрация
 app.post('/api/register', async (req, res) => {
-  const { invite_code, username, password } = req.body;
-  if (!invite_code || !username || !password) {
-    return res.status(400).json({ message: 'заполните все поля' });
-  }
+  const { invite_code, username, password, referrer } = req.body;
+  if (!invite_code || !username || !password) return res.status(400).json({ message: 'заполните все поля' });
 
   const db = loadDB();
   const cleanInvite = invite_code.trim();
   const inv = db.invites[cleanInvite];
-
-  if (!inv || inv.used) {
-    return res.status(400).json({ message: 'инвайт недействителен или уже использован' });
-  }
+  if (!inv || inv.used) return res.status(400).json({ message: 'инвайт недействителен' });
 
   const userKey = username.trim().toLowerCase();
-  if (db.users[userKey]) {
-    return res.status(400).json({ message: 'логин занят' });
-  }
+  if (db.users[userKey]) return res.status(400).json({ message: 'логин занят' });
 
   const assignedUid = db.next_uid || 1;
   db.next_uid = assignedUid + 1;
-
-  db.invites[cleanInvite].used = true;
-  db.invites[cleanInvite].used_by = username.trim();
+  inv.used = true;
+  inv.used_by = username.trim();
 
   const isOwner = (assignedUid === 1 || userKey === 'dev');
-  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1';
-
-  // Хэширование пароля через bcrypt
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
+
+  let cleanRef = null;
+  if (referrer && db.users[referrer.toLowerCase()] && referrer.toLowerCase() !== userKey) {
+    cleanRef = referrer.toLowerCase();
+    db.users[cleanRef].cookies = (db.users[cleanRef].cookies || 0) + 1;
+  }
 
   db.users[userKey] = {
     uid: assignedUid,
     username: username.trim(),
-    password_hash: password_hash,
+    password_hash,
     invite_code: cleanInvite,
+    referrer: cleanRef,
     role: isOwner ? 'owner' : 'user',
     cookies: 0,
     banned: false,
@@ -313,97 +247,59 @@ app.post('/api/register', async (req, res) => {
     avatar_media: null,
     avatar_type: null,
     hwid: null,
-    web_ip: ip,
+    web_ip: req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1',
     client_ip: null,
     last_launch: null,
     sub_until: isOwner ? -1 : 0,
     created_at: Date.now()
   };
 
-  // Генерация случайного токена сессии
   const token = crypto.randomBytes(32).toString('hex');
   if (!db.sessions) db.sessions = {};
-  db.sessions[token] = {
-    username: userKey,
-    expires_at: Date.now() + (30 * 86400000)
-  };
+  db.sessions[token] = { username: userKey, expires_at: Date.now() + 30 * 86400000 };
 
   saveDB(db);
-
-  res.json({
-    token: token,
-    user: safeUserObject(db.users[userKey])
-  });
+  res.json({ token, user: safeUser(db.users[userKey]) });
 });
 
+// Авторизация
 app.post('/api/login', async (req, res) => {
   const { username, password, pin } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ message: 'введите логин и пароль' });
-  }
-
   const db = loadDB();
-  const userKey = username.trim().toLowerCase();
-  const user = db.users[userKey];
+  const user = db.users[username?.trim().toLowerCase()];
+  if (!user) return res.status(401).json({ message: 'неверный логин или пароль' });
 
-  if (!user) {
-    return res.status(401).json({ message: 'неверный логин или пароль' });
-  }
-
-  // Проверка пароля (поддерживает и старый открытый, и новый bcrypt)
-  let passwordMatch = false;
-  if (user.password_hash) {
-    passwordMatch = await bcrypt.compare(password, user.password_hash);
-  } else if (user.password) {
-    passwordMatch = (user.password === password);
-    if (passwordMatch) {
-      // Авто-миграция старого пароля в bcrypt
+  let passOk = false;
+  if (user.password_hash) passOk = await bcrypt.compare(password, user.password_hash);
+  else if (user.password) {
+    passOk = (user.password === password);
+    if (passOk) {
       user.password_hash = await bcrypt.hash(password, 10);
       delete user.password;
     }
   }
 
-  if (!passwordMatch) {
-    return res.status(401).json({ message: 'неверный логин или пароль' });
-  }
-
-  if (user.banned) {
-    return res.status(403).json({
-      message: `аккаунт заблокирован: ${user.ban_reason || 'бан'}`,
-      banned: true
-    });
-  }
+  if (!passOk) return res.status(401).json({ message: 'неверный логин или пароль' });
+  if (user.banned) return res.status(403).json({ message: `бан: ${user.ban_reason}`, banned: true });
 
   if (user.security_pin) {
-    if (!pin) {
-      return res.json({ require_pin: true, message: 'требуется ввод 2fa пин-кода' });
-    }
-    if (user.security_pin !== pin.trim()) {
-      return res.status(403).json({ message: 'неверный 2fa пин-код' });
-    }
+    if (!pin) return res.json({ require_pin: true });
+    if (user.security_pin !== pin.trim()) return res.status(403).json({ message: 'неверный 2fa пин' });
   }
 
   user.web_ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1';
 
   const token = crypto.randomBytes(32).toString('hex');
   if (!db.sessions) db.sessions = {};
-  db.sessions[token] = {
-    username: userKey,
-    expires_at: Date.now() + (30 * 86400000)
-  };
+  db.sessions[token] = { username: user.username.toLowerCase(), expires_at: Date.now() + 30 * 86400000 };
 
   saveDB(db);
-
-  res.json({
-    token: token,
-    user: safeUserObject(user),
-    build_status: db.build_status
-  });
+  res.json({ token, user: safeUser(user), build_status: db.build_status });
 });
 
 app.get('/api/profile', authUser, (req, res) => {
   const db = loadDB();
-  res.json({ user: safeUserObject(req.user), build_status: db.build_status });
+  res.json({ user: safeUser(req.user), build_status: db.build_status });
 });
 
 app.get('/api/user/:username', (req, res) => {
@@ -428,188 +324,73 @@ app.get('/api/user/:username', (req, res) => {
 
 app.post('/api/profile/update', authUser, (req, res) => {
   const db = loadDB();
-  const user = db.users[req.user.username.toLowerCase()];
-  const { bio, avatar_color, avatar_media, avatar_type, reset_media } = req.body;
-
-  if (typeof bio === 'string') user.bio = bio.slice(0, 250);
-  if (typeof avatar_color === 'string') user.avatar_color = avatar_color;
-
-  if (reset_media) {
-    user.avatar_media = null;
-    user.avatar_type = null;
-  } else if (avatar_media && avatar_type) {
-    user.avatar_media = avatar_media;
-    user.avatar_type = avatar_type;
-  }
-
+  const u = db.users[req.user.username.toLowerCase()];
+  if (req.body.bio !== undefined) u.bio = String(req.body.bio).slice(0, 250);
+  if (req.body.avatar_color) u.avatar_color = req.body.avatar_color;
+  if (req.body.reset_media) { u.avatar_media = null; u.avatar_type = null; }
+  else if (req.body.avatar_media) { u.avatar_media = req.body.avatar_media; u.avatar_type = req.body.avatar_type; }
   saveDB(db);
-  res.json({ message: 'профиль сохранен', user: safeUserObject(user) });
+  res.json({ message: 'профиль сохранен', user: safeUser(u) });
 });
 
 app.post('/api/user/set-pin', authUser, (req, res) => {
   const db = loadDB();
-  const user = db.users[req.user.username.toLowerCase()];
-  const { pin } = req.body;
-
-  if (!pin || pin.length < 4 || pin.length > 8) {
-    return res.status(400).json({ message: 'пин-код должен быть от 4 до 8 цифр' });
-  }
-
-  user.security_pin = pin.trim();
+  db.users[req.user.username.toLowerCase()].security_pin = req.body.pin?.trim();
   saveDB(db);
-  res.json({ message: 'персональный 2fa пин-код успешно установлен' });
+  res.json({ message: 'пин установлен' });
 });
 
 app.post('/api/user/verify-pin', authUser, (req, res) => {
-  const { pin } = req.body;
-  if (!req.user.security_pin) {
-    return res.json({ status: 'success', message: 'пин не задан' });
+  if (!req.user.security_pin || req.user.security_pin === req.body.pin?.trim()) {
+    return res.json({ status: 'success' });
   }
-  if (req.user.security_pin === pin?.trim()) {
-    return res.json({ status: 'success', message: '2FA подтвержден' });
-  }
-  res.status(403).json({ status: 'error', message: 'неверный пин-код' });
+  res.status(403).json({ message: 'неверный пин' });
 });
 
 app.post('/api/hwid/reset', authUser, (req, res) => {
   const db = loadDB();
-  const user = db.users[req.user.username.toLowerCase()];
-  user.hwid = null;
+  db.users[req.user.username.toLowerCase()].hwid = null;
   saveDB(db);
-  res.json({ message: 'hwid успешно сброшен' });
+  res.json({ message: 'hwid сброшен' });
 });
 
-// ============================================================
-// ВАЛЮТА COOKIES И РУЛЕТКА
-// ============================================================
-
-// Покупка cookies за рубли (1 cookie = 50 руб)
-app.post('/api/cookies/buy', authUser, (req, res) => {
-  const amount = parseInt(req.body.amount, 10);
-  if (!amount || amount < 1 || amount > 500) {
-    return res.status(400).json({ message: 'укажите количество от 1 до 500 cookies' });
-  }
-
-  const db = loadDB();
-  const user = db.users[req.user.username.toLowerCase()];
-  user.cookies = (user.cookies || 0) + amount;
-
-  const costRub = amount * 50;
-  const payRecord = {
-    id: 'PAY-CK-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
-    username: user.username,
-    user_uid: user.uid,
-    amount: costRub,
-    plan_days: 0,
-    promo: `+${amount} cookies`,
-    status: 'успешно',
-    created_at: Date.now()
-  };
-
-  db.payments.unshift(payRecord);
-  saveDB(db);
-
-  sendTelegramNotification(`🍪 <b>Покупка Cookies JOY</b>\nПользователь: <b>${user.username}</b> [UID: ${user.uid}]\nКоличество: +${amount} 🍪\nСумма: ${costRub} ₽`);
-
-  res.json({ message: `начислено +${amount} cookies!`, cookies: user.cookies });
-});
-
-// Прокрут рулетки: 1 cookie за спин
-// Прокрут рулетки: ТОЛЬКО ПРИ НАЛИЧИИ АКТИВНОЙ ПОДПИСКИ
+// Рулетка
 app.post('/api/roulette/spin', authUser, (req, res) => {
   const db = loadDB();
   const user = db.users[req.user.username.toLowerCase()];
-
   const now = Date.now();
-  const hasActiveSub = user.sub_until === -1 || user.sub_until > now;
 
-  if (!hasActiveSub) {
-    return res.status(403).json({ message: 'рулетка доступна только пользователям с активной подпиской' });
+  if (user.sub_until !== -1 && user.sub_until <= now) {
+    return res.status(403).json({ message: 'рулетка доступна только владельцам активной подписки' });
   }
 
   if ((user.cookies || 0) < 1) {
-    return res.status(400).json({ message: 'недостаточно cookies (требуется 1 cookie)' });
+    return res.status(400).json({ message: 'недостаточно cookies' });
   }
 
   user.cookies -= 1;
-
-  // Шансы: 1.5% на чит, 98.5% на cookies
   const roll = Math.random() * 100;
   let reward = {};
 
-  if (roll < 0.2) {
-    reward = { type: 'sub', value: 7, label: '7d sub', color: '#c084fc' };
-  } else if (roll < 0.7) {
-    reward = { type: 'sub', value: 3, label: '3d sub', color: '#a855f7' };
-  } else if (roll < 1.5) {
-    reward = { type: 'sub', value: 1, label: '1d sub', color: '#8b5cf6' };
-  } else if (roll < 8.0) {
-    reward = { type: 'cookies', value: 5, label: '5 cookies', color: '#e9d5ff' };
-  } else if (roll < 30.0) {
-    reward = { type: 'cookies', value: 3, label: '3 cookies', color: '#c4b5fd' };
-  } else {
-    reward = { type: 'cookies', value: 1, label: '1 cookie', color: '#a78bfa' };
-  }
+  if (roll < 0.2) reward = { type: 'sub', value: 7, label: '7D SUB', color: '#c084fc' };
+  else if (roll < 0.7) reward = { type: 'sub', value: 3, label: '3D SUB', color: '#a855f7' };
+  else if (roll < 1.5) reward = { type: 'sub', value: 1, label: '1D SUB', color: '#8b5cf6' };
+  else if (roll < 8.0) reward = { type: 'cookies', value: 5, label: '5 COOKIES', color: '#e9d5ff' };
+  else if (roll < 30.0) reward = { type: 'cookies', value: 3, label: '3 COOKIES', color: '#c4b5fd' };
+  else reward = { type: 'cookies', value: 1, label: '1 COOKIE', color: '#a78bfa' };
 
-  if (reward.type === 'sub') {
-    if (user.sub_until !== -1) {
-      const ms = reward.value * 86400000;
-      user.sub_until = (user.sub_until > now ? user.sub_until : now) + ms;
-    }
+  if (reward.type === 'sub' && user.sub_until !== -1) {
+    const base = user.sub_until > now ? user.sub_until : now;
+    user.sub_until = base + (reward.value * 86400000);
   } else if (reward.type === 'cookies') {
     user.cookies = (user.cookies || 0) + reward.value;
   }
 
   saveDB(db);
-
-  res.json({
-    reward,
-    cookies: user.cookies,
-    sub_until: user.sub_until
-  });
+  res.json({ reward, cookies: user.cookies, sub_until: user.sub_until });
 });
 
-// Запрос на создание счёта/заявки на покупку cookies (для пользователей)
-app.post('/api/cookies/invoice', authUser, (req, res) => {
-  const { amount, method } = req.body;
-  const count = parseInt(amount, 10);
-  if (!count || count < 1 || count > 500) {
-    return res.status(400).json({ message: 'неверное количество cookies' });
-  }
-
-  const costRub = count * 50;
-  const invId = 'INV-' + crypto.randomBytes(3).toString('hex').toUpperCase();
-
-  sendTelegramNotification(`🍪 <b>Заявка на Cookies JOY</b>\nПользователь: <b>${req.user.username}</b> [UID: ${req.user.uid}]\nКоличество: ${count} cookies\nСумма: ${costRub} ₽\nСпособ: ${method || 'tg_wallet'}`);
-
-  res.json({
-    invoice_id: invId,
-    amount: count,
-    cost_rub: costRub,
-    message: 'заявка создана. после оплаты через бота или реселлера баланс зачислится автоматически'
-  });
-});
-
-// ВЫДАЧА COOKIES СЕБЕ ИЛИ ДРУГИМ — ТОЛЬКО ДЛЯ OWNER
-app.post('/api/admin/grant-cookies', requireOwner, (req, res) => {
-  const { username, amount } = req.body;
-  const db = loadDB();
-  const target = db.users[(username || req.adminUser.username).toLowerCase()];
-  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
-
-  const val = parseInt(amount, 10);
-  if (isNaN(val)) return res.status(400).json({ message: 'неверное число' });
-
-  target.cookies = Math.max(0, (target.cookies || 0) + val);
-  saveDB(db);
-
-  res.json({ message: `пользователю ${target.username} установлено ${target.cookies} cookies`, cookies: target.cookies });
-});
-});
-
-// ============================================================
-// ПОКУПКА ЧИТА И ПРОМОКОДЫ
-// ============================================================
+// Промокоды
 app.post('/api/promo/validate', authUser, (req, res) => {
   const db = loadDB();
   const code = (req.body.code || '').trim().toUpperCase();
@@ -637,17 +418,26 @@ app.post('/api/promo/validate', authUser, (req, res) => {
   });
 });
 
+// Оплата подписки / cookies
 app.post('/api/payment/checkout', authUser, (req, res) => {
+  const { plan_days, amount, promo_code, target_type } = req.body;
   const db = loadDB();
   const user = db.users[req.user.username.toLowerCase()];
-  const { plan_days, amount, promo_code } = req.body;
+  const now = Date.now();
+
+  if (target_type === 'cookies') {
+    const cookiesToAdd = parseInt(plan_days, 10);
+    user.cookies = (user.cookies || 0) + cookiesToAdd;
+    saveDB(db);
+    return res.json({ message: `начислено +${cookiesToAdd} cookies`, user: safeUser(user) });
+  }
+
   const daysToAdd = parseInt(plan_days, 10) || 30;
   const cleanPromo = (promo_code || '').trim().toUpperCase();
 
   let promoBonusDays = 0;
   if (cleanPromo && db.promos[cleanPromo]) {
     const promo = db.promos[cleanPromo];
-    const now = Date.now();
     if ((!promo.expires_at || promo.expires_at >= now) &&
         (promo.max_uses === 0 || promo.used_count < promo.max_uses) &&
         (!promo.users_activated || !promo.users_activated.includes(user.username.toLowerCase()))) {
@@ -662,138 +452,161 @@ app.post('/api/payment/checkout', authUser, (req, res) => {
   }
 
   const finalDays = daysToAdd + promoBonusDays;
-  const now = Date.now();
   if (user.sub_until !== -1) {
-    const msToAdd = finalDays * 86400000;
-    user.sub_until = (user.sub_until > now ? user.sub_until : now) + msToAdd;
+    const base = user.sub_until > now ? user.sub_until : now;
+    user.sub_until = base + (finalDays * 86400000);
+  }
+
+  // Реферальный бонус
+  if (user.referrer && db.users[user.referrer]) {
+    const refOwner = db.users[user.referrer];
+    refOwner.cookies = (refOwner.cookies || 0) + 2;
   }
 
   const paymentRecord = {
-    id: 'PAY-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+    id: 'PAY-' + crypto.randomBytes(3).toString('hex').toUpperCase(),
     username: user.username,
     user_uid: user.uid,
     amount: amount || 0,
     plan_days: finalDays,
     promo: cleanPromo || '—',
     status: 'успешно',
-    created_at: Date.now()
+    created_at: now
   };
 
   db.payments.unshift(paymentRecord);
   saveDB(db);
 
-  sendTelegramNotification(`💰 <b>Оплата JOY</b>\nПользователь: <b>${user.username}</b> [UID: ${user.uid}]\nСумма: ${amount} ₽\nДней начислено: +${finalDays}\nПромокод: ${cleanPromo || 'нет'}`);
+  sendTelegramNotification(`💰 <b>Оплата JOY</b>\nПользователь: <b>${user.username}</b> [UID: ${user.uid}]\nСумма: ${amount} ₽\nДней начислено: +${finalDays}`);
 
-  res.json({
-    message: `подписка успешно активирована (+${finalDays} дн.)`,
-    user: safeUserObject(user),
-    payment: paymentRecord
-  });
+  res.json({ message: 'подписка успешно активирована', user: safeUser(user) });
 });
 
-// ============================================================
-// ОБЛАКО: КОНФИГИ И СКРИПТЫ (С ПОДПИСКОЙ ЗА COOKIES 0-10)
-// ============================================================
+// Реселлеры
+app.get('/api/resellers', (req, res) => {
+  const db = loadDB();
+  res.json({ resellers: db.resellers || [] });
+});
+
+app.post('/api/admin/resellers/add', requireOwner, (req, res) => {
+  const { name, link, region } = req.body;
+  if (!name || !link) return res.status(400).json({ message: 'заполните поля' });
+  const db = loadDB();
+  if (!db.resellers) db.resellers = [];
+  const item = { id: 'res_' + Date.now(), name: name.trim(), link: link.trim(), region: region || 'Global' };
+  db.resellers.push(item);
+  saveDB(db);
+  res.json({ resellers: db.resellers });
+});
+
+app.delete('/api/admin/resellers/:id', requireOwner, (req, res) => {
+  const db = loadDB();
+  db.resellers = (db.resellers || []).filter(r => r.id !== req.params.id);
+  saveDB(db);
+  res.json({ resellers: db.resellers });
+});
+
+// Идеи обновлений
+app.get('/api/features', (req, res) => {
+  const db = loadDB();
+  res.json({ suggestions: db.feature_suggestions || [] });
+});
+
+app.post('/api/features', authUser, (req, res) => {
+  const { title } = req.body;
+  if (!title) return res.status(400).json({ message: 'введите идею' });
+  const db = loadDB();
+  if (!db.feature_suggestions) db.feature_suggestions = [];
+  const feat = { id: Date.now(), title: title.trim().slice(0, 100), author: req.user.username, votes: [req.user.username], created_at: Date.now() };
+  db.feature_suggestions.unshift(feat);
+  saveDB(db);
+  res.json({ feature: feat });
+});
+
+app.post('/api/features/:id/vote', authUser, (req, res) => {
+  const db = loadDB();
+  const feat = (db.feature_suggestions || []).find(f => f.id === parseInt(req.params.id, 10));
+  if (!feat) return res.status(404).json({ message: 'не найдено' });
+
+  const uName = req.user.username;
+  if (feat.votes.includes(uName)) feat.votes = feat.votes.filter(v => v !== uName);
+  else feat.votes.push(uName);
+
+  saveDB(db);
+  res.json({ votes: feat.votes.length, userVoted: feat.votes.includes(uName) });
+});
+
+// Облако: Конфиги
 app.get('/api/configs', authUser, (req, res) => {
   const db = loadDB();
-  const userKey = req.user.username.toLowerCase();
+  const uKey = req.user.username.toLowerCase();
   const now = Date.now();
-
-  const list = (db.configs || []).filter(c => c.author.toLowerCase() === userKey || c.is_public).map(c => {
-    const isAuthor = c.author.toLowerCase() === userKey || req.user.role === 'owner';
-    const subKey = `${c.id}_${userKey}`;
-    const subExpires = (db.item_subscriptions || {})[subKey] || 0;
-    const isUnlocked = isAuthor || (c.price_cookies || 0) === 0 || subExpires > now;
-
-    return {
-      ...c,
-      is_unlocked: isUnlocked,
-      sub_until: subExpires,
-      data: isUnlocked ? c.data : null // скрываем конфиг, если нет подписки
-    };
+  const list = (db.configs || []).filter(c => c.author.toLowerCase() === uKey || c.is_public).map(c => {
+    const isOwner = c.author.toLowerCase() === uKey || req.user.role === 'owner';
+    const subExp = (db.item_subscriptions || {})[`${c.id}_${uKey}`] || 0;
+    const isUnlocked = isOwner || (c.price_cookies || 0) === 0 || subExp > now;
+    return { ...c, is_unlocked: isUnlocked, data: isUnlocked ? c.data : null };
   });
-
   res.json({ configs: list });
 });
 
 app.post('/api/configs/upload', authUser, (req, res) => {
   const db = loadDB();
-  const { filename, file_data, is_public, price_cookies } = req.body;
-  if (!filename || !file_data) return res.status(400).json({ message: 'выберите .cfg файл' });
-
-  const cleanName = filename.replace(/\.cfg$/i, '').trim().slice(0, 32) + '.cfg';
-  const price = Math.min(10, Math.max(0, parseInt(price_cookies, 10) || 0));
-
-  const newConfig = {
+  const { filename, file_data, price_cookies, is_public } = req.body;
+  const cfg = {
     id: 'CFG-' + crypto.randomBytes(3).toString('hex').toUpperCase(),
-    name: cleanName,
+    name: filename.replace(/\.cfg$/i, '').trim().slice(0, 32) + '.cfg',
     data: file_data,
     author: req.user.username,
-    price_cookies: price,
+    price_cookies: Math.min(10, Math.max(0, parseInt(price_cookies, 10) || 0)),
     is_public: !!is_public,
     updated_at: Date.now()
   };
-
-  db.configs.unshift(newConfig);
+  db.configs.unshift(cfg);
   saveDB(db);
-  res.json({ message: 'конфиг загружен в облако', config: newConfig });
+  res.json({ config: cfg });
 });
 
 app.delete('/api/configs/:id', authUser, (req, res) => {
   const db = loadDB();
   const userKey = req.user.username.toLowerCase();
   const idx = (db.configs || []).findIndex(c => c.id === req.params.id && (c.author.toLowerCase() === userKey || req.user.role === 'owner'));
-
   if (idx === -1) return res.status(404).json({ message: 'конфиг не найден' });
-
   db.configs.splice(idx, 1);
   saveDB(db);
   res.json({ message: 'конфиг удален' });
 });
 
+// Облако: Скрипты
 app.get('/api/scripts', authUser, (req, res) => {
   const db = loadDB();
-  const userKey = req.user.username.toLowerCase();
+  const uKey = req.user.username.toLowerCase();
   const now = Date.now();
-
-  const list = (db.scripts || []).filter(s => s.author.toLowerCase() === userKey || s.is_public).map(s => {
-    const isAuthor = s.author.toLowerCase() === userKey || req.user.role === 'owner';
-    const subKey = `${s.id}_${userKey}`;
-    const subExpires = (db.item_subscriptions || {})[subKey] || 0;
-    const isUnlocked = isAuthor || (s.price_cookies || 0) === 0 || subExpires > now;
-
-    return {
-      ...s,
-      is_unlocked: isUnlocked,
-      sub_until: subExpires,
-      code: isUnlocked ? s.code : '-- доступ заблокирован: требуется подписка за cookies'
-    };
+  const list = (db.scripts || []).filter(s => s.author.toLowerCase() === uKey || s.is_public).map(s => {
+    const isOwner = s.author.toLowerCase() === uKey || req.user.role === 'owner';
+    const subExp = (db.item_subscriptions || {})[`${s.id}_${uKey}`] || 0;
+    const isUnlocked = isOwner || (s.price_cookies || 0) === 0 || subExp > now;
+    return { ...s, is_unlocked: isUnlocked, code: isUnlocked ? s.code : '-- subscription required' };
   });
-
   res.json({ scripts: list });
 });
 
 app.post('/api/scripts', authUser, (req, res) => {
   const db = loadDB();
-  const { title, code, is_public, price_cookies } = req.body;
-  if (!title || !code) return res.status(400).json({ message: 'заполните поля скрипта' });
-
-  const price = Math.min(10, Math.max(0, parseInt(price_cookies, 10) || 0));
-
-  const item = {
+  const { title, code, price_cookies, is_public } = req.body;
+  const script = {
     id: Date.now(),
     title: title.trim().slice(0, 32),
     code: code.slice(0, 200000),
     author: req.user.username,
-    price_cookies: price,
+    price_cookies: Math.min(10, Math.max(0, parseInt(price_cookies, 10) || 0)),
     is_public: !!is_public,
     enabled: true,
     updated_at: Date.now()
   };
-
-  db.scripts.unshift(item);
+  db.scripts.unshift(script);
   saveDB(db);
-  res.json({ message: 'скрипт загружен', script: item });
+  res.json({ script });
 });
 
 app.post('/api/scripts/:id/toggle', authUser, (req, res) => {
@@ -801,7 +614,6 @@ app.post('/api/scripts/:id/toggle', authUser, (req, res) => {
   const userKey = req.user.username.toLowerCase();
   const s = (db.scripts || []).find(x => x.id === parseInt(req.params.id, 10) && x.author.toLowerCase() === userKey);
   if (!s) return res.status(404).json({ message: 'не найден' });
-
   s.enabled = !s.enabled;
   saveDB(db);
   res.json({ enabled: s.enabled });
@@ -812,81 +624,38 @@ app.delete('/api/scripts/:id', authUser, (req, res) => {
   const userKey = req.user.username.toLowerCase();
   const idx = (db.scripts || []).findIndex(x => x.id === parseInt(req.params.id, 10) && (x.author.toLowerCase() === userKey || req.user.role === 'owner'));
   if (idx === -1) return res.status(404).json({ message: 'не найден' });
-
   db.scripts.splice(idx, 1);
   saveDB(db);
   res.json({ message: 'скрипт удален' });
 });
 
-// Покупка доступа к Lua или CFG на 30 дней за cookies
 app.post('/api/cloud/subscribe', authUser, (req, res) => {
   const { item_id, item_type } = req.body;
   const db = loadDB();
   const buyer = db.users[req.user.username.toLowerCase()];
-
-  let item = null;
-  if (item_type === 'config') {
-    item = (db.configs || []).find(c => c.id === item_id);
-  } else {
-    item = (db.scripts || []).find(s => s.id === parseInt(item_id, 10));
-  }
+  const item = item_type === 'config' ? (db.configs || []).find(c => c.id === item_id) : (db.scripts || []).find(s => s.id === parseInt(item_id, 10));
 
   if (!item) return res.status(404).json({ message: 'товар не найден' });
-  if (item.author.toLowerCase() === buyer.username.toLowerCase()) {
-    return res.status(400).json({ message: 'вы автор данного товара' });
-  }
-
   const price = item.price_cookies || 0;
-  if ((buyer.cookies || 0) < price) {
-    return res.status(400).json({ message: `недостаточно cookies (нужно ${price} 🍪)` });
-  }
+  if ((buyer.cookies || 0) < price) return res.status(400).json({ message: 'недостаточно cookies' });
 
   buyer.cookies -= price;
-
-  const author = db.users[item.author.toLowerCase()];
-  if (author) {
-    author.cookies = (author.cookies || 0) + price;
-  }
+  if (db.users[item.author.toLowerCase()]) db.users[item.author.toLowerCase()].cookies = (db.users[item.author.toLowerCase()].cookies || 0) + price;
 
   if (!db.item_subscriptions) db.item_subscriptions = {};
-  const subKey = `${item.id}_${buyer.username.toLowerCase()}`;
-  const now = Date.now();
-  const currentExp = db.item_subscriptions[subKey] || 0;
-  const base = currentExp > now ? currentExp : now;
-  db.item_subscriptions[subKey] = base + (30 * 86400000);
+  db.item_subscriptions[`${item.id}_${buyer.username.toLowerCase()}`] = Date.now() + 30 * 86400000;
 
   saveDB(db);
-
-  res.json({
-    message: `доступ к ${item.name || item.title} продлен на 30 дней!`,
-    cookies: buyer.cookies
-  });
+  res.json({ cookies: buyer.cookies });
 });
 
-// ============================================================
-// СКАЧИВАНИЕ ЛАУНЧЕРА И КЛИЕНТСКИЙ API
-// ============================================================
+// Лаунчер
 app.get('/api/download-loader', (req, res) => {
-  const token = req.query.token;
-  if (!token) return res.status(401).send('доступ запрещен');
-
-  const db = loadDB();
-  const session = (db.sessions || {})[token];
-  if (!session || session.expires_at < Date.now()) return res.status(401).send('сессия истекла');
-
-  const user = db.users[session.username.toLowerCase()];
-  if (!user || user.banned) return res.status(403).send('аккаунт заблокирован');
-
   const realLoader = path.join(BUILDS_DIR, 'JoyLoader.exe');
-  if (fs.existsSync(realLoader)) {
-    return res.download(realLoader, 'JoyLoader.exe');
-  }
-
-  const tempPath = path.join(__dirname, 'JoyLoader_stub.exe');
-  if (!fs.existsSync(tempPath)) {
-    fs.writeFileSync(tempPath, 'JOY.VIP CLIENT BUILD STUB');
-  }
-  res.download(tempPath, 'JoyLoader.exe');
+  if (fs.existsSync(realLoader)) return res.download(realLoader, 'JoyLoader.exe');
+  const temp = path.join(__dirname, 'JoyLoader_stub.exe');
+  if (!fs.existsSync(temp)) fs.writeFileSync(temp, 'JOY CLIENT BUILD');
+  res.download(temp, 'JoyLoader.exe');
 });
 
 app.post('/api/client/auth', async (req, res) => {
@@ -897,24 +666,14 @@ app.post('/api/client/auth', async (req, res) => {
 
   const db = loadDB();
   const user = db.users[username.trim().toLowerCase()];
-  if (!user) {
-    return res.status(401).json({ status: 'error', message: 'неверные данные входа' });
-  }
+  if (!user) return res.status(401).json({ status: 'error', message: 'неверные данные входа' });
 
   let passOk = false;
-  if (user.password_hash) {
-    passOk = await bcrypt.compare(password, user.password_hash);
-  } else if (user.password) {
-    passOk = (user.password === password);
-  }
+  if (user.password_hash) passOk = await bcrypt.compare(password, user.password_hash);
+  else if (user.password) passOk = (user.password === password);
 
-  if (!passOk) {
-    return res.status(401).json({ status: 'error', message: 'неверные данные входа' });
-  }
-
-  if (user.banned) {
-    return res.status(403).json({ status: 'error', message: `бан: ${user.ban_reason || 'доступ запрещен'}` });
-  }
+  if (!passOk) return res.status(401).json({ status: 'error', message: 'неверные данные входа' });
+  if (user.banned) return res.status(403).json({ status: 'error', message: `бан: ${user.ban_reason || 'доступ запрещен'}` });
 
   if (db.build_status === 'updating' && user.role !== 'owner') {
     return res.status(403).json({ status: 'error', message: 'билд на техническом обновлении' });
@@ -922,13 +681,10 @@ app.post('/api/client/auth', async (req, res) => {
 
   const now = Date.now();
   const hasSub = user.sub_until === -1 || user.sub_until > now;
-  if (!hasSub) {
-    return res.status(403).json({ status: 'error', message: 'подписка истекла или отсутствует' });
-  }
+  if (!hasSub) return res.status(403).json({ status: 'error', message: 'подписка истекла или отсутствует' });
 
-  if (!user.hwid) {
-    user.hwid = hwid.trim();
-  } else if (user.hwid !== hwid.trim() && user.role !== 'owner') {
+  if (!user.hwid) user.hwid = hwid.trim();
+  else if (user.hwid !== hwid.trim() && user.role !== 'owner') {
     return res.status(403).json({ status: 'error', message: 'hwid не совпадает с привязанным' });
   }
 
@@ -948,7 +704,6 @@ app.post('/api/client/auth', async (req, res) => {
 app.get('/api/client/payload', (req, res) => {
   const token = req.headers['x-loader-token'];
   const userKey = req.headers['x-loader-user'];
-
   if (!token || !userKey) return res.status(401).send('unauthorized');
 
   const db = loadDB();
@@ -956,21 +711,15 @@ app.get('/api/client/payload', (req, res) => {
   if (!user || user.banned) return res.status(403).send('forbidden');
 
   const now = Date.now();
-  if (user.sub_until !== -1 && user.sub_until <= now) {
-    return res.status(403).send('subscription expired');
-  }
+  if (user.sub_until !== -1 && user.sub_until <= now) return res.status(403).send('subscription expired');
 
   const dllPath = path.join(BUILDS_DIR, 'joy_internal.dll');
-  if (fs.existsSync(dllPath)) {
-    return res.sendFile(dllPath);
-  }
+  if (fs.existsSync(dllPath)) return res.sendFile(dllPath);
 
   res.send('JOY_ENCRYPTED_MEMORY_PAYLOAD_STUB');
 });
 
-// ============================================================
-// ФОРУМ, ТИКЕТЫ И ОБНОВЛЕНИЯ
-// ============================================================
+// Форум
 app.get('/api/forum/threads', (req, res) => {
   const db = loadDB();
   const list = db.threads.map(t => {
@@ -1001,75 +750,61 @@ app.get('/api/forum/threads/:id', (req, res) => {
   if (!thread) return res.status(404).json({ message: 'тема не найдена' });
 
   const authorUser = db.users[thread.author.toLowerCase()] || {};
-  const enrichedThread = {
-    ...thread,
-    author_role: authorUser.role || 'user',
-    author_avatar_media: authorUser.avatar_media || null,
-    author_avatar_type: authorUser.avatar_type || null,
-    author_avatar_color: authorUser.avatar_color || '#8b5cf6',
-    posts: (thread.posts || []).map(p => {
-      const pUser = db.users[p.author.toLowerCase()] || {};
-      return {
-        ...p,
-        author_role: pUser.role || 'user',
-        author_avatar_media: pUser.avatar_media || null,
-        author_avatar_type: pUser.avatar_type || null,
-        author_avatar_color: pUser.avatar_color || '#8b5cf6'
-      };
-    })
-  };
-  res.json({ thread: enrichedThread });
+  res.json({
+    thread: {
+      ...thread,
+      author_role: authorUser.role || 'user',
+      author_avatar_media: authorUser.avatar_media || null,
+      author_avatar_type: authorUser.avatar_type || null,
+      author_avatar_color: authorUser.avatar_color || '#8b5cf6',
+      posts: (thread.posts || []).map(p => {
+        const pUser = db.users[p.author.toLowerCase()] || {};
+        return {
+          ...p,
+          author_role: pUser.role || 'user',
+          author_avatar_media: pUser.avatar_media || null,
+          author_avatar_type: pUser.avatar_type || null,
+          author_avatar_color: pUser.avatar_color || '#8b5cf6'
+        };
+      })
+    }
+  });
 });
 
 app.post('/api/forum/threads', authUser, (req, res) => {
   const db = loadDB();
-  const user = req.user;
   const { title, content, tag } = req.body;
-  if (!title || !title.trim()) return res.status(400).json({ message: 'введите заголовок темы' });
-  if (!content || !content.trim()) return res.status(400).json({ message: 'введите текст сообщения' });
+  if (!title || !content) return res.status(400).json({ message: 'заполните тему' });
 
   const allowedTags = ['обсуждение', 'баг', 'предложение', 'медиа'];
-  const validTag = allowedTags.includes(tag) ? tag : 'обсуждение';
-
   const newThread = {
     id: Date.now(),
-    title: title.trim(),
-    content: content.trim(),
-    tag: validTag,
+    title: title.trim().slice(0, 90),
+    content: content.trim().slice(0, 800),
+    tag: allowedTags.includes(tag) ? tag : 'обсуждение',
     pinned: false,
     locked: false,
-    author: user.username,
-    author_uid: user.uid,
+    author: req.user.username,
+    author_uid: req.user.uid,
     created_at: Date.now(),
     posts: []
   };
 
   db.threads.unshift(newThread);
   saveDB(db);
-  res.json({ message: 'тема опубликована', thread: newThread });
+  res.json({ thread: newThread });
 });
 
 app.post('/api/forum/threads/:id/reply', authUser, (req, res) => {
   const db = loadDB();
-  const user = req.user;
   const thread = db.threads.find(t => t.id === parseInt(req.params.id, 10));
   if (!thread) return res.status(404).json({ message: 'тема не найдена' });
-
-  if (thread.locked && user.role !== 'owner') {
-    return res.status(403).json({ message: 'тема закрыта для ответов' });
-  }
+  if (thread.locked && req.user.role !== 'owner') return res.status(403).json({ message: 'тема закрыта' });
 
   const { text } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ message: 'введите текст' });
 
-  const post = {
-    id: Date.now(),
-    author: user.username,
-    author_uid: user.uid,
-    text: text.trim(),
-    created_at: Date.now()
-  };
-
+  const post = { id: Date.now(), author: req.user.username, author_uid: req.user.uid, text: text.trim().slice(0, 500), created_at: Date.now() };
   if (!thread.posts) thread.posts = [];
   thread.posts.push(post);
   saveDB(db);
@@ -1081,12 +816,10 @@ app.post('/api/forum/threads/:id/moderate', requireOwner, (req, res) => {
   const db = loadDB();
   const thread = db.threads.find(t => t.id === parseInt(req.params.id, 10));
   if (!thread) return res.status(404).json({ message: 'тема не найдена' });
-
   if (typeof pinned === 'boolean') thread.pinned = pinned;
   if (typeof locked === 'boolean') thread.locked = locked;
-
   saveDB(db);
-  res.json({ message: 'статус темы обновлен', thread });
+  res.json({ message: 'обновлено', thread });
 });
 
 app.delete('/api/forum/threads/:id', authUser, (req, res) => {
@@ -1094,14 +827,10 @@ app.delete('/api/forum/threads/:id', authUser, (req, res) => {
   const tId = parseInt(req.params.id, 10);
   const idx = db.threads.findIndex(t => t.id === tId);
   if (idx === -1) return res.status(404).json({ message: 'не найдено' });
-
-  if (db.threads[idx].author !== req.user.username && req.user.role !== 'owner') {
-    return res.status(403).json({ message: 'нет прав' });
-  }
-
+  if (db.threads[idx].author !== req.user.username && req.user.role !== 'owner') return res.status(403).json({ message: 'нет прав' });
   db.threads.splice(idx, 1);
   saveDB(db);
-  res.json({ message: 'тема удалена' });
+  res.json({ message: 'удалено' });
 });
 
 app.delete('/api/forum/threads/:id/post/:postId', authUser, (req, res) => {
@@ -1113,27 +842,24 @@ app.delete('/api/forum/threads/:id/post/:postId', authUser, (req, res) => {
 
   const pIdx = (thread.posts || []).findIndex(p => p.id === pId);
   if (pIdx === -1) return res.status(404).json({ message: 'не найдено' });
-
-  if (thread.posts[pIdx].author !== req.user.username && req.user.role !== 'owner') {
-    return res.status(403).json({ message: 'нет прав' });
-  }
+  if (thread.posts[pIdx].author !== req.user.username && req.user.role !== 'owner') return res.status(403).json({ message: 'нет прав' });
 
   thread.posts.splice(pIdx, 1);
   saveDB(db);
-  res.json({ message: 'сообщение удалено' });
+  res.json({ message: 'удалено' });
 });
 
+// Тикеты
 app.post('/api/support/ticket', authUser, (req, res) => {
   const db = loadDB();
-  const user = req.user;
   const { subject, message } = req.body;
   if (!subject || !message) return res.status(400).json({ message: 'заполните поля' });
 
   const ticket = {
     id: 'TICK-' + Math.floor(1000 + Math.random() * 9000),
-    userKey: user.username.toLowerCase(),
-    username: user.username,
-    user_uid: user.uid,
+    userKey: req.user.username.toLowerCase(),
+    username: req.user.username,
+    user_uid: req.user.uid,
     subject: subject.trim(),
     message: message.trim(),
     status: 'на рассмотрении',
@@ -1143,8 +869,7 @@ app.post('/api/support/ticket', authUser, (req, res) => {
 
   db.tickets.unshift(ticket);
   saveDB(db);
-
-  sendTelegramNotification(`🚨 <b>Новый тикет JOY</b>\n\n<b>От:</b> ${user.username} [UID: ${user.uid}]\n<b>Тема:</b> ${ticket.subject}\n<b>Сообщение:</b> ${ticket.message}`);
+  sendTelegramNotification(`🚨 <b>Новый тикет JOY</b>\nОт: <b>${req.user.username}</b> [UID: ${req.user.uid}]\nТема: ${ticket.subject}\nТекст: ${ticket.message}`);
   res.json({ message: 'обращение отправлено', ticket });
 });
 
@@ -1158,55 +883,40 @@ app.delete('/api/support/ticket/:id', authUser, (req, res) => {
   const db = loadDB();
   const idx = (db.tickets || []).findIndex(t => t.id === req.params.id && (t.userKey === req.user.username.toLowerCase() || req.user.role === 'owner'));
   if (idx === -1) return res.status(404).json({ message: 'не найдено' });
-
   db.tickets.splice(idx, 1);
   saveDB(db);
   res.json({ message: 'удалено' });
 });
 
-app.get('/api/updates', (req, res) => {
-  const db = loadDB();
-  res.json({ updates: db.updates || [] });
-});
+// Патчи
+app.get('/api/updates', (req, res) => res.json({ updates: loadDB().updates || [] }));
 
 app.post('/api/updates', requireOwner, (req, res) => {
   const { title, content } = req.body;
   if (!title || !content) return res.status(400).json({ message: 'заполните поля' });
   const db = loadDB();
-  const item = {
-    id: Date.now(),
-    title: title.trim(),
-    content: content.trim(),
-    author: req.adminUser.username,
-    created_at: Date.now()
-  };
+  const item = { id: Date.now(), title: title.trim(), content: content.trim(), author: req.adminUser.username, created_at: Date.now() };
   db.updates.unshift(item);
   saveDB(db);
-
-  sendTelegramNotification(`🚀 <b>Новое обновление JOY</b>\n\n<b>${item.title}</b>\n\n${item.content}`);
+  sendTelegramNotification(`🚀 <b>Новое обновление JOY</b>\n<b>${item.title}</b>\n\n${item.content}`);
   res.json({ update: item });
 });
 
 app.delete('/api/updates/:id', requireOwner, (req, res) => {
   const db = loadDB();
-  const idx = (db.updates || []).findIndex(u => u.id === parseInt(req.params.id, 10));
-  if (idx !== -1) {
-    db.updates.splice(idx, 1);
-    saveDB(db);
-  }
+  db.updates = (db.updates || []).filter(u => u.id !== parseInt(req.params.id, 10));
+  saveDB(db);
   res.json({ message: 'удалено' });
 });
 
-// ============================================================
-// АДМИНИСТРАТИВНАЯ ПАНЕЛЬ (ПОЛНЫЙ ДОСТУП)
-// ============================================================
+// Админка
 app.post('/api/admin/self-lifetime', requireOwner, (req, res) => {
   const db = loadDB();
-  const user = db.users[req.adminUser.username.toLowerCase()];
-  user.sub_until = -1;
-  user.role = 'owner';
+  const u = db.users[req.adminUser.username.toLowerCase()];
+  u.sub_until = -1;
+  u.role = 'owner';
   saveDB(db);
-  res.json({ message: 'вам выдана lifetime сабка и роль owner', user: safeUserObject(user) });
+  res.json({ message: 'вам выдана lifetime сабка и роль owner', user: safeUser(u) });
 });
 
 app.get('/api/admin/users', requireOwner, (req, res) => {
@@ -1234,18 +944,28 @@ app.get('/api/admin/users', requireOwner, (req, res) => {
   res.json({ users: list });
 });
 
+app.post('/api/admin/grant-cookies', requireOwner, (req, res) => {
+  const { username, amount } = req.body;
+  const db = loadDB();
+  const target = db.users[(username || req.adminUser.username).toLowerCase()];
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+  target.cookies = Math.max(0, (target.cookies || 0) + parseInt(amount, 10));
+  saveDB(db);
+  res.json({ message: `пользователю ${target.username} установлено ${target.cookies} cookies`, cookies: target.cookies });
+});
+
 app.get('/api/admin/user/:username', requireOwner, (req, res) => {
   const db = loadDB();
   const target = db.users[req.params.username.toLowerCase()];
   if (!target) return res.status(404).json({ message: 'пользователь не найден' });
-  res.json({ target: safeUserObject(target) });
+  res.json({ target: safeUser(target) });
 });
 
 app.post('/api/admin/user/update', requireOwner, (req, res) => {
   const { username, role, uid, cookies, sub_mode, reset_hwid, banned, ban_reason } = req.body;
   const db = loadDB();
   const target = db.users[username.toLowerCase()];
-  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+  if (!target) return res.status(404).json({ message: 'не найден' });
 
   if (role) target.role = role;
   if (uid && !isNaN(parseInt(uid, 10))) target.uid = parseInt(uid, 10);
@@ -1258,14 +978,13 @@ app.post('/api/admin/user/update', requireOwner, (req, res) => {
   else if (sub_mode === '90d') target.sub_until = (target.sub_until > now ? target.sub_until : now) + (90 * 86400000);
 
   if (reset_hwid) target.hwid = null;
-
   if (typeof banned === 'boolean') {
     target.banned = banned;
     target.ban_reason = banned ? (ban_reason || 'нарушение правил') : '';
   }
 
   saveDB(db);
-  res.json({ message: `аккаунт ${target.username} обновлен`, target: safeUserObject(target) });
+  res.json({ message: `аккаунт ${target.username} обновлен`, target: safeUser(target) });
 });
 
 app.post('/api/admin/status', requireOwner, (req, res) => {
@@ -1305,10 +1024,7 @@ app.post('/api/admin/upload-build', requireOwner, (req, res) => {
   }
 });
 
-app.get('/api/admin/payments', requireOwner, (req, res) => {
-  const db = loadDB();
-  res.json({ payments: db.payments || [] });
-});
+app.get('/api/admin/payments', requireOwner, (req, res) => res.json({ payments: loadDB().payments || [] }));
 
 app.post('/api/admin/payments/grant', requireOwner, (req, res) => {
   const { payment_id } = req.body;
@@ -1326,7 +1042,6 @@ app.post('/api/admin/payments/grant', requireOwner, (req, res) => {
   }
   pay.status = 'выдано вручную';
   saveDB(db);
-
   res.json({ message: `подписка успешно выдана юзеру ${target.username}` });
 });
 
@@ -1344,7 +1059,7 @@ app.get('/api/admin/invites', requireOwner, (req, res) => {
 
 app.post('/api/admin/create-invite', requireOwner, (req, res) => {
   const db = loadDB();
-  const code = generateInviteCode();
+  const code = 'JOY-' + crypto.randomBytes(4).toString('hex').toUpperCase();
   db.invites[code] = { used: false, used_by: null, created_at: Date.now() };
   saveDB(db);
   res.json({ invite: code });
@@ -1369,14 +1084,13 @@ app.get('/api/admin/promos', requireOwner, (req, res) => {
 });
 
 app.post('/api/admin/promo/create', requireOwner, (req, res) => {
-  const { code, days, discount_percent, cookies, max_uses, duration_hours } = req.body;
+  const { code, days, cookies, discount_percent, max_uses, duration_hours } = req.body;
   if (!code || (!days && !discount_percent && !cookies)) {
-    return res.status(400).json({ message: 'укажите код и дни, скидку или cookies' });
+    return res.status(400).json({ message: 'укажите код и дни, cookies или скидку' });
   }
 
   const db = loadDB();
   const promoKey = code.trim().toUpperCase();
-
   const hours = parseFloat(duration_hours);
   const expiresAt = (hours && hours > 0) ? (Date.now() + Math.round(hours * 3600 * 1000)) : null;
   const uses = parseInt(max_uses, 10);
@@ -1408,9 +1122,8 @@ app.delete('/api/admin/promo/:code', requireOwner, (req, res) => {
   res.status(404).json({ message: 'не найден' });
 });
 
+app.get('/api/verify-ip', (req, res) => res.json({ status: 'ok', build_status: loadDB().build_status }));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`[JOY] Сервер активен на порту ${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => console.log(`[JOY] Server live on ${PORT}`));
