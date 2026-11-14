@@ -19,8 +19,6 @@
       --accent: #8b5cf6;
       --accent-bright: #a855f7;
       --accent-glow: rgba(139, 92, 246, 0.25);
-      --cookie-color: #f59e0b;
-      --cookie-glow: rgba(245, 158, 11, 0.25);
       --text-main: #eeeaf8;
       --text-muted: #756f8f;
       --radius: 10px;
@@ -44,21 +42,8 @@
       flex-direction: column;
     }
 
-    .ambient-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .glow-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(140px);
-      opacity: 0.32;
-      animation: floatPulse 14s ease-in-out infinite alternate;
-    }
+    .ambient-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .glow-orb { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.32; animation: floatPulse 14s ease-in-out infinite alternate; }
     .glow-1 { top: -10%; left: 25%; width: 500px; height: 500px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
     .glow-2 { bottom: 5%; right: 15%; width: 520px; height: 520px; background: radial-gradient(circle, #5b21b6 0%, transparent 70%); animation-duration: 18s; }
 
@@ -125,13 +110,6 @@
     }
     .btn-violet:hover { transform: translateY(-1.5px); box-shadow: 0 6px 22px rgba(168, 85, 247, 0.4); }
 
-    .btn-cookie {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #fff;
-      box-shadow: 0 4px 15px var(--cookie-glow);
-    }
-    .btn-cookie:hover { transform: translateY(-1.5px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4); }
-
     .btn-outline {
       background: rgba(255, 255, 255, 0.02);
       backdrop-filter: blur(10px);
@@ -140,33 +118,27 @@
     }
     .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.08); transform: translateY(-1px); }
 
-    .uid-tag {
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      font-weight: 500;
-      user-select: none;
-    }
+    .uid-tag { color: var(--text-muted); font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; }
 
     .cookie-chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: var(--cookie-color);
-      padding: 3px 8px;
+      gap: 6px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      padding: 4px 10px;
       border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       cursor: pointer;
       user-select: none;
       transition: all 0.2s var(--ease);
     }
     .cookie-chip:hover {
-      background: rgba(245, 158, 11, 0.2);
-      border-color: #f59e0b;
+      background: rgba(139, 92, 246, 0.22);
+      border-color: var(--accent);
       transform: translateY(-1px);
     }
 
@@ -182,7 +154,6 @@
       line-height: 20px;
       border-radius: 4px;
       text-transform: lowercase;
-      letter-spacing: 0.02em;
     }
     .status-stable { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
     .status-testing { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
@@ -222,10 +193,7 @@
       font-size: 12.5px;
       transition: all 0.2s var(--ease);
     }
-    .c-select-trigger:hover, .c-select-wrapper.open .c-select-trigger {
-      border-color: var(--border-accent);
-      background: var(--surface-elevated);
-    }
+    .c-select-trigger:hover, .c-select-wrapper.open .c-select-trigger { border-color: var(--border-accent); background: var(--surface-elevated); }
     .c-select-arrow { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
     .c-select-wrapper.open .c-select-arrow { transform: rotate(180deg); }
     .c-select-options {
@@ -241,365 +209,110 @@
       z-index: 100;
       display: none;
       box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      animation: popIn 0.2s var(--ease);
+      max-height: 200px;
+      overflow-y: auto;
     }
     .c-select-wrapper.open .c-select-options { display: block; }
     .c-option { padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--text-muted); transition: all 0.15s; }
     .c-option:hover, .c-option.selected { background: rgba(139, 92, 246, 0.15); color: #fff; }
 
     #cf-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #06050a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      position: fixed; inset: 0; z-index: 9999; background: #06050a;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: opacity 0.4s var(--ease), visibility 0.4s;
     }
     #cf-screen.verified { opacity: 0; visibility: hidden; pointer-events: none; }
-
     .cf-turnstile-box {
-      width: 320px;
-      background: rgba(18, 16, 28, 0.7);
-      backdrop-filter: blur(24px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 14px 18px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
+      width: 320px; background: rgba(18, 16, 28, 0.7); backdrop-filter: blur(24px);
+      border: 1px solid var(--border-subtle); border-radius: 6px; padding: 14px 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85); display: flex; justify-content: space-between; align-items: center;
     }
-
     .cf-checkbox-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.04);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s var(--ease);
-      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 4px; border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.04); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s var(--ease);
     }
-    .cf-checkbox-btn:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.15); }
     .cf-checkbox-btn.checked { border-color: #34d399; background: rgba(16, 185, 129, 0.15); }
-    .cf-spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid transparent;
-      border-top-color: var(--accent-bright);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
+    .cf-spinner { width: 18px; height: 18px; border: 2px solid transparent; border-top-color: var(--accent-bright); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    #auth-screen {
-      position: relative;
-      z-index: 10;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    #auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-box { width: 100%; max-width: 360px; background: var(--surface-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 28px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+    .brand-title { font-weight: 800; font-size: 28px; letter-spacing: -0.04em; text-align: center; margin-bottom: 18px; background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand-title-nav { font-weight: 800; font-size: 19px; background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
 
-    .auth-box {
-      width: 100%;
-      max-width: 360px;
-      background: var(--surface-glass);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-      animation: popIn 0.35s var(--ease);
-    }
-
-    .brand-title {
-      font-weight: 800;
-      font-size: 28px;
-      letter-spacing: -0.04em;
-      text-align: center;
-      margin-bottom: 18px;
-      background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      user-select: none;
-    }
-
-    .brand-title-nav {
-      font-weight: 800;
-      font-size: 19px;
-      letter-spacing: -0.03em;
-      background: linear-gradient(180deg, #ffffff 30%, #c4b5fd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      user-select: none;
-      cursor: pointer;
-      display: inline-block;
-      min-width: 34px;
-    }
-
-    .auth-tabs {
-      display: flex;
-      background: rgba(7, 6, 11, 0.4);
-      padding: 3px;
-      border-radius: var(--radius);
-      margin-bottom: 18px;
-      border: 1px solid var(--border-subtle);
-    }
-
-    .auth-tab {
-      flex: 1;
-      background: transparent;
-      color: var(--text-muted);
-      padding: 6px 0;
-      font-size: 12px;
-      border-radius: 6px;
-      transition: all 0.2s var(--ease);
-    }
-    .auth-tab.active { color: #fff; background: var(--surface-elevated); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .auth-tabs { display: flex; background: rgba(7, 6, 11, 0.4); padding: 3px; border-radius: var(--radius); margin-bottom: 18px; border: 1px solid var(--border-subtle); }
+    .auth-tab { flex: 1; background: transparent; color: var(--text-muted); padding: 6px 0; font-size: 12px; border-radius: 6px; }
+    .auth-tab.active { color: #fff; background: var(--surface-elevated); }
     .auth-form { display: none; }
     .auth-form.active { display: block; animation: fadeIn 0.25s var(--ease); }
 
-    #dashboard-screen {
-      position: relative;
-      z-index: 10;
-      display: none;
-      flex-direction: column;
-      min-height: 100vh;
-      animation: fadeIn 0.35s var(--ease);
-    }
-
+    #dashboard-screen { position: relative; z-index: 10; display: none; flex-direction: column; min-height: 100vh; }
     header.top-nav {
-      background: rgba(14, 13, 22, 0.55);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border-subtle);
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      background: rgba(14, 13, 22, 0.55); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle);
+      height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50;
     }
-
     .brand-group { display: inline-flex; align-items: center; gap: 8px; }
     .nav-left { display: flex; align-items: center; gap: 24px; }
     .nav-links { display: flex; gap: 14px; }
-
-    .nav-link {
-      background: none;
-      color: var(--text-muted);
-      font-size: 13.5px;
-      padding: 6px 0;
-      position: relative;
-      transition: color 0.2s var(--ease);
-    }
+    .nav-link { background: none; color: var(--text-muted); font-size: 13.5px; padding: 6px 0; position: relative; transition: color 0.2s var(--ease); }
     .nav-link:hover, .nav-link.active { color: var(--text-main); }
     .nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: -14px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-      animation: tabSlide 0.25s var(--ease);
+      content: ''; position: absolute; bottom: -14px; left: 0; right: 0; height: 2px;
+      background: var(--accent); box-shadow: 0 0 10px var(--accent);
     }
 
-    .main-content {
-      flex-grow: 1;
-      max-width: 840px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 28px 16px;
-      transition: max-width 0.25s var(--ease);
-    }
-
-    body.admin-wide-mode .main-content {
-      max-width: 1340px !important;
-      padding: 24px 20px;
-    }
-
+    .main-content { flex-grow: 1; max-width: 840px; width: 100%; margin: 0 auto; padding: 28px 16px; transition: max-width 0.25s var(--ease); }
+    body.admin-wide-mode .main-content { max-width: 1340px !important; padding: 24px 20px; }
     .section { display: none; }
     .section.active { display: block; animation: tabFade 0.3s var(--ease); }
 
     .profile-card {
-      background: var(--surface-glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 14px;
-      transition: border-color 0.25s var(--ease);
+      background: var(--surface-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
     }
     .profile-card:hover { border-color: rgba(255, 255, 255, 0.09); }
 
     .profile-header-banner { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
-
-    .profile-avatar-wrapper {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-      background: rgba(9, 8, 14, 0.5);
-    }
+    .profile-avatar-wrapper { width: 58px; height: 58px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-subtle); flex-shrink: 0; background: rgba(9, 8, 14, 0.5); }
     .profile-avatar-wrapper img, .profile-avatar-wrapper video { width: 100%; height: 100%; object-fit: cover; }
-    .profile-avatar-letter {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 22px;
-      font-weight: 700;
-      color: #fff;
-    }
+    .profile-avatar-letter { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #fff; }
 
-    .profile-sub-tabs {
-      display: flex;
-      gap: 6px;
-      border-bottom: 1px solid var(--border-subtle);
-      margin-bottom: 18px;
-      padding-bottom: 8px;
-    }
-
-    .profile-sub-tab {
-      background: none;
-      color: var(--text-muted);
-      font-size: 12.5px;
-      padding: 4px 10px;
-      border-radius: var(--radius);
-    }
+    .profile-sub-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 18px; padding-bottom: 8px; }
+    .profile-sub-tab { background: none; color: var(--text-muted); font-size: 12.5px; padding: 4px 10px; border-radius: var(--radius); }
     .profile-sub-tab.active { color: #fff; background: var(--surface-elevated); }
-
     .sub-view { display: none; }
     .sub-view.active { display: block; animation: tabFade 0.25s var(--ease); }
 
-    #prof-bio-text { word-break: break-word; overflow-wrap: anywhere; white-space: pre-wrap; max-width: 100%; line-height: 1.55; }
-
-    .custom-file-upload {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px dashed var(--border-subtle);
-      color: var(--text-main);
-      padding: 7px 12px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-    }
+    .custom-file-upload { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border-subtle); color: var(--text-main); padding: 7px 12px; border-radius: var(--radius); cursor: pointer; font-size: 12px; }
     .custom-file-upload input[type="file"] { display: none; }
 
     .color-picker { display: flex; gap: 8px; margin-top: 6px; }
     .color-opt { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .color-opt.active { border-color: #fff; }
 
-    .launcher-info-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .info-cell {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 10px 12px;
-    }
-    .info-cell-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
+    .launcher-info-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .info-cell { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 10px 12px; }
+    .info-cell-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
     .info-cell-val { font-size: 13.5px; font-weight: 600; color: #fff; }
 
-    .hwid-compact-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 10px 12px;
-      margin-bottom: 14px;
-      font-size: 12px;
-    }
+    .hwid-compact-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 14px; font-size: 12px; }
 
     /* КАРТОЧКИ ПОКУПКИ ЧИТА */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .pricing-card {
-      background: rgba(18, 16, 28, 0.45);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 18px 16px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      transition: all 0.25s var(--ease);
-    }
-    .pricing-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px -10px var(--accent-glow);
-    }
-    .pricing-card.featured {
-      border-color: var(--accent);
-      background: linear-gradient(180deg, rgba(139, 92, 246, 0.09) 0%, rgba(18, 16, 28, 0.6) 100%);
-    }
-
-    .discount-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34d399;
-      font-size: 10.5px;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }
-
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+    .pricing-card { background: rgba(18, 16, 28, 0.45); backdrop-filter: blur(16px); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 18px 16px; display: flex; flex-direction: column; position: relative; transition: all 0.25s var(--ease); }
+    .pricing-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 24px -10px var(--accent-glow); }
+    .pricing-card.featured { border-color: var(--accent); background: linear-gradient(180deg, rgba(139, 92, 246, 0.09) 0%, rgba(18, 16, 28, 0.6) 100%); }
+    .discount-badge { position: absolute; top: 10px; right: 10px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 10.5px; font-family: var(--font-mono); font-weight: 600; padding: 2px 5px; border-radius: 4px; }
     .plan-period { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
     .plan-price { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 16px; }
 
-    /* РУЛЕТКА */
+    /* ФИОЛЕТОВАЯ РУЛЕТКА (БЕЗ ОРАНЖЕВЫХ ЭМОДЗИ) */
     .roulette-container {
-      background: radial-gradient(circle at center, rgba(139, 92, 246, 0.12) 0%, rgba(14, 13, 22, 0.75) 75%);
+      background: rgba(14, 13, 22, 0.65);
       border: 1px solid var(--border-accent);
       border-radius: var(--radius);
-      padding: 26px 20px;
+      padding: 24px 20px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -609,183 +322,73 @@
       width: 100%;
       height: 94px;
       overflow: hidden;
-      background: rgba(7, 6, 11, 0.85);
+      background: rgba(7, 6, 11, 0.9);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
-      margin: 20px 0;
+      margin: 18px 0;
     }
     .roulette-pointer {
       position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      width: 2px;
-      background: #f59e0b;
+      top: 0; bottom: 0; left: 50%; width: 2px;
+      background: var(--accent-bright);
       transform: translateX(-50%);
       z-index: 10;
-      box-shadow: 0 0 12px #f59e0b;
+      box-shadow: 0 0 10px var(--accent-bright);
     }
-    .roulette-track {
-      display: flex;
-      gap: 8px;
-      height: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
-      padding: 8px 0;
-    }
+    .roulette-track { display: flex; gap: 8px; height: 100%; position: absolute; left: 0; top: 0; padding: 8px 0; }
     .roulette-item {
-      min-width: 106px;
+      min-width: 110px;
       height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.025);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
       font-weight: 700;
-      font-size: 11px;
+      font-size: 12px;
+      font-family: var(--font-mono);
       user-select: none;
       flex-shrink: 0;
     }
 
-    .quiet-logout-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 12px;
-      cursor: pointer;
-      padding: 6px 0;
-      transition: color 0.2s;
-    }
+    .quiet-logout-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 6px 0; }
     .quiet-logout-btn:hover { color: #f87171; text-decoration: underline; }
 
-    /* Форум */
-    .forum-item {
-      background: var(--surface-glass);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: all 0.2s var(--ease);
-    }
+    /* Форум и тикеты */
+    .forum-item { background: var(--surface-glass); backdrop-filter: blur(14px); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; transition: all 0.2s var(--ease); }
     .forum-item:hover { border-color: var(--accent); background: var(--surface-elevated); transform: translateX(3px); }
-
-    .ticket-badge {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10.5px;
-      font-weight: 600;
-      background: rgba(139, 92, 246, 0.15);
-      color: #c4b5fd;
-    }
-
-    .tag-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 0 6px;
-      height: 18px;
-      line-height: 18px;
-      border-radius: 4px;
-      margin-right: 6px;
-      text-transform: lowercase;
-    }
+    .ticket-badge { padding: 2px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 600; background: rgba(139, 92, 246, 0.15); color: #c4b5fd; }
+    .tag-badge { display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 0 6px; height: 18px; line-height: 18px; border-radius: 4px; margin-right: 6px; text-transform: lowercase; }
     .tag-баг { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
     .tag-предложение { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
     .tag-медиа { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .tag-обсуждение { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.25); }
     .pin-badge { color: #fcd34d; font-size: 11px; font-weight: 700; margin-right: 6px; }
-
     .del-btn { color: #f87171; font-size: 11px; background: none; border: none; cursor: pointer; margin-left: 8px; }
     .del-btn:hover { text-decoration: underline; }
 
-    .mini-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      cursor: pointer;
-      border: 1px solid var(--border-subtle);
-      background: rgba(9, 8, 14, 0.5);
-    }
-    .mini-avatar img, .mini-avatar video { width: 100%; height: 100%; object-fit: cover; }
-    .mini-avatar-letter { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: #fff; }
-
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      margin-top: 10px;
-    }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
     .admin-table th, .admin-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border-subtle); }
     .admin-table th { color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; font-weight: 600; }
     .admin-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
-    .copy-chip {
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-subtle);
-      font-family: var(--font-mono);
-      font-size: 11px;
-    }
-    .copy-chip:hover { border-color: var(--accent); color: #fff; }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1001;
-      background: rgba(7, 6, 11, 0.7);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    .modal-overlay { position: fixed; inset: 0; z-index: 1001; background: rgba(7, 6, 11, 0.75); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; animation: fadeIn 0.2s var(--ease); }
-
-    .modal-card {
-      width: 100%;
-      max-width: 370px;
-      background: rgba(14, 13, 22, 0.85);
-      backdrop-filter: blur(24px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      padding: 24px;
-      position: relative;
-    }
+    .modal-card { width: 100%; max-width: 380px; background: rgba(14, 13, 22, 0.9); backdrop-filter: blur(24px); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 24px; position: relative; }
     .modal-close-btn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
 
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(21, 19, 34, 0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border-accent);
-      color: var(--text-main);
-      padding: 8px 14px;
-      border-radius: var(--radius);
-      font-size: 12px;
-      z-index: 1000;
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all 0.28s var(--ease);
+    /* Методы оплаты */
+    .pay-methods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+    .pay-method-opt {
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle);
+      border-radius: 8px; padding: 10px 8px; text-align: center; cursor: pointer;
+      font-size: 12px; font-weight: 500; transition: all 0.2s;
     }
+    .pay-method-opt:hover, .pay-method-opt.active { border-color: var(--accent); background: rgba(139, 92, 246, 0.12); color: #fff; }
+
+    #toast { position: fixed; bottom: 20px; right: 20px; background: rgba(21, 19, 34, 0.9); backdrop-filter: blur(16px); border: 1px solid var(--border-accent); color: var(--text-main); padding: 8px 14px; border-radius: var(--radius); font-size: 12px; z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.28s var(--ease); }
     #toast.show { transform: translateY(0); opacity: 1; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -797,7 +400,6 @@
       .pricing-grid { grid-template-columns: 1fr; }
       header.top-nav { padding: 0 14px; }
       .nav-links { gap: 10px; }
-      .launcher-info-box { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -808,7 +410,7 @@
     <div class="glow-orb glow-2"></div>
   </div>
 
-  <!-- CLOUDFLARE TURNSTILE ВИДЖЕТ С PROOF-OF-WORK И ГАЛОЧКОЙ -->
+  <!-- CLOUDFLARE TURNSTILE SHIELD -->
   <div id="cf-screen">
     <div class="cf-turnstile-box">
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -899,10 +501,31 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div class="cookie-chip" onclick="openBuyCookiesModal()" title="Купить cookies (1 🍪 = 50 ₽)">
-          <span>🍪</span>
-          <span id="nav-cookie-count">0</span>
-          <span style="font-size: 10px; opacity: 0.7;">+</span>
+        <!-- Переключатели RU/EN и Валюты -->
+        <div class="c-select-wrapper" id="c-lang-select" style="width: 60px;">
+          <div class="c-select-trigger" style="padding: 4px 6px; font-size: 11px;" onclick="toggleCustomDropdown('c-lang-select')">
+            <span class="c-select-val">RU</span>
+          </div>
+          <div class="c-select-options">
+            <div class="c-option selected" onclick="setLanguage('RU')">RU</div>
+            <div class="c-option" onclick="setLanguage('EN')">EN</div>
+          </div>
+        </div>
+
+        <div class="c-select-wrapper" id="c-currency-select" style="width: 68px;">
+          <div class="c-select-trigger" style="padding: 4px 6px; font-size: 11px;" onclick="toggleCustomDropdown('c-currency-select')">
+            <span class="c-select-val">RUB</span>
+          </div>
+          <div class="c-select-options">
+            <div class="c-option selected" onclick="setCurrency('RUB')">RUB</div>
+            <div class="c-option" onclick="setCurrency('USD')">USD</div>
+            <div class="c-option" onclick="setCurrency('EUR')">EUR</div>
+          </div>
+        </div>
+
+        <!-- Баланс cookies -->
+        <div class="cookie-chip" onclick="openBuyCookiesModal()" title="Пополнить баланс">
+          <span id="nav-cookie-count">0</span> cookies +
         </div>
       </div>
     </header>
@@ -940,51 +563,55 @@
 
           <button class="btn-violet" style="width: 100%; margin-bottom: 16px;" onclick="downloadClient()">скачать лаунчер (joyloader.exe)</button>
 
-          <label style="margin-top: 18px; margin-bottom: 8px;">приобрести подписку на чит cs2</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; margin-bottom: 8px;">
+            <label style="margin: 0;">подписка на чит cs2</label>
+            <button class="btn-outline" style="padding: 3px 8px; font-size: 10.5px;" onclick="openBuyCookiesModal()">пополнить баланс cookies</button>
+          </div>
+
           <div class="pricing-grid" style="margin-top: 0;">
             <div class="pricing-card">
               <div class="plan-period">30 дней</div>
-              <div class="plan-price">900 ₽</div>
+              <div class="plan-price" id="price-sub-30">900 ₽</div>
               <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(30, 900)">оформить</button>
             </div>
 
             <div class="pricing-card featured">
               <span class="discount-badge">-15%</span>
               <div class="plan-period" style="color: var(--accent-bright);">90 дней</div>
-              <div class="plan-price">2 300 ₽</div>
+              <div class="plan-price" id="price-sub-90">2 300 ₽</div>
               <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(90, 2300)">оформить</button>
             </div>
 
             <div class="pricing-card">
               <span class="discount-badge">-26%</span>
               <div class="plan-period">360 дней</div>
-              <div class="plan-price">8 000 ₽</div>
+              <div class="plan-price" id="price-sub-360">8 000 ₽</div>
               <button class="btn-violet" style="margin-top: auto;" onclick="openCheckoutModal(360, 8000)">оформить</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 2. РУЛЕТКА (LUCKY WHEEL) -->
+      <!-- 2. СТИЛЬНАЯ ФИОЛЕТОВАЯ РУЛЕТКА -->
       <section id="sec-roulette" class="section">
         <div class="roulette-container">
-          <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">🍪 Колесо Удачи JOY</h2>
-          <p class="text-muted" style="font-size: 12px;">Прокрут стоит <b>1 cookie</b>. Шанс на подписку чита — <b>1.5%</b> (до 7 дней), на cookies — <b>98.5%</b> (до 5 🍪)!</p>
+          <h2 style="font-size: 17px; font-weight: 700; margin-bottom: 4px; color: #fff;">рулетка joy</h2>
+          <p class="text-muted" style="font-size: 12px;">доступна только владельцам активной подписки • стоимость: 1 cookie</p>
 
           <div class="roulette-tape-wrapper">
             <div class="roulette-pointer"></div>
             <div class="roulette-track" id="roulette-track"></div>
           </div>
 
-          <div style="display: flex; justify-content: center; align-items: center; gap: 14px;">
-            <button id="spin-roulette-btn" class="btn-cookie" style="padding: 10px 28px; font-size: 13.5px;" onclick="spinRouletteAction()">
-              Крутить за 1 🍪
+          <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
+            <button id="spin-roulette-btn" class="btn-violet" style="padding: 10px 24px; font-size: 13px;" onclick="spinRouletteAction()">
+              прокрутить за 1 cookie
             </button>
             <button class="btn-outline" style="padding: 10px 14px; font-size: 12px;" onclick="openBuyCookiesModal()">
-              Пополнить cookies
+              купить cookies
             </button>
           </div>
-          <div id="roulette-win-text" style="margin-top: 14px; font-weight: 700; font-size: 13.5px; min-height: 20px;"></div>
+          <div id="roulette-win-text" style="margin-top: 14px; font-weight: 700; font-size: 13px; min-height: 20px;"></div>
         </div>
       </section>
 
@@ -996,7 +623,7 @@
             <button class="profile-sub-tab" onclick="switchForumSub('cloud')">облако (маркетплейс)</button>
           </div>
 
-          <!-- Темы форума -->
+          <!-- Темы -->
           <div id="forum-sub-threads" class="sub-view active">
             <div id="forum-index">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -1076,7 +703,7 @@
               <button class="btn-violet" style="padding: 4px 10px; font-size: 11px;" onclick="toggleCloudUploadBox()">+ загрузить</button>
             </div>
 
-            <!-- Форма загрузки в облако с ценой за cookies -->
+            <!-- Загрузка в облако с кастомным селектором цены (БЕЗ СКРОЛЛОВ) -->
             <div id="cloud-upload-box" style="display: none; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 14px; border-radius: var(--radius); margin-bottom: 14px;">
               <div id="cloud-cfg-upload-section">
                 <label style="margin-bottom: 6px;">загрузить .cfg файл</label>
@@ -1085,8 +712,25 @@
                     <span id="cloud-cfg-file-status">выбрать .cfg</span>
                     <input type="file" id="cloud-cfg-file-input" accept=".cfg" onchange="previewCloudCfg(this)">
                   </label>
-                  <input type="number" id="cloud-cfg-price" placeholder="цена: 0-10 🍪 / мес" min="0" max="10" style="max-width: 160px; font-size: 12px;">
-                  <div class="c-select-wrapper" id="c-cfg-vis-select" style="width: 150px;">
+
+                  <!-- Кастомный селектор цены 0-10 без системных стрелок -->
+                  <div class="c-select-wrapper" id="c-cfg-price-select" style="width: 140px;">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-cfg-price-select')">
+                      <span class="c-select-val">0 cookies / мес</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" data-value="0" onclick="selectCustomOption('c-cfg-price-select', 'бесплатно (0)', '0')">бесплатно (0)</div>
+                      <div class="c-option" data-value="1" onclick="selectCustomOption('c-cfg-price-select', '1 cookie / мес', '1')">1 cookie / мес</div>
+                      <div class="c-option" data-value="2" onclick="selectCustomOption('c-cfg-price-select', '2 cookies / мес', '2')">2 cookies / мес</div>
+                      <div class="c-option" data-value="3" onclick="selectCustomOption('c-cfg-price-select', '3 cookies / мес', '3')">3 cookies / мес</div>
+                      <div class="c-option" data-value="5" onclick="selectCustomOption('c-cfg-price-select', '5 cookies / мес', '5')">5 cookies / мес</div>
+                      <div class="c-option" data-value="7" onclick="selectCustomOption('c-cfg-price-select', '7 cookies / мес', '7')">7 cookies / мес</div>
+                      <div class="c-option" data-value="10" onclick="selectCustomOption('c-cfg-price-select', '10 cookies / мес', '10')">10 cookies / мес</div>
+                    </div>
+                  </div>
+
+                  <div class="c-select-wrapper" id="c-cfg-vis-select" style="width: 130px;">
                     <div class="c-select-trigger" onclick="toggleCustomDropdown('c-cfg-vis-select')">
                       <span class="c-select-val">приватный</span>
                       <span class="c-select-arrow">▼</span>
@@ -1110,8 +754,23 @@
                   <textarea id="cloud-lua-code" class="mono" placeholder="-- lua code..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                  <input type="number" id="cloud-lua-price" placeholder="цена: 0-10 🍪 / мес" min="0" max="10" style="max-width: 160px; font-size: 12px;">
-                  <div class="c-select-wrapper" id="c-lua-vis-select" style="width: 150px;">
+                  <div class="c-select-wrapper" id="c-lua-price-select" style="width: 140px;">
+                    <div class="c-select-trigger" onclick="toggleCustomDropdown('c-lua-price-select')">
+                      <span class="c-select-val">0 cookies / мес</span>
+                      <span class="c-select-arrow">▼</span>
+                    </div>
+                    <div class="c-select-options">
+                      <div class="c-option selected" data-value="0" onclick="selectCustomOption('c-lua-price-select', 'бесплатно (0)', '0')">бесплатно (0)</div>
+                      <div class="c-option" data-value="1" onclick="selectCustomOption('c-lua-price-select', '1 cookie / мес', '1')">1 cookie / мес</div>
+                      <div class="c-option" data-value="2" onclick="selectCustomOption('c-lua-price-select', '2 cookies / мес', '2')">2 cookies / мес</div>
+                      <div class="c-option" data-value="3" onclick="selectCustomOption('c-lua-price-select', '3 cookies / мес', '3')">3 cookies / мес</div>
+                      <div class="c-option" data-value="5" onclick="selectCustomOption('c-lua-price-select', '5 cookies / мес', '5')">5 cookies / мес</div>
+                      <div class="c-option" data-value="7" onclick="selectCustomOption('c-lua-price-select', '7 cookies / мес', '7')">7 cookies / мес</div>
+                      <div class="c-option" data-value="10" onclick="selectCustomOption('c-lua-price-select', '10 cookies / мес', '10')">10 cookies / мес</div>
+                    </div>
+                  </div>
+
+                  <div class="c-select-wrapper" id="c-lua-vis-select" style="width: 130px;">
                     <div class="c-select-trigger" onclick="toggleCustomDropdown('c-lua-vis-select')">
                       <span class="c-select-val">приватный</span>
                       <span class="c-select-arrow">▼</span>
@@ -1168,13 +827,13 @@
           <div id="prof-sub-cookies" class="sub-view">
             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
               <div>
-                <div class="text-muted" style="font-size: 10.5px; text-transform: uppercase;">ваш баланс</div>
-                <div style="font-size: 20px; font-weight: 700; color: #f59e0b;" id="prof-cookies-display">0 cookies</div>
+                <div class="text-muted" style="font-size: 10.5px; text-transform: uppercase;">баланс аккаунта</div>
+                <div style="font-size: 20px; font-weight: 700; color: #c4b5fd;" id="prof-cookies-display">0 cookies</div>
               </div>
-              <button class="btn-cookie" onclick="openBuyCookiesModal()">+ пополнить cookies</button>
+              <button class="btn-violet" onclick="openBuyCookiesModal()">пополнить счет</button>
             </div>
             <p class="text-muted" style="font-size: 12px; line-height: 1.6;">
-              🍪 <b>Cookies</b> — внутренняя валюта getjoy.vip. Используйте ее для прокрута рулетки или для покупки и продления подписок на приватные Lua-скрипты и CFG от других пользователей. Курс: 1 cookie = 50 ₽.
+              Cookies используются для прокрута рулетки чита, а также для оплаты ежемесячного доступа к приватным Lua-скриптам и конфигам других участников.
             </p>
           </div>
 
@@ -1232,7 +891,7 @@
             </div>
           </div>
 
-          <!-- Админка овнера (на весь экран) -->
+          <!-- Админка овнера (полный доступ) -->
           <div id="prof-sub-admin" class="sub-view">
             <div id="admin-pin-screen" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-accent); padding: 24px; border-radius: var(--radius); text-align: center; max-width: 360px; margin: 20px auto;">
               <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">2fa подтверждение</h3>
@@ -1244,7 +903,10 @@
             <div id="admin-full-content" style="display: none;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <span style="font-weight: 700; color: #f87171; font-size: 15px;">панель управления овнера (полный доступ)</span>
-                <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn-outline" style="padding: 5px 10px; font-size: 11px;" onclick="adminGrantCookiesPrompt()">+ выдать cookies</button>
+                  <button class="btn-violet" style="padding: 5px 12px; font-size: 11px;" onclick="adminGrantSelfLifetime()">выдать себе lifetime</button>
+                </div>
               </div>
 
               <!-- Логи покупок -->
@@ -1433,6 +1095,36 @@
     </main>
   </div>
 
+  <!-- МОДАЛКА ПОКУПКИ COOKIES (С ВЫБОРОМ МЕТОДОВ И РЕСЕЛЛЕРАМИ) -->
+  <div id="buy-cookies-modal" class="modal-overlay" onclick="closeBuyCookiesModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeBuyCookiesModal()">✕</button>
+      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">пополнение cookies</h3>
+      <div class="text-muted" style="font-size: 11.5px; margin-bottom: 14px;">1 cookie = 50 ₽ (0.5 $ / 0.45 €)</div>
+
+      <div class="form-group">
+        <label>количество cookies</label>
+        <input type="number" id="ck-amount-input" value="5" min="1" max="500" oninput="updateCookiesTotalCost()">
+      </div>
+
+      <label style="margin-bottom: 6px;">способ оплаты</label>
+      <div class="pay-methods-grid">
+        <div class="pay-method-opt active" onclick="selectPayMethod('tg_wallet', this)">Telegram Wallet</div>
+        <div class="pay-method-opt" onclick="selectPayMethod('crypto', this)">Crypto (BTC / USDT)</div>
+        <div class="pay-method-opt" onclick="selectPayMethod('card', this)">Банковская карта</div>
+        <div class="pay-method-opt" onclick="selectPayMethod('reseller', this)">Реселлер (RU/EU)</div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 16px;">
+          <span>итого к оплате:</span>
+          <span id="ck-total-cost">250 ₽</span>
+        </div>
+        <button class="btn-violet" style="width: 100%;" onclick="proceedCookiesOrder()">перейти к оплате</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ЧЕКАУТ ПОДПИСКИ -->
   <div id="checkout-modal" class="modal-overlay" onclick="closeCheckoutModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
@@ -1489,6 +1181,10 @@
     let stagedMediaType = null;
     let allAdminUsers = [];
 
+    let currentCurrency = 'RUB';
+    let currentLang = 'RU';
+    let selectedPayMethod = 'tg_wallet';
+
     let cloudType = 'configs';
     let allCloudConfigs = [];
     let allCloudScripts = [];
@@ -1496,7 +1192,7 @@
 
     let activeCheckoutPlan = { days: 30, basePrice: 900, finalPrice: 900, promoCode: null, extraDays: 0 };
 
-    // Анимация плавной печати логотипа joy <-> getjoy.vip
+    // Анимация логотипа joy <-> getjoy.vip
     let typewriterTimer = null;
     function startTypewriter(toFull) {
       clearInterval(typewriterTimer);
@@ -1555,6 +1251,29 @@
     function getCustomValue(wrapperId) {
       const wrapper = document.getElementById(wrapperId);
       return wrapper.dataset.value || wrapper.querySelector('.c-select-val').innerText.trim();
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      selectCustomOption('c-lang-select', lang, lang);
+      triggerToast(lang === 'RU' ? 'Язык: Русский' : 'Language: English');
+    }
+
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      selectCustomOption('c-currency-select', curr, curr);
+      const rates = { RUB: 1, USD: 0.011, EUR: 0.01 };
+      const symbols = { RUB: '₽', USD: '$', EUR: '€' };
+
+      const p30 = Math.round(900 * rates[curr]);
+      const p90 = Math.round(2300 * rates[curr]);
+      const p360 = Math.round(8000 * rates[curr]);
+
+      document.getElementById('price-sub-30').innerText = `${p30} ${symbols[curr]}`;
+      document.getElementById('price-sub-90').innerText = `${p90} ${symbols[curr]}`;
+      document.getElementById('price-sub-360').innerText = `${p360} ${symbols[curr]}`;
+
+      updateCookiesTotalCost();
     }
 
     function switchAuthTab(tab) {
@@ -1709,7 +1428,7 @@
     }
 
     // =======================================================
-    // АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ
+    // АВТОРИЗАЦИЯ
     // =======================================================
     let pendingLoginCredentials = null;
 
@@ -1804,10 +1523,10 @@
       document.getElementById('prof-bio-text').innerText = u.bio || '—';
       document.getElementById('edit-bio').value = u.bio || '';
 
-      const cookieVal = u.cookies !== undefined ? u.cookies : 0;
-      document.getElementById('nav-cookie-count').innerText = cookieVal;
+      const ckCount = u.cookies || 0;
+      document.getElementById('nav-cookie-count').innerText = ckCount;
       const profCk = document.getElementById('prof-cookies-display');
-      if (profCk) profCk.innerText = `${cookieVal} cookies`;
+      if (profCk) profCk.innerText = `${ckCount} cookies`;
 
       const rEl = document.getElementById('prof-role');
       rEl.className = `role-badge role-${u.role || 'user'}`;
@@ -1921,15 +1640,15 @@
     }
 
     // =======================================================
-    // РУЛЕТКА И ПОПОЛНЕНИЕ COOKIES
+    // РУЛЕТКА (ТОЛЬКО С САБКОЙ, ЧИСТЫЙ СТИЛЬ)
     // =======================================================
     const rouletteSampleItems = [
-      { label: '1 Cookie', color: '#8b5cf6' },
-      { label: '3 Cookies', color: '#14b8a6' },
-      { label: '5 Cookies', color: '#10b981' },
-      { label: '1 День чита', color: '#3b82f6' },
-      { label: '3 Дня чита', color: '#a855f7' },
-      { label: '7 Дней чита', color: '#f59e0b' }
+      { label: '1 COOKIE', color: '#a78bfa' },
+      { label: '3 COOKIES', color: '#c4b5fd' },
+      { label: '5 COOKIES', color: '#e9d5ff' },
+      { label: '1D SUB', color: '#8b5cf6' },
+      { label: '3D SUB', color: '#a855f7' },
+      { label: '7D SUB', color: '#c084fc' }
     ];
 
     function initRouletteTrack() {
@@ -1940,7 +1659,7 @@
         const sample = rouletteSampleItems[Math.floor(Math.random() * rouletteSampleItems.length)];
         const div = document.createElement('div');
         div.className = 'roulette-item';
-        div.style.borderColor = sample.color;
+        div.style.borderColor = 'rgba(139, 92, 246, 0.25)';
         div.style.color = sample.color;
         div.innerText = sample.label;
         track.appendChild(div);
@@ -1953,6 +1672,13 @@
       const token = localStorage.getItem('token');
       if (!token) return triggerToast('авторизуйтесь');
 
+      // Проверка на клиенте перед запросом
+      const now = Date.now();
+      const hasSub = currentUser && (currentUser.sub_until === -1 || currentUser.sub_until > now);
+      if (!hasSub) {
+        return triggerToast('рулетка доступна только с активной подпиской на чит');
+      }
+
       try {
         const res = await fetch('/api/roulette/spin', {
           method: 'POST',
@@ -1963,7 +1689,7 @@
 
         isSpinning = true;
         document.getElementById('spin-roulette-btn').disabled = true;
-        document.getElementById('roulette-win-text').innerText = 'Колесо вращается...';
+        document.getElementById('roulette-win-text').innerText = 'вращение...';
 
         const track = document.getElementById('roulette-track');
         track.style.transition = 'none';
@@ -1971,10 +1697,10 @@
         await new Promise(r => setTimeout(r, 40));
 
         const targetIndex = 44;
-        const itemWidth = 114; // 106px minWidth + 8px gap
+        const itemWidth = 118;
         track.children[targetIndex].style.borderColor = d.reward.color;
         track.children[targetIndex].style.color = d.reward.color;
-        track.children[targetIndex].innerText = d.reward.label;
+        track.children[targetIndex].innerText = d.reward.label.toUpperCase();
 
         track.style.transition = 'transform 4.8s cubic-bezier(0.1, 0.9, 0.2, 1)';
         const offset = (targetIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
@@ -1983,7 +1709,7 @@
         setTimeout(() => {
           isSpinning = false;
           document.getElementById('spin-roulette-btn').disabled = false;
-          document.getElementById('roulette-win-text').innerHTML = `<span style="color:${d.reward.color}">Вы выиграли: ${d.reward.label}!</span>`;
+          document.getElementById('roulette-win-text').innerHTML = `<span style="color:${d.reward.color}">выигрыш: ${d.reward.label}</span>`;
           if (currentUser) {
             currentUser.cookies = d.cookies;
             currentUser.sub_until = d.sub_until;
@@ -1995,28 +1721,78 @@
       }
     }
 
+    // =======================================================
+    // ПОКУПКА COOKIES (МОДАЛКА И СЧЕТА)
+    // =======================================================
     function openBuyCookiesModal() {
-      const amountStr = prompt('Сколько cookies вы хотите купить? (1 cookie = 50 ₽)', '5');
-      if (!amountStr) return;
-      const amount = parseInt(amountStr, 10);
-      if (!amount || amount < 1) return triggerToast('неверное количество');
+      document.getElementById('buy-cookies-modal').classList.add('active');
+      updateCookiesTotalCost();
+    }
+
+    function closeBuyCookiesModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('buy-cookies-modal').classList.remove('active');
+    }
+
+    function selectPayMethod(method, el) {
+      selectedPayMethod = method;
+      document.querySelectorAll('.pay-method-opt').forEach(m => m.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function updateCookiesTotalCost() {
+      const input = document.getElementById('ck-amount-input');
+      const amount = Math.max(1, parseInt(input.value, 10) || 1);
+      const rates = { RUB: 50, USD: 0.55, EUR: 0.5 };
+      const symbols = { RUB: '₽', USD: '$', EUR: '€' };
+
+      const cost = (amount * rates[currentCurrency]).toFixed(currentCurrency === 'RUB' ? 0 : 2);
+      document.getElementById('ck-total-cost').innerText = `${cost} ${symbols[currentCurrency]}`;
+    }
+
+    async function proceedCookiesOrder() {
+      const amount = parseInt(document.getElementById('ck-amount-input').value, 10) || 1;
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch('/api/cookies/invoice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ amount, method: selectedPayMethod })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
+        triggerToast(d.message);
+        closeBuyCookiesModal();
+      } catch (e) {
+        triggerToast(e.message);
+      }
+    }
+
+    // Функция только для админа
+    async function adminGrantCookiesPrompt() {
+      const username = prompt('Кому выдать cookies? (Оставь пустым для себя):', currentUser ? currentUser.username : '');
+      const amount = prompt('Сколько cookies добавить? (можно с минусом для списания):', '10');
+      if (!amount) return;
 
       const token = localStorage.getItem('token');
-      fetch('/api/cookies/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ amount })
-      }).then(r => r.json()).then(d => {
+      try {
+        const res = await fetch('/api/admin/grant-cookies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ username, amount })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.message);
+
         triggerToast(d.message);
-        if (d.cookies !== undefined && currentUser) {
-          currentUser.cookies = d.cookies;
-          renderUser(currentUser);
-        }
-      }).catch(e => triggerToast('ошибка пополнения cookies'));
+        loadUserProfile();
+      } catch (e) { triggerToast(e.message); }
     }
 
     // =======================================================
-    // МАРКЕТПЛЕЙС LUA / CFG (ПОДПИСКА ЗА COOKIES)
+    // МАРКЕТПЛЕЙС LUA / CFG (БЕЗ ДЕФОЛТНЫХ СКРОЛЛОВ)
     // =======================================================
     function switchCloudType(type) {
       cloudType = type;
@@ -2075,7 +1851,7 @@
           div.style.padding = '12px 14px';
           div.style.marginBottom = '8px';
 
-          const priceText = cfg.price_cookies ? `${cfg.price_cookies} 🍪 / мес` : 'бесплатно';
+          const priceText = cfg.price_cookies ? `${cfg.price_cookies} cookies / мес` : 'бесплатно';
           const visBadge = cfg.is_public ? '<span class="ticket-badge">публичный</span>' : '<span class="status-badge status-testing">приватный</span>';
           const isMine = cfg.author.toLowerCase() === currentUser.username.toLowerCase();
 
@@ -2083,13 +1859,13 @@
             <div>
               <div style="font-weight: 700; font-size: 13.5px;" class="mono">${cfg.name} ${visBadge}</div>
               <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
-                автор: <span class="author-clickable" onclick="openUserProfileModal('${cfg.author}')">${cfg.author}</span> • цена: <span style="color:#f59e0b; font-weight:600;">${priceText}</span> • код: <span class="copy-chip" onclick="navigator.clipboard.writeText('${cfg.id}'); triggerToast('код скопирован')">${cfg.id}</span>
+                автор: <span class="author-clickable" onclick="openUserProfileModal('${cfg.author}')">${cfg.author}</span> • цена: <span style="color:#c4b5fd; font-weight:600;">${priceText}</span> • код: <span class="copy-chip" onclick="navigator.clipboard.writeText('${cfg.id}'); triggerToast('код скопирован')">${cfg.id}</span>
               </div>
             </div>
             <div style="display: flex; gap: 6px; align-items: center;">
               ${cfg.is_unlocked 
                 ? `<button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="downloadCfgFileLocally('${cfg.name}', '${encodeURIComponent(cfg.data || '')}')">скачать .cfg</button>`
-                : `<button class="btn-cookie" style="padding: 3px 10px; font-size: 11px;" onclick="buyItemSubscription('${cfg.id}', 'config')">купить за ${cfg.price_cookies} 🍪</button>`}
+                : `<button class="btn-violet" style="padding: 3px 10px; font-size: 11px;" onclick="buyItemSubscription('${cfg.id}', 'config')">купить за ${cfg.price_cookies} cookies</button>`}
               ${isMine || currentUser.role === 'owner' ? `<button class="del-btn" onclick="apiDeleteCloudCfg('${cfg.id}')">[удалить]</button>` : ''}
             </div>
           `;
@@ -2115,7 +1891,7 @@
           div.style.padding = '12px 14px';
           div.style.marginBottom = '8px';
 
-          const priceText = s.price_cookies ? `${s.price_cookies} 🍪 / мес` : 'бесплатно';
+          const priceText = s.price_cookies ? `${s.price_cookies} cookies / мес` : 'бесплатно';
           const visBadge = s.is_public ? '<span class="ticket-badge">публичный</span>' : '<span class="status-badge status-testing">приватный</span>';
           const isMine = s.author.toLowerCase() === currentUser.username.toLowerCase();
 
@@ -2123,13 +1899,13 @@
             <div>
               <div style="font-weight: 700; font-size: 13.5px;" class="mono">${s.title} ${visBadge}</div>
               <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
-                автор: <span class="author-clickable" onclick="openUserProfileModal('${s.author}')">${s.author}</span> • цена: <span style="color:#f59e0b; font-weight:600;">${priceText}</span> • статус: <span style="color:${s.enabled ? '#34d399' : '#f87171'}">${s.enabled ? 'активен' : 'выкл'}</span>
+                автор: <span class="author-clickable" onclick="openUserProfileModal('${s.author}')">${s.author}</span> • цена: <span style="color:#c4b5fd; font-weight:600;">${priceText}</span> • статус: <span style="color:${s.enabled ? '#34d399' : '#f87171'}">${s.enabled ? 'активен' : 'выкл'}</span>
               </div>
             </div>
             <div style="display: flex; gap: 6px; align-items: center;">
               ${s.is_unlocked 
                 ? `<button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="downloadCfgFileLocally('${s.title}.lua', '${encodeURIComponent(s.code || '')}')">скачать .lua</button>`
-                : `<button class="btn-cookie" style="padding: 3px 10px; font-size: 11px;" onclick="buyItemSubscription('${s.id}', 'script')">купить за ${s.price_cookies} 🍪</button>`}
+                : `<button class="btn-violet" style="padding: 3px 10px; font-size: 11px;" onclick="buyItemSubscription('${s.id}', 'script')">купить за ${s.price_cookies} cookies</button>`}
               ${isMine ? `<button class="btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="apiToggleCloudScript(${s.id})">${s.enabled ? 'выключить' : 'включить'}</button>` : ''}
               ${isMine || currentUser.role === 'owner' ? `<button class="del-btn" onclick="apiDeleteCloudScript(${s.id})">[удалить]</button>` : ''}
             </div>
@@ -2140,7 +1916,7 @@
     }
 
     async function buyItemSubscription(itemId, itemType) {
-      if (!confirm('Приобрести доступ на 30 дней за cookies?')) return;
+      if (!confirm('Приобрести подписку на 30 дней за cookies?')) return;
       const token = localStorage.getItem('token');
       try {
         const res = await fetch('/api/cloud/subscribe', {
@@ -2177,7 +1953,7 @@
       if (!stagedCloudCfg) return triggerToast('выберите .cfg файл');
       const token = localStorage.getItem('token');
       const is_public = getCustomValue('c-cfg-vis-select') === 'public';
-      const price_cookies = document.getElementById('cloud-cfg-price').value;
+      const price_cookies = getCustomValue('c-cfg-price-select');
 
       try {
         const res = await fetch('/api/configs/upload', {
@@ -2197,7 +1973,6 @@
         stagedCloudCfg = null;
         document.getElementById('cloud-cfg-file-input').value = '';
         document.getElementById('cloud-cfg-file-status').innerText = 'выбрать .cfg';
-        document.getElementById('cloud-cfg-price').value = '';
         toggleCloudUploadBox();
         loadCloudData();
       } catch (e) { triggerToast(e.message); }
@@ -2207,7 +1982,7 @@
       const token = localStorage.getItem('token');
       const title = document.getElementById('cloud-lua-title').value.trim();
       const code = document.getElementById('cloud-lua-code').value.trim();
-      const price_cookies = document.getElementById('cloud-lua-price').value;
+      const price_cookies = getCustomValue('c-lua-price-select');
       const is_public = getCustomValue('c-lua-vis-select') === 'public';
 
       if (!title || !code) return triggerToast('заполните поля скрипта');
@@ -2224,7 +1999,6 @@
         triggerToast(d.message);
         document.getElementById('cloud-lua-title').value = '';
         document.getElementById('cloud-lua-code').value = '';
-        document.getElementById('cloud-lua-price').value = '';
         toggleCloudUploadBox();
         loadCloudData();
       } catch (e) { triggerToast(e.message); }
@@ -2260,7 +2034,7 @@
     }
 
     // =======================================================
-    // ЧЕКАУТ ПОДПИСКИ НА ЧИТ
+    // ОФОРМЛЕНИЕ САБКИ
     // =======================================================
     function openCheckoutModal(days, price) {
       activeCheckoutPlan = { 
@@ -2310,7 +2084,7 @@
         let bText = 'применено: ';
         if (d.discount_percent > 0) bText += `скидка ${d.discount_percent}% `;
         if (d.days > 0) bText += `(+${d.days} дн. сабки) `;
-        if (d.cookies > 0) bText += `(+${d.cookies} 🍪)`;
+        if (d.cookies > 0) bText += `(+${d.cookies} cookies)`;
         badge.innerText = bText;
 
         document.getElementById('checkout-total-price').innerText = `${newPrice} ₽`;
@@ -2404,7 +2178,7 @@
     }
 
     // =======================================================
-    // АДМИНИСТРАТИВНАЯ ПАНЕЛЬ
+    // АДМИН-ПАНЕЛЬ
     // =======================================================
     async function adminGrantSelfLifetime() {
       const token = localStorage.getItem('token');
@@ -2489,7 +2263,7 @@
           <td class="mono">uid ${u.uid}</td>
           <td style="font-weight: 600;">${u.username}</td>
           <td><span class="role-badge role-${u.role}">${u.role}</span></td>
-          <td style="color:#f59e0b; font-weight:600;">${u.cookies || 0} 🍪</td>
+          <td style="color:#c4b5fd; font-weight:600;">${u.cookies || 0}</td>
           <td>${statusHtml}</td>
           <td class="mono" style="font-size: 11px;">${u.web_ip}</td>
           <td class="mono" style="font-size: 11px;">${ipWarning}</td>
@@ -2698,7 +2472,7 @@
         d.promos.forEach(p => {
           let bonusStr = [];
           if (p.days > 0) bonusStr.push(`+${p.days} дн.`);
-          if (p.cookies > 0) bonusStr.push(`+${p.cookies} 🍪`);
+          if (p.cookies > 0) bonusStr.push(`+${p.cookies} cookies`);
           if (p.discount_percent > 0) bonusStr.push(`-${p.discount_percent}%`);
 
           const usesStr = p.max_uses === 0 ? `${p.used_count} / ∞` : `${p.used_count} / ${p.max_uses}`;
