@@ -515,9 +515,17 @@ app.post('/api/cookies/buy', authUser, (req, res) => {
 });
 
 // Прокрут рулетки: 1 cookie за спин
+// Прокрут рулетки: ТОЛЬКО ПРИ НАЛИЧИИ АКТИВНОЙ ПОДПИСКИ
 app.post('/api/roulette/spin', authUser, (req, res) => {
   const db = loadDB();
   const user = db.users[req.user.username.toLowerCase()];
+
+  const now = Date.now();
+  const hasActiveSub = user.sub_until === -1 || user.sub_until > now;
+
+  if (!hasActiveSub) {
+    return res.status(403).json({ message: 'рулетка доступна только пользователям с активной подпиской' });
+  }
 
   if ((user.cookies || 0) < 1) {
     return res.status(400).json({ message: 'недостаточно cookies (требуется 1 cookie)' });
@@ -525,33 +533,24 @@ app.post('/api/roulette/spin', authUser, (req, res) => {
 
   user.cookies -= 1;
 
-  // Шансы:
-  // Суммарно на чит: ровно 1.5%
-  //   - 7 дней: 0.2%
-  //   - 3 дня: 0.5%
-  //   - 1 день: 0.8%
-  // Суммарно на cookies: ровно 98.5%
-  //   - 5 cookies: 6.5%
-  //   - 3 cookies: 22.0%
-  //   - 1 cookie: 70.0%
+  // Шансы: 1.5% на чит, 98.5% на cookies
   const roll = Math.random() * 100;
   let reward = {};
 
   if (roll < 0.2) {
-    reward = { type: 'sub', value: 7, label: '7 дней сабки', color: '#f59e0b' };
+    reward = { type: 'sub', value: 7, label: '7d sub', color: '#c084fc' };
   } else if (roll < 0.7) {
-    reward = { type: 'sub', value: 3, label: '3 дня сабки', color: '#a855f7' };
+    reward = { type: 'sub', value: 3, label: '3d sub', color: '#a855f7' };
   } else if (roll < 1.5) {
-    reward = { type: 'sub', value: 1, label: '1 день сабки', color: '#3b82f6' };
+    reward = { type: 'sub', value: 1, label: '1d sub', color: '#8b5cf6' };
   } else if (roll < 8.0) {
-    reward = { type: 'cookies', value: 5, label: '5 cookies', color: '#10b981' };
+    reward = { type: 'cookies', value: 5, label: '5 cookies', color: '#e9d5ff' };
   } else if (roll < 30.0) {
-    reward = { type: 'cookies', value: 3, label: '3 cookies', color: '#14b8a6' };
+    reward = { type: 'cookies', value: 3, label: '3 cookies', color: '#c4b5fd' };
   } else {
-    reward = { type: 'cookies', value: 1, label: '1 cookie', color: '#8b5cf6' };
+    reward = { type: 'cookies', value: 1, label: '1 cookie', color: '#a78bfa' };
   }
 
-  const now = Date.now();
   if (reward.type === 'sub') {
     if (user.sub_until !== -1) {
       const ms = reward.value * 86400000;
@@ -568,6 +567,44 @@ app.post('/api/roulette/spin', authUser, (req, res) => {
     cookies: user.cookies,
     sub_until: user.sub_until
   });
+});
+
+// Запрос на создание счёта/заявки на покупку cookies (для пользователей)
+app.post('/api/cookies/invoice', authUser, (req, res) => {
+  const { amount, method } = req.body;
+  const count = parseInt(amount, 10);
+  if (!count || count < 1 || count > 500) {
+    return res.status(400).json({ message: 'неверное количество cookies' });
+  }
+
+  const costRub = count * 50;
+  const invId = 'INV-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+
+  sendTelegramNotification(`🍪 <b>Заявка на Cookies JOY</b>\nПользователь: <b>${req.user.username}</b> [UID: ${req.user.uid}]\nКоличество: ${count} cookies\nСумма: ${costRub} ₽\nСпособ: ${method || 'tg_wallet'}`);
+
+  res.json({
+    invoice_id: invId,
+    amount: count,
+    cost_rub: costRub,
+    message: 'заявка создана. после оплаты через бота или реселлера баланс зачислится автоматически'
+  });
+});
+
+// ВЫДАЧА COOKIES СЕБЕ ИЛИ ДРУГИМ — ТОЛЬКО ДЛЯ OWNER
+app.post('/api/admin/grant-cookies', requireOwner, (req, res) => {
+  const { username, amount } = req.body;
+  const db = loadDB();
+  const target = db.users[(username || req.adminUser.username).toLowerCase()];
+  if (!target) return res.status(404).json({ message: 'пользователь не найден' });
+
+  const val = parseInt(amount, 10);
+  if (isNaN(val)) return res.status(400).json({ message: 'неверное число' });
+
+  target.cookies = Math.max(0, (target.cookies || 0) + val);
+  saveDB(db);
+
+  res.json({ message: `пользователю ${target.username} установлено ${target.cookies} cookies`, cookies: target.cookies });
+});
 });
 
 // ============================================================
