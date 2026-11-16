@@ -243,7 +243,7 @@ app.post('/api/register', async (req, res) => {
     ban_reason: '',
     bio: '',
     security_pin: null,
-    avatar_color: '#8b5cf6',
+    avatar_color: '#e2e8f0',
     avatar_media: null,
     avatar_type: null,
     hwid: null,
@@ -322,13 +322,22 @@ app.get('/api/user/:username', (req, res) => {
   });
 });
 
+// Сохранение аватарок и данных профиля в БД
 app.post('/api/profile/update', authUser, (req, res) => {
   const db = loadDB();
   const u = db.users[req.user.username.toLowerCase()];
+  
   if (req.body.bio !== undefined) u.bio = String(req.body.bio).slice(0, 250);
   if (req.body.avatar_color) u.avatar_color = req.body.avatar_color;
-  if (req.body.reset_media) { u.avatar_media = null; u.avatar_type = null; }
-  else if (req.body.avatar_media) { u.avatar_media = req.body.avatar_media; u.avatar_type = req.body.avatar_type; }
+  
+  if (req.body.reset_media) { 
+    u.avatar_media = null; 
+    u.avatar_type = null; 
+  } else if (req.body.avatar_media) { 
+    u.avatar_media = req.body.avatar_media; 
+    u.avatar_type = req.body.avatar_type; 
+  }
+  
   saveDB(db);
   res.json({ message: 'профиль сохранен', user: safeUser(u) });
 });
@@ -372,12 +381,12 @@ app.post('/api/roulette/spin', authUser, (req, res) => {
   const roll = Math.random() * 100;
   let reward = {};
 
-  if (roll < 0.2) reward = { type: 'sub', value: 7, label: '7D SUB', color: '#c084fc' };
-  else if (roll < 0.7) reward = { type: 'sub', value: 3, label: '3D SUB', color: '#a855f7' };
-  else if (roll < 1.5) reward = { type: 'sub', value: 1, label: '1D SUB', color: '#8b5cf6' };
-  else if (roll < 8.0) reward = { type: 'cookies', value: 5, label: '5 COOKIES', color: '#e9d5ff' };
-  else if (roll < 30.0) reward = { type: 'cookies', value: 3, label: '3 COOKIES', color: '#c4b5fd' };
-  else reward = { type: 'cookies', value: 1, label: '1 COOKIE', color: '#a78bfa' };
+  if (roll < 0.2) reward = { type: 'sub', value: 7, label: '7D SUB', color: '#ffffff' };
+  else if (roll < 0.7) reward = { type: 'sub', value: 3, label: '3D SUB', color: '#e2e8f0' };
+  else if (roll < 1.5) reward = { type: 'sub', value: 1, label: '1D SUB', color: '#cbd5e1' };
+  else if (roll < 8.0) reward = { type: 'cookies', value: 5, label: '5 COOKIES', color: '#ffffff' };
+  else if (roll < 30.0) reward = { type: 'cookies', value: 3, label: '3 COOKIES', color: '#cbd5e1' };
+  else reward = { type: 'cookies', value: 1, label: '1 COOKIE', color: '#94a3b8' };
 
   if (reward.type === 'sub' && user.sub_until !== -1) {
     const base = user.sub_until > now ? user.sub_until : now;
@@ -457,7 +466,6 @@ app.post('/api/payment/checkout', authUser, (req, res) => {
     user.sub_until = base + (finalDays * 86400000);
   }
 
-  // Реферальный бонус
   if (user.referrer && db.users[user.referrer]) {
     const refOwner = db.users[user.referrer];
     refOwner.cookies = (refOwner.cookies || 0) + 2;
@@ -735,7 +743,7 @@ app.get('/api/forum/threads', (req, res) => {
       tag: t.tag || 'обсуждение',
       author_avatar_media: authorUser.avatar_media || null,
       author_avatar_type: authorUser.avatar_type || null,
-      author_avatar_color: authorUser.avatar_color || '#8b5cf6',
+      author_avatar_color: authorUser.avatar_color || '#e2e8f0',
       created_at: t.created_at,
       replies_count: t.posts ? t.posts.length : 0
     };
@@ -756,7 +764,7 @@ app.get('/api/forum/threads/:id', (req, res) => {
       author_role: authorUser.role || 'user',
       author_avatar_media: authorUser.avatar_media || null,
       author_avatar_type: authorUser.avatar_type || null,
-      author_avatar_color: authorUser.avatar_color || '#8b5cf6',
+      author_avatar_color: authorUser.avatar_color || '#e2e8f0',
       posts: (thread.posts || []).map(p => {
         const pUser = db.users[p.author.toLowerCase()] || {};
         return {
@@ -764,7 +772,7 @@ app.get('/api/forum/threads/:id', (req, res) => {
           author_role: pUser.role || 'user',
           author_avatar_media: pUser.avatar_media || null,
           author_avatar_type: pUser.avatar_type || null,
-          author_avatar_color: pUser.avatar_color || '#8b5cf6'
+          author_avatar_color: pUser.avatar_color || '#e2e8f0'
         };
       })
     }
